@@ -13,3 +13,4 @@ Sau đó TLuc đã có một nước đi không ngờ đó chính là mình khô
 
 Nhờ anh ChatGPT và 2 tuần ngồi **vibe coding** thì cuối cùng TLuc cũng đã bắt chước được cái page của anh [Mark](https://marknizal.vercel.app/) nhưng mà mới copy được cái page đầu tiên à... Thôi thì từ từ rồi mình tiếp hihi, à cho những ai hỏi cái page nó như thế nào thì đây nhen [Kaivian](https://kaivian.github.io/) và [source code đây](https://github.com/Kaivian/kaivian.github.io). Vào đọc thử xem coi có hiểu gì hong nhen chứ TLuc không hiểu rồi đó toàn vibe coding...
 
+Rồi giờ thì cũng tới lúc mình làm một cái gì đó ngon nghẻ rồi chứ nhỉ giờ tạo cái trang web quản lí nhân sự các thứ đi. Vào ChatGPT hỏi ảnh làm sao để tạo ra một web dùng React + Tailwind liền và lặp tức rồi chúng ta chuyển qua chuyên đề học tập thoi!
