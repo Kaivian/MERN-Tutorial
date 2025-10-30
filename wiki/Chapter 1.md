@@ -1,4 +1,4 @@
-# Chapter 1 - Tôi cần điều gì?
+# Chapter 1 - Mình cần điều gì?
 
 Đang ngồi chill chill thì tự nhiên nghĩ tới "**sao mình phải đợi học xong mới đi làm nhỉ?**" thế là bật dậy tìm hiểu "**ở cái tuổi mình thì làm được gì nhỉ?**" thế là ra một list thiệt dài: `Các combo mà trường mình cho đó`. Đang phân vân không biết chọn gì thì nghe tin trường mình mà học `Java chuyên sâu` thì tỉ lệ không có lớp nó cao lắm với lại giờ công ty cũng ít tuyển `Java` đang mông lung vì mình đang có sẵn nền tảng rồi, code cả game rồi thì giờ không làm `Java` thì mình làm cái gì được đây.
 
