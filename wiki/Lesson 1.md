@@ -1,9 +1,9 @@
 # Lesson 1 - Ngôn ngữ
-Nè nè tự làm thử cho mình một cái **Portfolio** chưa mà qua đây, nếu mà chưa thì thử mò rồi làm thử một cái đơn giản đi nha, `HTML`, `CSS`, `Javascript` bình thường thôi cũng được, nếu mà bí quá thì có thể tham khảo code ở [Chapter 2](https://github.com/Kaivian/MERN-Tutorial/wiki/Chapter-2), và [Chapter 3](https://github.com/Kaivian/MERN-Tutorial/wiki/Chapter-3) nha. Thử mò để xem coi cái đó là cái gì rồi quay lại đây nhen!
+Nè nè tự làm thử cho mình một cái **Portfolio** chưa mà qua đây, nếu mà chưa thì thử mò rồi làm thử một cái đơn giản đi nha, `HTML`, `CSS`, `Javascript` bình thường thôi cũng được, nếu mà bí quá thì có thể tham khảo code ở [Chapter 2](https://github.com/Kaivian/MERN-Tutorial/wiki/Chapter-2), và [Chapter 3](https://github.com/Kaivian/MERN-Tutorial/wiki/Chapter-3) nha. Thử mò để xem coi cái đó là cái gì rồi quay lại đây nhen! Còn nếu đã thử làm rồi thì chúng ta vào với bài đầu tiên nha.
 
 ## Front-end là gì?
 
-Rồi còn nếu thử làm rồi thì chúng ta vào với bài đầu tiên nha. Giờ **Front-end** là nó code cái gì đây, thì đúng như cái tên đó nó code cái phần phía trước, tức là cái `giao diện tương tác với người dùng` **UI (User Interface)**, và còn thêm một cái gọi là **UX (User Experience) - Trãi nghiệm của người dùng** nhưng phần đó chúng ta sẽ nói vào bài khác nha.
+Giờ **Front-end** là nó code cái gì đây, thì đúng như cái tên đó nó code cái phần phía trước, tức là cái `giao diện tương tác với người dùng` **UI (User Interface)**, và còn thêm một cái gọi là **UX (User Experience) - Trãi nghiệm của người dùng** nhưng phần đó chúng ta sẽ nói vào bài khác nha.
 
 Front-end có rất nhiều ngôn ngữ để lập trình như `PHP`, `JSX`, hay `TSX`,… Nhưng suy cho cùng, những gì người dùng nhìn thấy vẫn được hiển thị bằng **HTML**, và phần giao diện, bố cục của trang web được định dạng chủ yếu nhờ **CSS**.
 
@@ -18,7 +18,7 @@ Rồi vậy thì ngôn ngữ nào đang phổ biến nhất:
 Ok, giờ ta nói tới **Back-end**, tức là “phần phía sau” của ứng dụng web. Nếu **Front-end** là phần người dùng thấy và tương tác (UI/UX), thì **Back-end** chính là phần xử lý logic, dữ liệu, xác thực, và kết nối với cơ sở dữ liệu.
 
 Nói ngắn gọn:
-> Front-end là _“mặt tiền”_, còn Back-end là _“hệ thống điều khiển bên trong”_.
+> Front-end là cái _“màn hình”_, còn Back-end là _“linh kiện bên trong máy tính”_.
 
 ## Back-end trong MERN bao gồm gì?
 
@@ -81,7 +81,7 @@ Vì sao chọn MongoDB:
 
 4. Cộng đồng mạnh & dễ dùng → MongoDB Compass cho phép quản lý dữ liệu trực quan, dễ học hơn SQL.
 
-> Nói ngắn gọn: MongoDB “ăn rơ” với Node.js và React — tất cả đều nói chung một “ngôn ngữ” là JSON.
+> Nói ngắn gọn: MongoDB “hợp rơ” với Node.js và React — tất cả đều nói chung một “ngôn ngữ” là JSON.
 </details>
 
 <details>
