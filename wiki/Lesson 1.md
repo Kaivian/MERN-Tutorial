@@ -18,7 +18,7 @@ Rồi vậy thì ngôn ngữ nào đang phổ biến nhất:
 Ok, giờ ta nói tới **Back-end**, tức là “phần phía sau” của ứng dụng web. Nếu **Front-end** là phần người dùng thấy và tương tác (UI/UX), thì **Back-end** chính là phần xử lý logic, dữ liệu, xác thực, và kết nối với cơ sở dữ liệu.
 
 Nói ngắn gọn:
-> Front-end là cái _“màn hình”_, còn Back-end là _“linh kiện bên trong máy tính”_.
+> Front-end là cái _“màn hình hiển thị”_, còn Back-end là _“linh kiện bên trong máy tính”_.
 
 ## Back-end trong MERN bao gồm gì?
 
