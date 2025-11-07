@@ -11,19 +11,16 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
+    "plugins": [{ "name": "next" }],
+    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     },
     "resolvePackageJsonExports": true,
     "resolvePackageJsonImports": true,
-    "types": ["@types/node", "react", "react-dom"]
+    "types": ["@types/node"]
   },
   "include": [
     "next-env.d.ts",
