@@ -21,7 +21,7 @@ const ICONS: Record<ThemeMode, React.ElementType> = {
   system: Monitor,
 };
 
-interface ThemeSwitchButtonProps extends Omit<ButtonProps, "isIconOnly" | "onPress" | "children" | "aria-label" | "isLoading"> { }
+type ThemeSwitchButtonProps = Omit<ButtonProps, "isIconOnly" | "onPress" | "children" | "aria-label" | "isLoading">;
 
 export default function ThemeSwitchButton(restProps: ThemeSwitchButtonProps) {
   const { theme, setTheme, resolvedTheme } = useTheme();

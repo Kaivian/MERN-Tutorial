@@ -21,8 +21,7 @@ const ICONS: Record<ThemeMode, React.ElementType> = {
   system: Monitor,
 };
 
-interface ThemeSwitchDropdownProps extends Omit<ButtonProps, "onPress" | "children" | "aria-label" | "isLoading" | "endContent"> { }
-
+type ThemeSwitchDropdownProps = Omit<ButtonProps, "onPress" | "children" | "aria-label" | "isLoading" | "endContent">;
 
 export default function ThemeSwitchDropdown(restProps: ThemeSwitchDropdownProps) {
   const { theme, setTheme, resolvedTheme } = useTheme();
