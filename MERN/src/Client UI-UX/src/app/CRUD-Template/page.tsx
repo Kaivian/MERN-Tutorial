@@ -1,5 +1,3 @@
-'use client';
-
 import ThemeSwitchButton from "@/components/theme-switch/ThemeSwitchButton";
 import ThemeSwitchDropDown from "@/components/theme-switch/ThemeSwitchDropDown";
 
