@@ -9,6 +9,7 @@ export interface SidebarItem {
   iconSize: number;
   isDisabled?: boolean;
   isHidden?: boolean;
+  isSelected?: boolean;
   endContent?: React.ReactNode;
 }
 
@@ -38,9 +39,10 @@ export const sidebarSections: SidebarSection[] = [
         key: "home",
         label: "Home",
         icon: "Home",
-        iconSize: 31,
+        iconSize: 32,
         isDisabled: false,
         isHidden: false,
+        isSelected: true,
       },
       {
         key: "projects",
@@ -84,7 +86,7 @@ export const sidebarSections: SidebarSection[] = [
         key: "team",
         label: "Team",
         icon: "Group",
-        iconSize: 28,
+        iconSize: 32,
         isDisabled: false,
         isHidden: false,
       },
@@ -103,6 +105,9 @@ export const sidebarSections: SidebarSection[] = [
       },
     ],
   },
+];
+
+export const sidebarSections2: SidebarSection[] = [
   {
     title: "Organization",
     items: [
@@ -122,7 +127,12 @@ export const sidebarSections: SidebarSection[] = [
         key: "perks",
         label: "Perks",
         icon: "Palette",
-        iconSize: 31,
+        iconSize: 36,
+        endContent: (
+          <Chip size="sm" radius="full" className="bg-default/40">
+            3
+          </Chip>
+        ),
       },
       {
         key: "expenses",
@@ -190,5 +200,12 @@ export const teamMembers: TeamMember[] = [
     avatarChar: "B",
     statusColor: "success",
     statusContent: "",
+  },
+  {
+    key: "mike",
+    name: "Mike",
+    avatarChar: "M",
+    statusColor: "default",
+    isInvisibleBadge: true,
   },
 ];
