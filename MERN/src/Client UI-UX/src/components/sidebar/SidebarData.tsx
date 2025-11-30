@@ -208,4 +208,18 @@ export const teamMembers: TeamMember[] = [
     statusColor: "default",
     isInvisibleBadge: true,
   },
+  {
+    key: "tyson",
+    name: "Tyson",
+    avatarChar: "T",
+    statusColor: "default",
+    isInvisibleBadge: true,
+  },
+  {
+    key: "jack",
+    name: "Jack",
+    avatarChar: "J",
+    statusColor: "default",
+    isInvisibleBadge: true,
+  },
 ];

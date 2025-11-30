@@ -5,6 +5,7 @@ import Sidebar from "@/components/sidebar/Sidebar";
 import PageHeader from "@/components/sidebar/PageHeader";
 
 const STORAGE_KEY = "sidebar_state";
+const TABLET_BREAKPOINT = 768;
 
 export default function AppTemplateLayout({
   children,
@@ -16,12 +17,30 @@ export default function AppTemplateLayout({
 
   useEffect(() => {
     const savedState = localStorage.getItem(STORAGE_KEY);
-    const shouldBeOpen = savedState !== null ? savedState === "true" : true;
+    const width = window.innerWidth;
+
+    const shouldBeOpen = width < TABLET_BREAKPOINT
+      ? false
+      : (savedState !== null ? savedState === "true" : true);
+
     setTimeout(() => {
       setIsSidebarOpen(shouldBeOpen);
       setIsMounted(true);
     }, 0);
+  }, []);
 
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < TABLET_BREAKPOINT) {
+        setIsSidebarOpen((prev) => {
+          if (prev) return false;
+          return prev;
+        });
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   useEffect(() => {

@@ -3,7 +3,7 @@
 import React from "react";
 import {
   Avatar,
-  User,
+  // User,
   Button,
   ButtonGroup,
   Tooltip,
@@ -24,18 +24,18 @@ import {
 // --- 1. SIDEBAR FULL (PRIORITY MENU SCROLL) ---
 const SidebarExpanded = () => {
   return (
-    <div className="flex flex-col gap-4 flex-1 overflow-hidden h-full min-w-[240px] animate-[fadeIn_0.3s_ease-in-out]">
+    <div className="flex flex-col gap-4 flex-1 overflow-hidden h-full w-full animate-[fadeIn_0.3s_ease-in-out]">
 
       {/* --- A. PRIMARY AREA (HEADER + MENU) --- */}
       <ScrollShadow className="flex flex-col gap-6 shrink min-h-0 -mx-2 px-2" hideScrollBar>
         {/* Header & User (Luôn đi cùng Menu) */}
-        <div className="flex flex-col gap-6 pt-1">
+        <div className="flex flex-col gap-6 pt-1 mx-2">
           <section className="flex items-center gap-2">
             <Avatar src="../images/Kaivian Logo.png" />
             <h1 className="text-lg font-semibold">Kaivian</h1>
           </section>
 
-          <section>
+          {/* <section>
             <User
               avatarProps={{
                 src: "../images/Avatar.JPG",
@@ -44,8 +44,10 @@ const SidebarExpanded = () => {
               description="Software Engineer"
               name="Thế Lực"
             />
-          </section>
+          </section> */}
         </div>
+
+        <Divider className="bg-divider w-full" />
 
         {/* Menu Sections */}
         <div className="flex flex-col gap-6 pb-2">
@@ -71,8 +73,9 @@ const SidebarExpanded = () => {
                       size="lg"
                       className={`text-left px-3 gap-2 justify-start ${item.isSelected ? "bg-default-100" : ""}`}
                       variant="light"
+                      endContent={item.endContent}
                     >
-                      <span className={`text-small font-medium ${item.isDisabled ? "text-default-300" : "text-default-500"} ${item.isSelected ? "text-foreground" : ""}`}>
+                      <span className={`text-small font-medium flex-1 text-left ${item.isDisabled ? "text-default-300" : "text-default-500"} ${item.isSelected ? "text-foreground" : ""}`}>
                         {item.label}
                       </span>
                     </Button>
@@ -104,8 +107,9 @@ const SidebarExpanded = () => {
                       size="lg"
                       className={`text-left px-3 gap-2 justify-start ${item.isSelected ? "bg-default-100" : ""}`}
                       variant="light"
+                      endContent={item.endContent}
                     >
-                      <span className={`text-small font-medium ${item.isDisabled ? "text-default-300" : "text-default-500"} ${item.isSelected ? "text-foreground" : ""}`}>
+                      <span className={`text-small font-medium flex-1 text-left ${item.isDisabled ? "text-default-300" : "text-default-500"} ${item.isSelected ? "text-foreground" : ""}`}>
                         {item.label}
                       </span>
                     </Button>
@@ -196,7 +200,7 @@ const SidebarExpanded = () => {
 // --- 2. SIDEBAR COLLAPSED (PRIORITY MENU SCROLL) ---
 const SidebarCollapsed = () => {
   return (
-    <div className="flex flex-col items-center gap-4 flex-1 h-full w-full animate-[fadeIn_0.5s_ease-in-out]">
+    <div className="flex flex-col items-center gap-4 flex-1 h-full w-full animate-[fadeIn_0.3s_ease-in-out]">
 
       {/* --- A. PRIMARY AREA (HEADER + MENU) --- */}
       <ScrollShadow className="flex flex-col gap-4 w-full items-center shrink min-h-0 pt-2" hideScrollBar>
@@ -204,9 +208,9 @@ const SidebarCollapsed = () => {
         {/* Header & User */}
         <div className="flex flex-col items-center gap-6 w-full">
           <div className="flex justify-center w-full">
-            <Avatar src="../images/Kaivian Logo.png" size="sm" />
+            <Avatar src="../images/Kaivian Logo.png" />
           </div>
-          <div className="flex justify-center w-full">
+          {/* <div className="flex justify-center w-full">
             <Tooltip content="Thế Lực (Software Engineer)" placement="right">
               <Avatar
                 src="../images/Avatar.JPG"
@@ -215,8 +219,10 @@ const SidebarCollapsed = () => {
                 className="cursor-pointer"
               />
             </Tooltip>
-          </div>
+          </div> */}
         </div>
+
+        <Divider className="bg-divider w-full" />
 
         {/* Sections 1 & 2 */}
         <div className="flex flex-col gap-2 w-full items-center pb-2">
@@ -248,7 +254,7 @@ const SidebarCollapsed = () => {
             ))}
           </section>
 
-          <Divider className="bg-divider w-8 my-1" />
+          <Divider className="bg-divider w-full" />
 
           {/* Section 2 */}
           <section className="flex flex-col gap-1 w-full items-center">
@@ -278,13 +284,13 @@ const SidebarCollapsed = () => {
             ))}
           </section>
 
-          <Divider className="bg-divider w-8 my-1" />
+          <Divider className="bg-divider w-full" />
         </div>
       </ScrollShadow>
 
       {/* --- B. SECONDARY AREA (TEAMS) --- */}
       {/* Chỉ hiện nếu còn chỗ trống */}
-      <ScrollShadow className="flex-1 w-full min-h-0" hideScrollBar>
+      <ScrollShadow className="flex-1 w-full min-h-0 -my-4" hideScrollBar>
         <section className="flex flex-col gap-1 w-full items-center pb-2">
           {teamMembers.map((member: TeamMember) => {
             if (member.isHidden) return null;

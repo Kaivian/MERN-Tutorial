@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   },
   description: "Next.js + Tailwind v4 + HeroUI template",
   icons: {
-    icon: "/favicon.png",
+    icon: "/images/Kaivian Logo-Circle.png",
   },
 };
 
