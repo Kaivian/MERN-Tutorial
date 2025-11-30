@@ -28,7 +28,6 @@ export default function PageHeader({ toggleSidebar }: PageHeaderProps) {
         <User
           avatarProps={{
             src: "/images/Avatar.JPG",
-            isBordered: true,
           }}
           description="Software Engineer"
           name="Thế Lực"
