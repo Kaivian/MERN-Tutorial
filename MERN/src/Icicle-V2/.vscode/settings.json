@@ -1,0 +1,19 @@
+{
+  // Bắt buộc VS Code sử dụng chế độ config mới (Flat Config)
+  "eslint.useFlatConfig": true,
+  // Chỉ định các loại file cần kiểm tra
+  "eslint.validate": [ "javascript", "javascriptreact", "typescript", "typescriptreact" ],
+  // Rất quan trọng cho MERN Stack:
+  "eslint.workingDirectories": [ 
+    "./client",
+    "./server"
+  ],
+
+  // Luôn hiện thanh trạng thái Eslint phía dưới góc phải
+  "eslint.alwaysShowStatus": true,
+  
+  // (Tùy chọn) Tự động sửa lỗi khi lưu file
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  }
+}
