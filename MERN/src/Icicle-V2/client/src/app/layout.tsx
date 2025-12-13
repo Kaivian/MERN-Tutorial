@@ -7,12 +7,12 @@ import { fontSans, fontMono } from "@/config/font";
 
 export const metadata: Metadata = {
   title: {
-    default: "MERN Frontend",
-    template: `%s - MERN Frontend`,
+    default: "Gia Lực",
+    template: `Kaivian Template`,
   },
-  description: "Next.js + Tailwind v4 + HeroUI template",
+  description: "Next.js + Tailwind v4 + HeroUI",
   icons: {
-    icon: "/images/Kaivian Logo-Circle.png",
+    icon: "/favicon.png",
   },
 };
 

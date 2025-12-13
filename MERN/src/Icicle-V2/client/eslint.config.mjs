@@ -17,12 +17,22 @@ const eslintConfig = defineConfig([
           "**/*.{ts,tsx,js,jsx}": "KEBAB_CASE",
         },
         {
-          ignoreMiddleExtensions: true, 
+          ignoreMiddleExtensions: true,
         },
       ],
     },
   },
-
+  {
+    files: ["src/hooks/**/*", "hooks/**/*"],
+    rules: {
+      "check-file/filename-naming-convention": [
+        "error",
+        {
+          "**/*.{ts,tsx,js,jsx}": "CAMEL_CASE",
+        },
+      ],
+    },
+  },
   {
     files: ["src/components/**/*", "components/**/*"],
     rules: {
@@ -34,7 +44,6 @@ const eslintConfig = defineConfig([
       ],
     },
   },
-
   globalIgnores([
     ".next/**",
     "out/**",
@@ -43,7 +52,7 @@ const eslintConfig = defineConfig([
     "tailwind.config.ts",
     "postcss.config.mjs",
     "eslint.config.mjs",
-    "src/app/**"
+    "src/app/**", // Thường app router của Next.js yêu cầu kebab-case hoặc tên file đặc biệt (page.tsx), nên ignore là hợp lý
   ]),
 ]);
 
