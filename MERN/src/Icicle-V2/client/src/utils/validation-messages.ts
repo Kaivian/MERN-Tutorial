@@ -22,12 +22,16 @@ export const VALIDATION_MESSAGES = {
 
   // BRL1.9: Minimum 8 characters
   MIN_8_CHARS: "Cần nhập ít nhất 8 ký tự.",
+  MAX_25_CHARS: "Mật khẩu không được vượt quá 25 ký tự.",
+  FORMAT: "Chỉ chấp nhận chữ cái không dấu, số và ký tự đặc biệt.",
 
   // BRL1.10: Password same as current
   PASSWORD_SAME: "Không được trùng với mật khẩu cũ.",
 
   // BRL1.11: Password mismatch
-  PASSWORD_MISMATCH: "Mật khẩu không khớp.",
+  PASSWORD_MISMATCH: "Mật khẩu mới không khớp.",
+
+  PASSWORD_FORMAT: "Mật khẩu từ 8-25 ký tự, chỉ chứa chữ cái không dấu và số (a-Z, 0-9)",
 
   // BRL1.12: Integer only
   INTEGER_ONLY: "Chỉ cho phép nhập số nguyên.",
