@@ -4,30 +4,39 @@
   "type": "module",
   "main": "src/server.js",
   "scripts": {
-    "dev": "nodemon",
-    "start": "node src/server.js",
-    "build": "echo \"no build step\"",
+    "dev": "cross-env NODE_ENV=development nodemon src/server.js",
+    "start": "cross-env NODE_ENV=production node src/server.js",
+    "seed": "cross-env NODE_ENV=development node src/scripts/seed.js",
+    "build": "echo \"no build step for nodejs backend\"",
+    "lint": "eslint src/**/*.js",
     "test": "node --test",
     "test:watch": "node --test --watch"
   },
   "dependencies": {
-    "bcrypt": "^6.0.0",
+    "bcrypt": "^5.1.1",
+    "compression": "^1.7.5",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2",
-    "express-rate-limit": "^8.1.0",
-    "helmet": "^8.1.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-async-errors": "^3.1.1",
+    "express-rate-limit": "^7.5.0",
+    "google-auth-library": "^9.15.0",
+    "helmet": "^8.0.0",
     "hpp": "^0.2.3",
     "jsonwebtoken": "^9.0.2",
-    "lru-cache": "^11.2.2",
-    "mongoose": "^8.18.1",
+    "lru-cache": "^11.0.2",
+    "mongoose": "^8.9.2",
     "morgan": "^1.10.0",
-    "uuid": "^13.0.0"
+    "slugify": "^1.6.6",
+    "uuid": "^11.0.3",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
-    "eslint-plugin-check-file": "^3.3.1",
-    "globals": "^16.5.0",
-    "nodemon": "^3.1.0"
+    "cross-env": "^7.0.3",
+    "eslint": "^9.17.0",
+    "eslint-plugin-check-file": "^2.8.0",
+    "globals": "^15.14.0",
+    "nodemon": "^3.1.9"
   }
 }

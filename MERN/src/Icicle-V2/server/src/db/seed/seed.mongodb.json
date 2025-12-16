@@ -1,0 +1,25 @@
+{
+  "roles": [
+    {
+      "name": "Quản Trị Viên",
+      "slug": "super_admin",
+      "permissions": [],
+      "description": "Quản trị viên cấp cao nhất, toàn quyền hệ thống.",
+      "isDefault": false,
+      "status": "active"
+    }
+  ],
+  "users": [
+    {
+      "username": "admin",
+      "email": "admin@localhost.com",
+      "password": "admin123@",
+      "isVerified": false,
+      "status": "active",
+      "profile": {
+        "fullName": "Quản Trị Viên Hệ Thống",
+        "bio": "Tài khoản quản trị mặc định."
+      }
+    }
+  ]
+}
