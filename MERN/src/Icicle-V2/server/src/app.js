@@ -1,3 +1,4 @@
+// server/src/app.js
 import express from 'express';
 import morgan from 'morgan';
 import helmet from 'helmet';
@@ -6,6 +7,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 
 import config from './config/env.config.js';
+import logger from './utils/logger.utils.js';
 import { apiLimiter } from './middlewares/rate-limit.middleware.js';
 import { responseMiddleware } from './middlewares/response.middleware.js';
 import { errorHandler } from './middlewares/error.middleware.js';
@@ -37,7 +39,6 @@ app.use(compression());
 
 /** * Global API Rate Limiter.
  * Protects the entire application from DDoS and Brute-force attacks.
- * Configured differently for Development vs Production.
  */
 app.use(apiLimiter);
 
@@ -46,10 +47,20 @@ app.use(express.json({ limit: '10kb' })); // Limit body size to prevent payload 
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser(config.security.cookieSecret)); // Parse cookies
 
-/** HTTP Request Logger (Dev mode only). */
-if (config.app.env === 'development') {
-  app.use(morgan('dev'));
-}
+/** * HTTP Request Logger (Morgan) -> Wired to Custom Logger (Winston).
+ * - Format: 'dev' (colored/short) for Development, 'combined' (detailed) for Production.
+ * - Logic: Pipes the morgan output directly into 'logger.info'.
+ */
+const morganFormat = config.app.env === 'development' ? 'dev' : 'combined';
+
+app.use(morgan(morganFormat, {
+  stream: {
+    write: (message) => {
+      // .trim() removes the extra newline character that Morgan adds automatically
+      logger.info(`[HTTP] ${message.trim()}`);
+    }
+  }
+}));
 
 /** * Response Standardization Middleware.
  * Attaches 'res.success' and 'res.error' helpers.
