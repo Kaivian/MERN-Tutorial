@@ -8,6 +8,7 @@ import cookieParser from 'cookie-parser';
 
 import config from './config/env.config.js';
 import logger from './utils/logger.utils.js';
+import apiRoutes from './routes/index.js';
 import { apiLimiter } from './middlewares/rate-limit.middleware.js';
 import { responseMiddleware } from './middlewares/response.middleware.js';
 import { errorHandler } from './middlewares/error.middleware.js';
@@ -75,15 +76,14 @@ app.use(responseMiddleware);
  * Uses 'res.success' for a standardized JSON response.
  */
 app.get('/', (req, res) => {
-  res.success({
-    environment: config.app.env,
-    database: config.app.env === 'development' ? 'development_db' : 'production_db',
-    uptime: process.uptime()
-  }, 'Icicle Backend API is running smoothly');
+  res.success({ status: 'active', version: '1.0.0' }, 'API is active');
 });
 
-// TODO: Import and use API routes here
-// app.use('/api/v1', routes);
+/**
+ * API Routes.
+ * Mounts all routes defined in routes/index.js under '/api'
+ */
+app.use('/api', apiRoutes);
 
 /* ==================== 4. ERROR HANDLING ==================== */
 

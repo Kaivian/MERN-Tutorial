@@ -8,16 +8,13 @@ import { VALIDATION_MESSAGES } from "@/utils/validation-messages";
 
 export default function LoginPage() {
   const [isVisible, setIsVisible] = useState(false);
-  
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!username || !password) return;
-
-    // Log kết quả
-    console.log({ username, password });
   };
 
   return (
@@ -40,7 +37,7 @@ export default function LoginPage() {
             value={username}
             onValueChange={setUsername}
           />
-          
+
           <Input
             isRequired
             errorMessage={VALIDATION_MESSAGES.REQUIRED}
@@ -64,7 +61,7 @@ export default function LoginPage() {
               </button>
             }
           />
-          
+
           <div className="flex flex-col gap-2 w-full">
             <div className="flex justify-end mr-1">
               <Link
@@ -76,7 +73,7 @@ export default function LoginPage() {
               </Link>
             </div>
           </div>
-          
+
           <Button fullWidth type="submit" color="primary">
             Đăng nhập
           </Button>

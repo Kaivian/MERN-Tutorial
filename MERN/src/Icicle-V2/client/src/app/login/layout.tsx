@@ -35,7 +35,7 @@ export default function AuthLayout({
       <section className="w-full flex-1 flex flex-col items-center bg-background transition-colors duration-300">
         <div className="grow flex flex-col items-center justify-center w-full">
           <div className="mb-10">
-            <Image className="w-40" {...useSyncImage("/logo.png", "Logo")} />
+            <Image className="w-40" {...useSyncImage("/logo.png", "Logo")} suppressHydrationWarning={true}/>
           </div>
           <div className="w-3/4 max-w-xl">
             {children}
