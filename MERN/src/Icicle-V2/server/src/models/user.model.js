@@ -4,58 +4,51 @@ import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
 /**
- * Sub-schema for storing session information.
- * @description
- * Configured with `_id: false` to optimize storage.
- * Designed to be embedded in the User document to support Single Device Login.
+ * Sub-schema for tracking the current active session.
+ * @typedef {Object} ActiveSession
+ * @property {string} tokenHash - SHA-256 hash of the Refresh Token to prevent plaintext storage.
+ * @property {Object} deviceInfo - Metadata about the user's device.
+ * @property {string} ipAddress - The last recorded IP address of the session.
+ * @property {Date} issuedAt - Timestamp when the session was created.
+ * @property {Date} expiresAt - Absolute expiration time of the session.
  */
 const activeSessionSchema = new Schema({
-  /**
-   * Hash of the Refresh Token.
-   * @warning Do not store tokens in plaintext.
-   * @note 'index: true' automatically creates an index on 'activeSession.tokenHash'.
-   */
   tokenHash: { 
     type: String, 
     required: true,
     index: true 
   },
-  
-  /** User device information (OS, Browser, etc.) */
   deviceInfo: {
     os: String,
     browser: String,
     type: { type: String, default: 'unknown' },
     userAgent: String
   },
-  
-  /** IP address of the session */
   ipAddress: String,
-  
-  /** Token issuance time */
-  issuedAt: { type: Date, default: Date.now },
-  
-  /** Token expiration time. Used to validate the session. */
-  expiresAt: { type: Date, required: true }
+  issuedAt: { 
+    type: Date, 
+    default: Date.now 
+  },
+  expiresAt: { 
+    type: Date, 
+    required: true 
+  }
 }, { _id: false });
 
 /**
- * Main User Schema.
- * @description
- * Manages identity, security, authorization, and the single active session.
- * Supports Hybrid Auth strategy: Manual Registration (Password) first -> Link Google later.
+ * User Schema
+ * @description Manages user identity, security flags, RBAC roles, and single-device session management.
+ * Optimized for a flow where Admin creates accounts and users must reset passwords upon first login.
  */
 const userSchema = new Schema({
   /* ==================== 1. IDENTITY ==================== */
 
-  /**
-   * Unique username identifier.
-   * @type {string}
-   * @unique
-   * @sparse Allows null if the user hasn't set a username yet.
+  /** * Unique identifier for the user profile.
+   * @type {string} 
    */
   username: {
     type: String,
+    required: [true, 'Username is required'],
     unique: true,
     sparse: true,
     trim: true,
@@ -63,24 +56,21 @@ const userSchema = new Schema({
     maxlength: 30
   },
   
-  /**
-   * Primary login email.
-   * @type {string}
-   * @required Mandatory for identity verification.
+  /** * Primary email for communication and password recovery.
+   * Note: Set to required: false if using username-only registration, 
+   * but recommended true for most MERN applications.
    */
   email: {
     type: String,
-    required: [true, 'Email is required'],
+    required: [false, 'Email is required'],
     unique: true,
     trim: true,
     lowercase: true,
-    match: [/^\S+@\S+\.\S+$/, 'Invalid email format']
+    match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email address']
   },
 
-  /**
-   * Hashed password.
-   * @required Mandatory as the flow requires manual registration first.
-   * @private This field is excluded by default when querying (`select: false`).
+  /** * Bcrypt hashed password. 
+   * Excluded from query results by default for security.
    */
   password: {
     type: String,
@@ -89,31 +79,25 @@ const userSchema = new Schema({
     minlength: 6
   },
 
-  /* ==================== 2. SOCIAL LOGIN ==================== */
+  /* ==================== 2. SECURITY & AUTH STATUS ==================== */
 
-  /**
-   * Google ID (Subject ID from Google).
-   * @unique
-   * @sparse Only exists if the user has successfully linked their account.
-   * @description Used for quick login after email verification.
+  /** * Flag indicating if the user is forced to change their password.
+   * @default true - Accounts created by Admin require a password reset on first access.
    */
-  googleId: {
-    type: String,
-    unique: true,
-    sparse: true 
+  mustChangePassword: {
+    type: Boolean,
+    required: true,
+    default: true
   },
 
-  /* ==================== 3. STATUS & SECURITY ==================== */
-
-  /** Email verification status */
+  /** Indicates if the user has verified their email address. */
   isVerified: {
     type: Boolean,
     default: false
   },
 
-  /**
-   * Account status.
-   * @enum ['active', 'banned', 'pending']
+  /** * Current lifecycle state of the account.
+   * @type {'active'|'banned'|'pending'}
    */
   status: {
     type: String,
@@ -121,22 +105,27 @@ const userSchema = new Schema({
     default: 'active'
   },
 
-  /**
-   * Single active session (Single Device).
-   * @type {activeSessionSchema}
-   * @default null (When user is not logged in or has logged out).
-   * @description Stored as an Object to automatically overwrite the old session upon new login.
+  /** * Embedded document containing the current session.
+   * Implementing this as an object (rather than an array) enforces Single Device Login (SDL).
    */
   activeSession: {
     type: activeSessionSchema,
     default: null
   },
 
+  /* ==================== 3. SOCIAL LOGIN ==================== */
+
+  /** Unique ID provided by Google OAuth. Used for account linking. */
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true 
+  },
+
   /* ==================== 4. AUTHORIZATION (RBAC) ==================== */
 
-  /**
-   * List of User Roles.
-   * References the 'roles' collection.
+  /** * References to the Role collection.
+   * @type {mongoose.Schema.Types.ObjectId[]}
    */
   roles: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -145,7 +134,7 @@ const userSchema = new Schema({
 
   /* ==================== 5. PROFILE ==================== */
 
-  /** Publicly displayed user profile information */
+  /** Public profile metadata. */
   profile: {
     fullName: { type: String, trim: true },
     displayName: { type: String, trim: true },
@@ -156,16 +145,19 @@ const userSchema = new Schema({
   
   /* ==================== 6. METADATA ==================== */
   
-  /** Timestamp of the last successful login */
+  /** Records the last successful authentication timestamp. */
   lastLoginAt: Date
 
 }, {
-  /** * Automatically manages `createdAt` and `updatedAt`.
-   * @see https://mongoosejs.com/docs/timestamps.html
+  /** * Automatically adds 'createdAt' and 'updatedAt' fields.
    */
   timestamps: true 
 });
 
+/**
+ * User Model
+ * @model User
+ */
 const User = mongoose.model('User', userSchema);
 
 export default User;
