@@ -45,7 +45,7 @@ export default function AuthLayout({
         {/* Footer cố định ở Layout */}
         <footer className="w-full max-w-xl px-4 pb-4">
           <div className="mt-6 text-center font-roboto text-sm leading-5 text-[#71717a]">
-            © 2025 Công ty TNHH Sản xuất Thương mại và Dịch vụ Gia Lực. All rights reserved.
+            © 2026 Công ty TNHH Sản xuất Thương mại và Dịch vụ Gia Lực. All rights reserved.
           </div>
         </footer>
       </section>
