@@ -14,11 +14,24 @@
       "username": "admin",
       "email": "admin@localhost.com",
       "password": "admin123@",
-      "isVerified": false,
+      "mustChangePassword": false,
+      "isVerified": true,
       "status": "active",
       "profile": {
         "fullName": "Quản Trị Viên Hệ Thống",
         "bio": "Tài khoản quản trị mặc định."
+      }
+    },
+    {
+      "username": "tester",
+      "email": "tester@localhost.com",
+      "password": "admin123@",
+      "mustChangePassword": true,
+      "isVerified": true,
+      "status": "active",
+      "profile": {
+        "fullName": "Người Dùng Test",
+        "bio": "Account dùng để test chức năng đổi mật khẩu."
       }
     }
   ]

@@ -2,6 +2,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import User from '../../models/user.model.js';
 import Role from '../../models/role.model.js';
@@ -50,7 +51,7 @@ const performSeeding = async () => {
       return {
         ...user,
         password: hashedPassword,
-        roles: [adminRoleId]
+        roles: [adminRoleId],
       };
     }));
 
@@ -64,7 +65,7 @@ const performSeeding = async () => {
 
 /**
  * Workflow A: Auto-seed on server startup.
- * Only runs if the database is completely empty.
+ * Only runs if the database is completely empty (checking User count).
  */
 export const checkAndSeedData = async () => {
   try {
@@ -74,7 +75,7 @@ export const checkAndSeedData = async () => {
       return; 
     }
     
-    logger.info('[Seed] Database is empty. Starting auto-seed process...');
+    logger.info('[Seed] Database appears empty. Starting auto-seed process...');
     await performSeeding();
     logger.success('[Seed] Auto-seeding process completed successfully.');
   } catch (error) {
@@ -84,16 +85,16 @@ export const checkAndSeedData = async () => {
 
 /**
  * Workflow B: Manual Reset & Seed (via npm run seed).
- * WARNING: This deletes all existing data in Roles and Users collections.
+ * WARNING: This DROPS the entire database (all collections, indexes, data).
  */
 export const resetAndSeedData = async () => {
   try {
-    logger.warn('[Seed] Force Reset triggered. Clearing database...');
+    logger.warn('[Seed] Force Reset triggered. Dropping entire database...');
     
-    // 1. Clear existing data
-    await User.deleteMany({});
-    await Role.deleteMany({});
-    logger.info('[Seed] Database cleared (Users and Roles).');
+    // 1. Drop the entire Database
+    // This removes Users, Roles, Logs, Tokens... everything.
+    await mongoose.connection.dropDatabase();
+    logger.info('[Seed] Database dropped successfully.');
 
     // 2. Run Seeding
     await performSeeding();
