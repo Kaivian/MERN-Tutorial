@@ -11,8 +11,6 @@ class AuthController {
   
   /**
    * Standardized cookie configuration for security.
-   * Based on environment variables.
-   * @readonly
    */
   get cookieOptions() {
     return {
@@ -25,17 +23,10 @@ class AuthController {
 
   /**
    * Handle User Login.
-   * Sets Access and Refresh tokens in HTTP-Only cookies.
-   * @param {import('express').Request} req
-   * @param {import('express').Response} res
    */
   async login(req, res) {
     try {
-      // Allow flexible input from Frontend:
-      // Can send { "identifier": "..." } OR { "username": "..." } OR { "email": "..." }
       const { password, identifier, username, email } = req.body;
-      
-      // Coalesce into a single identifier variable
       const loginIdentifier = identifier || username || email;
 
       if (!loginIdentifier) {
@@ -45,7 +36,6 @@ class AuthController {
       const ipAddress = req.ip;
       const userAgent = req.headers['user-agent'] || 'Unknown';
 
-      // Call Service with 'identifier'
       const { user, accessToken, refreshToken } = await authService.login({
         identifier: loginIdentifier, 
         password, 
@@ -69,10 +59,7 @@ class AuthController {
       res.success({ user }, 'Login successful');
     } catch (error) {
       const statusCode = error.message === 'Account is banned' ? 403 : 401;
-      
-      // Use generic log message to avoid leaking sensitive info
-      logger.warn(`[Auth] Login failed for identifier: ${req.body.identifier || req.body.username || req.body.email}. Reason: ${error.message}`);
-      
+      logger.warn(`[Auth] Login failed: ${error.message}`);
       res.error(error.message, statusCode, error);
     }
   }
@@ -80,14 +67,17 @@ class AuthController {
   /**
    * Handle User Logout.
    * Clears cookies and invalidates session in DB.
-   * @param {import('express').Request} req
-   * @param {import('express').Response} res
    */
   async logout(req, res) {
     try {
-      // In a strict implementation, we would decode the refreshToken to get the userID 
-      // and call authService.logout(userId) to clear the session in DB.
-      // For now, clearing cookies is sufficient for the client-side.
+      // BEST PRACTICE: Try to invalidate session in DB if possible
+      // We assume verifyAccessToken *might* have run, or we decode strictly here
+      // But for logout, clearing cookies is the primary client-side action.
+      // If you want strict DB clearing, ensure verifyAccessToken is used on the /logout route
+      
+      if (req.user && req.user.id) {
+         await authService.logout(req.user.id);
+      }
       
       res.clearCookie('accessToken', this.cookieOptions);
       res.clearCookie('refreshToken', this.cookieOptions);
@@ -103,16 +93,12 @@ class AuthController {
 
   /**
    * Refresh Access Token.
-   * Uses the Refresh Token cookie to issue a new pair of tokens.
-   * @param {import('express').Request} req
-   * @param {import('express').Response} res
    */
   async refreshToken(req, res) {
     try {
       const incomingRefreshToken = req.cookies.refreshToken;
       
       if (!incomingRefreshToken) {
-        // Just a warning, happens often when cookies expire
         return res.error('Refresh token missing', 401);
       }
 
@@ -124,56 +110,62 @@ class AuthController {
 
       res.success(null, 'Token refreshed');
     } catch (error) {
-      // Security: Clear cookies immediately if refresh fails (e.g., Reuse detection)
+      // Security: Clear cookies immediately if refresh fails
       res.clearCookie('accessToken', this.cookieOptions);
       res.clearCookie('refreshToken', this.cookieOptions);
       
       logger.error(`[Auth] Refresh token failed: ${error.message}`);
-      
       res.error(error.message, 403, error);
     }
   }
 
   /**
    * Get Current User Profile.
-   * Protected route requiring valid Access Token.
-   * @param {import('express').Request} req
-   * @param {import('express').Response} res
    */
   async getMe(req, res) {
     try {
-      // req.user is populated by verifyAccessToken middleware
+      // FIX CONFIRMED: req.user.id now exists thanks to middleware mapping
       const user = await authService.getProfile(req.user.id);
       res.success({ user }, 'Profile retrieved');
     } catch (error) {
-      logger.error(`[Auth] GetMe failed for UserID ${req.user?.id}: ${error.message}`);
+      logger.error(`[Auth] GetMe failed: ${error.message}`);
       res.error(error.message, 404, error);
     }
   }
 
   /**
    * Handle Change Password.
-   * Requires Login (Protected Route).
-   * @param {import('express').Request} req 
-   * @param {import('express').Response} res 
    */
   async changePassword(req, res) {
     try {
       const { currentPassword, newPassword } = req.body;
-      const userId = req.user.id; // Extracted from Access Token
+      
+      // FIX CONFIRMED: req.user.id is correctly mapped from 'sub'
+      const userId = req.user.id; 
+
+      if (!userId) {
+          return res.error('User context missing', 401);
+      }
 
       await authService.changePassword(userId, currentPassword, newPassword);
 
       logger.success(`[Auth] Password changed successfully for UserID: ${userId}`);
       res.success(null, 'Password changed successfully');
     } catch (error) {
-      logger.warn(`[Auth] Change password failed for UserID ${req.user?.id}: ${error.message}`);
-      res.error(error.message, 400, error);
+      // Handle specific business logic errors
+      if (error.message.includes('Incorrect current password') || error.message.includes('User not found')) {
+         return res.error(error.message, 400, error);
+      }
+      if (error.message.includes('New password cannot be')) {
+         return res.error(error.message, 422, error);
+      }
+
+      logger.warn(`[Auth] Change password failed: ${error.message}`);
+      res.error(error.message, 500, error);
     }
   }
 }
 
-// Export instance with bound methods
 const controller = new AuthController();
 export default {
   login: controller.login.bind(controller),

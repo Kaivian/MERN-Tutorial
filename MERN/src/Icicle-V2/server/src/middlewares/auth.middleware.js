@@ -32,8 +32,14 @@ export const verifyAccessToken = (req, res, next) => {
     // 3. Verify Token
     const decoded = jwt.verify(token, config.jwt.accessToken.secret);
 
-    // 4. Attach generic user info to request (ID is crucial here)
-    req.user = decoded; 
+    // 4. Attach user info to request (CRITICAL FIX HERE)
+    // We map 'sub' from the new JWT payload to 'id' so Controllers don't break.
+    req.user = {
+      id: decoded.sub,        // Map sub -> id (Fix undefined error)
+      _id: decoded.sub,       // Map _id just in case
+      roles: decoded.roles,   // ["super_admin"]
+      type: decoded.type      // "access"
+    };
 
     next();
 
@@ -43,7 +49,7 @@ export const verifyAccessToken = (req, res, next) => {
 
     if (error.name === 'TokenExpiredError') {
       message = 'Forbidden: Access token has expired';
-      statusCode = 401; // Expired usually implies 401 so client knows to refresh
+      statusCode = 401; // Client triggers refresh flow
     }
 
     logger.warn(`[Auth] Token verification failed (IP: ${req.ip}): ${error.message}`);
@@ -54,11 +60,6 @@ export const verifyAccessToken = (req, res, next) => {
 /**
  * Middleware to enforce "Force Change Password" policy.
  * Must be placed AFTER verifyAccessToken.
- * Checks DB to see if the user is flagged to change their password.
- *
- * @param {import('express').Request} req
- * @param {import('express').Response} res
- * @param {import('express').NextFunction} next
  */
 export const requirePasswordChanged = async (req, res, next) => {
   try {
@@ -68,7 +69,6 @@ export const requirePasswordChanged = async (req, res, next) => {
     }
 
     // 2. Fetch latest user status from DB
-    // We need real-time status, not just what's in the token
     const user = await userRepository.findById(req.user.id);
 
     if (!user) {
@@ -77,7 +77,6 @@ export const requirePasswordChanged = async (req, res, next) => {
 
     // 3. Check the flag
     if (user.mustChangePassword === true) {
-      // Return 403 with specific error code for Frontend to handle redirect
       return res.error('Password Change Required', 403, {
         errorCode: 'MUST_CHANGE_PASSWORD',
         redirect: '/change-password'

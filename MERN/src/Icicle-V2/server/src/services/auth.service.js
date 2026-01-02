@@ -27,16 +27,37 @@ class AuthService {
 
   /**
    * Generates a pair of JWTs (Access & Refresh).
-   * Uses configuration from env.config.js.
-   * @param {Object} payload - Data to encode (e.g., { id: '...' }).
+   * * BEST PRACTICE UPDATE:
+   * - Access Token: Contains 'sub', 'roles' (slugs), 'type': 'access'.
+   * - Refresh Token: Contains only 'sub', 'type': 'refresh'.
+   * * @param {Object} user - The user document (must have roles populated).
    * @returns {{accessToken: string, refreshToken: string}}
    */
-  generateTokens(payload) {
-    const accessToken = jwt.sign(payload, config.jwt.accessToken.secret, { 
+  generateTokens(user) {
+    // 1. Prepare Roles (Map from Objects to Slugs)
+    // Ensure roles are populated. If not, fallback to empty array.
+    const roleSlugs = user.roles && Array.isArray(user.roles) 
+      ? user.roles.map(r => r.slug) 
+      : [];
+
+    // 2. Create Access Token Payload (Rich Data for Middleware)
+    const accessPayload = {
+      sub: user._id.toString(), // Standard Subject Claim
+      roles: roleSlugs,         // Custom Claim: ["super_admin", "user"]
+      type: 'access'            // Security Claim
+    };
+
+    const accessToken = jwt.sign(accessPayload, config.jwt.accessToken.secret, { 
       expiresIn: config.jwt.accessToken.expiresIn 
     });
 
-    const refreshToken = jwt.sign(payload, config.jwt.refreshToken.secret, { 
+    // 3. Create Refresh Token Payload (Minimal Data)
+    const refreshPayload = {
+      sub: user._id.toString(),
+      type: 'refresh'
+    };
+
+    const refreshToken = jwt.sign(refreshPayload, config.jwt.refreshToken.secret, { 
       expiresIn: config.jwt.refreshToken.expiresIn 
     });
 
@@ -53,6 +74,7 @@ class AuthService {
     delete userObj.password;
     delete userObj.activeSession;
     delete userObj.loginHistory;
+    // userObj.roles is kept so frontend can see permissions if needed
     return userObj;
   }
 
@@ -60,7 +82,7 @@ class AuthService {
 
   /**
    * Authenticate a user using Username OR Email.
-   * * @param {Object} input
+   * @param {Object} input
    * @param {string} input.identifier - The username or email string.
    * @param {string} input.password
    * @param {string} input.ipAddress
@@ -70,14 +92,13 @@ class AuthService {
   async login({ identifier, password, ipAddress, userAgent }) {
     let failReason = '';
     
-    // 1. Find User by Credentials (Username OR Email)
+    // 1. Find User by Credentials
     const user = await userRepository.findByCredentials(identifier);
 
     try {
       // 2. Validate User Existence
       if (!user) {
         failReason = 'User not found';
-        // Security: Generic message to prevent User Enumeration
         throw new Error('Invalid username/email or password');
       }
 
@@ -94,15 +115,16 @@ class AuthService {
         throw new Error('Account is banned');
       }
 
-      // 5. Generate Tokens
-      const payload = { id: user._id };
-      const { accessToken, refreshToken } = this.generateTokens(payload);
+      // 5. Populate Roles (CRITICAL FOR JWT SLUGS)
+      // Fetch 'slug' and 'name' from the Role collection
+      await user.populate('roles', 'slug name');
 
-      // 6. Create/Update Session (Single Device Logic)
+      // 6. Generate Tokens
+      const { accessToken, refreshToken } = this.generateTokens(user);
+
+      // 7. Create/Update Session (Single Device Logic)
       const tokenHash = this.hashToken(refreshToken);
-      
-      // Expire in 7 days (Sync with JWT expiry if possible)
-      const sessionExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      const sessionExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 Days
 
       await userRepository.updateSession(user._id, {
         tokenHash,
@@ -111,7 +133,7 @@ class AuthService {
         expiresAt: sessionExpiresAt
       });
 
-      // 7. Audit Log: SUCCESS
+      // 8. Audit Log: SUCCESS
       await loginHistoryRepository.create({
         userId: user._id,
         ipAddress,
@@ -119,8 +141,7 @@ class AuthService {
         status: 'SUCCESS'
       });
 
-      // 8. Return Response
-      // Explicitly returning 'mustChangePassword' for Frontend redirect logic
+      // 9. Return Response
       return {
         user: this.sanitizeUser(user),
         accessToken,
@@ -129,7 +150,7 @@ class AuthService {
       };
 
     } catch (error) {
-      // 9. Audit Log: FAILURE (Only if user exists)
+      // 10. Audit Log: FAILURE
       if (user) {
         await loginHistoryRepository.create({
           userId: user._id,
@@ -165,12 +186,18 @@ class AuthService {
     let decoded;
     try {
       decoded = jwt.verify(incomingRefreshToken, config.jwt.refreshToken.secret);
-    } catch { 
+      
+      // Best Practice: Validate Token Type
+      if (decoded.type !== 'refresh') {
+        throw new Error('Invalid token type');
+      }
+    } catch {
       throw new Error('Invalid refresh token');
     }
 
     // 2. Check User & Session State
-    const user = await userRepository.findByIdWithSession(decoded.id);
+    // decoded.sub is the User ID
+    const user = await userRepository.findByIdWithSession(decoded.sub);
     if (!user || !user.activeSession) {
       throw new Error('Session expired or revoked');
     }
@@ -185,11 +212,14 @@ class AuthService {
       throw new Error('Security Alert: Invalid token reuse detected. Please login again.');
     }
 
-    // 4. Token Rotation (Issue NEW pair)
-    const { accessToken, refreshToken: newRefreshToken } = this.generateTokens({ id: user._id });
+    // 4. Populate Roles Again (Roles might have changed)
+    await user.populate('roles', 'slug name');
+
+    // 5. Token Rotation (Issue NEW pair)
+    const { accessToken, refreshToken: newRefreshToken } = this.generateTokens(user);
     const newHash = this.hashToken(newRefreshToken);
 
-    // 5. Update DB
+    // 6. Update DB
     await userRepository.updateSession(user._id, {
       ...user.activeSession, 
       tokenHash: newHash,    
@@ -206,6 +236,10 @@ class AuthService {
   async getProfile(userId) {
     const user = await userRepository.findById(userId);
     if (!user) throw new Error('User not found');
+    
+    // Populate roles for profile display
+    await user.populate('roles', 'name slug');
+    
     return this.sanitizeUser(user);
   }
 
@@ -213,39 +247,31 @@ class AuthService {
 
   /**
    * Changes the authenticated user's password.
-   * Requires checking the old password first for security.
-   * * @param {string} userId - The ID of the user requesting change.
-   * @param {string} currentPassword - The old password provided by user.
-   * @param {string} newPassword - The new password to set.
+   * @param {string} userId 
+   * @param {string} currentPassword 
+   * @param {string} newPassword 
    */
   async changePassword(userId, currentPassword, newPassword) {
-    // 1. Fetch User WITH PASSWORD explicitly.
-    // Standard findById() excludes password, so matchPassword() would fail without this.
+    // 1. Fetch User WITH PASSWORD explicitly
     const user = await userRepository.findByIdWithPassword(userId);
-    
-    if (!user) {
-      throw new Error('User not found');
-    }
+    if (!user) throw new Error('User not found');
 
     // 2. Verify Old Password
     const isMatch = await user.matchPassword(currentPassword);
-    if (!isMatch) {
-      throw new Error('Incorrect current password');
-    }
+    if (!isMatch) throw new Error('Incorrect current password');
 
-    // 3. Prevent reusing the same password (Optional Best Practice)
+    // 3. Prevent reuse
     if (currentPassword === newPassword) {
       throw new Error('New password cannot be the same as the current password');
     }
 
     // 4. Hash New Password
+    // Manual hashing is safer here to ensure consistency if repo uses updateOne
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // 5. Update Password and Reset 'mustChangePassword' flag
-    // The repository method handles both updating the hash and setting mustChangePassword to false.
+    // 5. Update Password
     await userRepository.updatePassword(userId, hashedPassword);
     
-    // 6. Security Action: Log this event
     logger.info(`[AuthService] Password changed successfully for UserID: ${userId}`);
   }
 }
