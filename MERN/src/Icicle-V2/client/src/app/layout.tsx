@@ -1,9 +1,11 @@
+// client/src/app/layout.tsx
 import "@/styles/globals.css";
 
 import clsx from "clsx";
 import { Metadata, Viewport } from "next";
 import { Providers } from "./providers";
 import { fontSans, fontMono } from "@/config/font";
+import AuthGuard from "@/components/guards/AuthGuard";
 
 export const metadata: Metadata = {
   title: {
@@ -34,11 +36,18 @@ export default function RootLayout({
       <body
         className={clsx(
           "min-h-screen text-foreground bg-background font-sans antialiased",
-          fontSans.variable, fontMono.variable
+          fontSans.variable,
+          fontMono.variable
         )}
       >
+        {/* Providers contain AuthProvider inside */}
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
-          {children}
+          
+          {/* AuthGuard must be a child of Providers to access AuthContext */}
+          <AuthGuard>
+            {children}
+          </AuthGuard>
+          
         </Providers>
       </body>
     </html>

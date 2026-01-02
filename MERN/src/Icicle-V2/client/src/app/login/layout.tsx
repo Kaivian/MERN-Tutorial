@@ -1,3 +1,4 @@
+// client/src/app/login/layout.tsx
 "use client";
 
 import { Image } from "@heroui/react";
@@ -9,10 +10,12 @@ export default function AuthLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const currentYear = new Date().getFullYear();
+
   return (
     <div className="flex h-screen"> 
       {/* Left Section */}
-      <section className="hidden xl:flex w-9/20 items-center justify-center bg-content4 transition-colors duration-300">
+      <section className="hidden xl:flex w-[45%] items-center justify-center bg-content4 transition-colors duration-300">
         <div className="mx-auto text-center">
           <Image
             src="/login/chart.png"
@@ -45,7 +48,7 @@ export default function AuthLayout({
         {/* Footer cố định ở Layout */}
         <footer className="w-full max-w-xl px-4 pb-4">
           <div className="mt-6 text-center font-roboto text-sm leading-5 text-[#71717a]">
-            © 2026 Công ty TNHH Sản xuất Thương mại và Dịch vụ Gia Lực. All rights reserved.
+            &copy; {currentYear} Công ty TNHH Sản xuất Thương mại và Dịch vụ Gia Lực. All rights reserved.
           </div>
         </footer>
       </section>
