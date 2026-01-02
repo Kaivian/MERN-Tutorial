@@ -74,19 +74,19 @@ export const useApi = <TData = unknown, TArgs extends unknown[] = unknown[]>(
 
   const execute = useCallback(async (...allArgs: [...TArgs, RequestOptions?]): Promise<ApiResponse<TData>> => {
     // 1. Extract optional configuration from the last argument
-    const hasOptions = allArgs.length > 0 && 
-      typeof allArgs[allArgs.length - 1] === 'object' && 
+    const hasOptions = allArgs.length > 0 &&
+      typeof allArgs[allArgs.length - 1] === 'object' &&
       allArgs[allArgs.length - 1] !== null;
 
     const options = (hasOptions ? allArgs[allArgs.length - 1] : {}) as RequestOptions;
     const funcArgs = (hasOptions ? allArgs.slice(0, -1) : allArgs) as TArgs;
 
-    const { 
-      showToast, 
-      title, 
-      msg, 
-      color, 
-      variant = "flat" 
+    const {
+      showToast,
+      title,
+      msg,
+      color,
+      variant = "flat"
     } = options;
 
     setLoading(true);
@@ -95,7 +95,7 @@ export const useApi = <TData = unknown, TArgs extends unknown[] = unknown[]>(
     try {
       // 2. Execute the API call (HAPPY PATH)
       const res = await apiFunc(...funcArgs);
-      
+
       setResponse(res);
       setData(res.data);
 
@@ -115,29 +115,27 @@ export const useApi = <TData = unknown, TArgs extends unknown[] = unknown[]>(
     } catch (err: unknown) {
       // 4. Handle Errors (ERROR PATH)
       const rawErrorMessage = err instanceof Error ? err.message : String(err);
-      
+
       // Auto-Mapping: Convert Backend Error -> Vietnamese UI Error
       const { title: friendlyTitle, msg: friendlyMsg } = getFriendlyError(rawErrorMessage);
-      
+
       // Update local error state
       setError(friendlyMsg);
 
       // 5. Handle Error Toast
       // logic: Errors show toast by default unless explicitly disabled (showToast: false)
-      if (showToast !== false) {
-        addToast({
-          // --- BUG FIX ---
-          // Do NOT use 'title' or 'color' from options here. 
-          // Those are meant for the Success state (e.g., "Login Successful").
-          // For errors, we MUST use the mapped error title and Danger color.
-          
-          title: friendlyTitle || "Lỗi", 
-          description: friendlyMsg,     
-          color: "danger", // Force Red/Danger color for errors
-          variant: variant,
-        });
-      }
-      
+      addToast({
+        // --- BUG FIX ---
+        // Do NOT use 'title' or 'color' from options here. 
+        // Those are meant for the Success state (e.g., "Login Successful").
+        // For errors, we MUST use the mapped error title and Danger color.
+
+        title: friendlyTitle || "Lỗi",
+        description: friendlyMsg,
+        color: "danger", // Force Red/Danger color for errors
+        variant: variant,
+      });
+
       throw err; // Re-throw to allow component to handle specific logic
     } finally {
       setLoading(false);

@@ -68,8 +68,23 @@ class AuthController {
         maxAge: this.tokenMaxAges.accessToken
       });
 
-      logger.success(`[Auth] User logged in: ${user.username} (${user.email})`);
+      // CHECK STATUS: Force Password Change
+      // Logic: If user must change password, we return a specific message 
+      // and potentially a specific code for the frontend to handle the redirect.
+      if (user.mustChangePassword) {
+        logger.info(`[Auth] User logged in but requires password change: ${user.username}`);
+        
+        return res.success(
+          { 
+            user,
+            requireAction: 'CHANGE_PASSWORD' // Explicit flag for Frontend
+          }, 
+          'Password change required to proceed' // Distinct message
+        );
+      }
 
+      // Standard Success Flow
+      logger.success(`[Auth] User logged in: ${user.username} (${user.email})`);
       res.success({ user }, 'Login successful');
     } catch (error) {
       const statusCode = error.message === 'Account is banned' ? 403 : 401;

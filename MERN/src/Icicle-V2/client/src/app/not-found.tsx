@@ -1,28 +1,12 @@
+// client/src/app/not-found.tsx
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
 import { Button, Card, CardBody } from "@heroui/react";
+import { useLogout } from "@/hooks/auth/useLogout";
 
 export default function NotFound() {
-  const router = useRouter();
-  const onceRef = useRef(false);
-  const [loggingOut, setLoggingOut] = useState(false);
-
-  const onLogout = async () => {
-    // if (onceRef.current || loggingOut) return;
-    // onceRef.current = true;
-    // setLoggingOut(true);
-    // try {
-    //   const res = await logoutHandler();
-
-    //   if (res.ok) router.replace(siteConfig.links.login.value);
-    // } finally {
-    //   setLoggingOut(false);
-    //   onceRef.current = false;
-    // }
-  };
+  const { logout, isLoading } = useLogout({ redirectTo: "/login" });
 
   return (
     <div className="min-h-screen grid place-items-center bg-background text-foreground">
@@ -41,19 +25,18 @@ export default function NotFound() {
 
           <div className="mt-6 flex items-center justify-center gap-3">
             <Link prefetch href="/">
-              <Button color="primary" variant="solid">
-                Về trang chủ
-              </Button>
+              <Button color="primary">Về trang chủ</Button>
             </Link>
+
             <Button variant="flat" onPress={() => window.history.back()}>
               Quay lại
             </Button>
+
             <Button
               color="danger"
-              isDisabled={loggingOut}
-              isLoading={loggingOut}
-              variant="solid"
-              onPress={onLogout}
+              isDisabled={isLoading}
+              isLoading={isLoading}
+              onPress={logout}
             >
               Đăng xuất
             </Button>
