@@ -141,7 +141,6 @@ class AuthController {
     try {
       const { currentPassword, newPassword } = req.body;
 
-      // FIX CONFIRMED: req.user.id is correctly mapped from 'sub'
       const userId = req.user.id;
 
       if (!userId) {
