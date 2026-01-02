@@ -8,7 +8,7 @@ import config from '../config/env.config.js';
  * Interacts with AuthService and manages HTTP responses/cookies.
  */
 class AuthController {
-  
+
   /**
    * Standardized cookie configuration for security.
    */
@@ -37,20 +37,20 @@ class AuthController {
       const userAgent = req.headers['user-agent'] || 'Unknown';
 
       const { user, accessToken, refreshToken } = await authService.login({
-        identifier: loginIdentifier, 
-        password, 
-        ipAddress, 
+        identifier: loginIdentifier,
+        password,
+        ipAddress,
         userAgent
       });
 
       // Set Cookies
-      res.cookie('refreshToken', refreshToken, { 
-        ...this.cookieOptions, 
+      res.cookie('refreshToken', refreshToken, {
+        ...this.cookieOptions,
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
       });
-      
-      res.cookie('accessToken', accessToken, { 
-        ...this.cookieOptions, 
+
+      res.cookie('accessToken', accessToken, {
+        ...this.cookieOptions,
         maxAge: 15 * 60 * 1000 // 15 minutes
       });
 
@@ -74,16 +74,16 @@ class AuthController {
       // We assume verifyAccessToken *might* have run, or we decode strictly here
       // But for logout, clearing cookies is the primary client-side action.
       // If you want strict DB clearing, ensure verifyAccessToken is used on the /logout route
-      
+
       if (req.user && req.user.id) {
-         await authService.logout(req.user.id);
+        await authService.logout(req.user.id);
       }
-      
+
       res.clearCookie('accessToken', this.cookieOptions);
       res.clearCookie('refreshToken', this.cookieOptions);
-      
+
       logger.info(`[Auth] User logged out (IP: ${req.ip})`);
-      
+
       res.success(null, 'Logged out successfully');
     } catch (error) {
       logger.error(`[Auth] Logout error`, error.message);
@@ -97,7 +97,7 @@ class AuthController {
   async refreshToken(req, res) {
     try {
       const incomingRefreshToken = req.cookies.refreshToken;
-      
+
       if (!incomingRefreshToken) {
         return res.error('Refresh token missing', 401);
       }
@@ -113,20 +113,21 @@ class AuthController {
       // Security: Clear cookies immediately if refresh fails
       res.clearCookie('accessToken', this.cookieOptions);
       res.clearCookie('refreshToken', this.cookieOptions);
-      
+
       logger.error(`[Auth] Refresh token failed: ${error.message}`);
       res.error(error.message, 403, error);
     }
   }
 
   /**
-   * Get Current User Profile.
-   */
+ * Get Current User Context.
+ * Returns sanitized user info + permissions for the UI.
+ */
   async getMe(req, res) {
     try {
-      // FIX CONFIRMED: req.user.id now exists thanks to middleware mapping
-      const user = await authService.getProfile(req.user.id);
-      res.success({ user }, 'Profile retrieved');
+      // req.user.id comes from the updated verifyAccessToken middleware
+      const data = await authService.getMe(req.user.id);
+      res.success({ user: data.user, permissions: data.permissions }, 'User context retrieved');
     } catch (error) {
       logger.error(`[Auth] GetMe failed: ${error.message}`);
       res.error(error.message, 404, error);
@@ -139,12 +140,12 @@ class AuthController {
   async changePassword(req, res) {
     try {
       const { currentPassword, newPassword } = req.body;
-      
+
       // FIX CONFIRMED: req.user.id is correctly mapped from 'sub'
-      const userId = req.user.id; 
+      const userId = req.user.id;
 
       if (!userId) {
-          return res.error('User context missing', 401);
+        return res.error('User context missing', 401);
       }
 
       await authService.changePassword(userId, currentPassword, newPassword);
@@ -154,10 +155,10 @@ class AuthController {
     } catch (error) {
       // Handle specific business logic errors
       if (error.message.includes('Incorrect current password') || error.message.includes('User not found')) {
-         return res.error(error.message, 400, error);
+        return res.error(error.message, 400, error);
       }
       if (error.message.includes('New password cannot be')) {
-         return res.error(error.message, 422, error);
+        return res.error(error.message, 422, error);
       }
 
       logger.warn(`[Auth] Change password failed: ${error.message}`);

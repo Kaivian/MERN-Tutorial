@@ -40,7 +40,8 @@ router.post('/refresh', authController.refreshToken);
 
 /**
  * @route   GET /api/auth/me
- * @desc    Get current logged-in user's profile information
+ * @desc    Get current logged-in user's context (ID, Roles, Permissions).
+ * optimized for Client-side Auth Context (Lightweight).
  * @access  Private (Requires valid Access Token)
  */
 router.get('/me',
