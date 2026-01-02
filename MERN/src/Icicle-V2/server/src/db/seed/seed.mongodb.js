@@ -15,10 +15,6 @@ const SEED_FILE_PATH = path.join(__dirname, 'seed.mongodb.json');
 
 /* ==================== CORE FUNCTIONS ==================== */
 
-/**
- * Core function to read JSON and insert data into MongoDB.
- * This function does NOT check for existence, it simply inserts.
- */
 const performSeeding = async () => {
   if (!fs.existsSync(SEED_FILE_PATH)) {
     throw new Error(`Seed file not found at: ${SEED_FILE_PATH}`);
@@ -28,45 +24,57 @@ const performSeeding = async () => {
   const seedData = JSON.parse(rawData);
 
   // 1. Insert Roles
-  let adminRoleId = null;
-  if (seedData.roles && seedData.roles.length > 0) {
-    await Role.insertMany(seedData.roles);
-    logger.success(`[Seed] Successfully created ${seedData.roles.length} role(s).`);
-    
-    // Find the ID for super_admin
-    const adminRole = await Role.findOne({ slug: 'super_admin' });
-    if (adminRole) adminRoleId = adminRole._id;
-  }
+  // Using insertMany bypasses hooks, but for seeding static system data, it's acceptable
+  // provided the JSON data includes 'slug' and correct 'isSystem' flags.
+  let roleMap = new Map();
 
-  if (!adminRoleId) {
-    logger.error('[Seed] Critical Error: "super_admin" role not found after insertion.');
-    return;
+  if (seedData.roles && seedData.roles.length > 0) {
+    const createdRoles = await Role.insertMany(seedData.roles);
+    logger.success(`[Seed] Successfully created ${createdRoles.length} role(s).`);
+
+    // Create a Map for quick lookup: 'super_admin' -> ObjectId('...')
+    createdRoles.forEach(role => {
+      roleMap.set(role.slug, role._id);
+    });
   }
 
   // 2. Insert Users
   if (seedData.users && seedData.users.length > 0) {
-    const usersToCreate = await Promise.all(seedData.users.map(async (user) => {
+    const usersToCreate = await Promise.all(seedData.users.map(async (userData) => {
+      const { roleSlug, password, ...rest } = userData;
+
+      // Determine Role ID
+      const assignedRoleId = roleMap.get(roleSlug);
+      
+      if (!assignedRoleId) {
+        logger.warn(`[Seed] Warning: Role slug '${roleSlug}' not found for user '${userData.username}'. Skipping.`);
+        return null;
+      }
+
+      // Hash Password manually (insertMany bypasses pre-save hooks)
       const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(user.password, salt);
+      const hashedPassword = await bcrypt.hash(password, salt);
+
       return {
-        ...user,
+        ...rest,
         password: hashedPassword,
-        roles: [adminRoleId],
+        roles: [assignedRoleId] 
       };
     }));
 
-    await User.insertMany(usersToCreate);
-    logger.success(`[Seed] Successfully created Admin account.`);
-    logger.info(`[Seed] Credentials: ${seedData.users[0].email} / ${seedData.users[0].password}`);
+    // Filter out nulls (failed role lookups)
+    const validUsers = usersToCreate.filter(u => u !== null);
+
+    if (validUsers.length > 0) {
+      await User.insertMany(validUsers);
+      logger.success(`[Seed] Successfully created ${validUsers.length} user(s).`);
+      logger.info(`[Seed] Admin Creds: ${seedData.users[0].email}`);
+    }
   }
 };
 
 /* ==================== EXPORTED WORKFLOWS ==================== */
 
-/**
- * Workflow A: Auto-seed on server startup.
- * Only runs if the database is completely empty (checking User count).
- */
 export const checkAndSeedData = async () => {
   try {
     const userCount = await User.countDocuments();
@@ -83,20 +91,14 @@ export const checkAndSeedData = async () => {
   }
 };
 
-/**
- * Workflow B: Manual Reset & Seed (via npm run seed).
- * WARNING: This DROPS the entire database (all collections, indexes, data).
- */
 export const resetAndSeedData = async () => {
   try {
     logger.warn('[Seed] Force Reset triggered. Dropping entire database...');
     
-    // 1. Drop the entire Database
-    // This removes Users, Roles, Logs, Tokens... everything.
+    // Drop Database to ensure clean slate for system roles
     await mongoose.connection.dropDatabase();
     logger.info('[Seed] Database dropped successfully.');
 
-    // 2. Run Seeding
     await performSeeding();
     
     logger.success('[Seed] Database reset and seeding completed successfully.');

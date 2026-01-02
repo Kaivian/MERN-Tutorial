@@ -3,9 +3,19 @@
     {
       "name": "Quản Trị Viên",
       "slug": "super_admin",
-      "permissions": [],
-      "description": "Quản trị viên cấp cao nhất, toàn quyền hệ thống.",
+      "permissions": ["*"],
+      "description": "System Administrator - Full Access",
+      "isSystem": true, 
       "isDefault": false,
+      "status": "active"
+    },
+    {
+      "name": "Thành Viên",
+      "slug": "user",
+      "permissions": ["profile:read", "profile:update"],
+      "description": "Standard User Role",
+      "isSystem": true,
+      "isDefault": true, 
       "status": "active"
     }
   ],
@@ -14,25 +24,19 @@
       "username": "admin",
       "email": "admin@localhost.com",
       "password": "admin123@",
+      "roleSlug": "super_admin", 
       "mustChangePassword": false,
       "isVerified": true,
-      "status": "active",
-      "profile": {
-        "fullName": "Quản Trị Viên Hệ Thống",
-        "bio": "Tài khoản quản trị mặc định."
-      }
+      "profile": { "fullName": "System Admin" }
     },
     {
       "username": "tester",
       "email": "tester@localhost.com",
-      "password": "admin123@",
+      "password": "user123@",
+      "roleSlug": "user",
       "mustChangePassword": true,
       "isVerified": true,
-      "status": "active",
-      "profile": {
-        "fullName": "Người Dùng Test",
-        "bio": "Account dùng để test chức năng đổi mật khẩu."
-      }
+      "profile": { "fullName": "Test User" }
     }
   ]
 }
