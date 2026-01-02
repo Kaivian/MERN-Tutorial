@@ -1,4 +1,4 @@
-// client/src/utils/axios-client.ts
+// client/src/utils/axios-client.utils.ts
 import axios, { 
   AxiosInstance, 
   AxiosError, 

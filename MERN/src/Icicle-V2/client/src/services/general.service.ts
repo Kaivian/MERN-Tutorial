@@ -1,5 +1,5 @@
-// client/src/services/general-service.ts
-import axiosClient from "@/utils/axios-client";
+// client/src/services/general.service.ts
+import axiosClient from "@/utils/axios-client.utils";
 import { ApiResponse } from "@/types/api";
 
 /**

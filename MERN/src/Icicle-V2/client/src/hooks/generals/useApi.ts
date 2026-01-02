@@ -1,7 +1,7 @@
-// client/src/hooks/generals/useApi.ts
 import { useState, useCallback } from 'react';
 import { addToast } from "@heroui/react";
-import { ApiResponse } from '../../types/api';
+import { ApiResponse } from '@/types/api';
+import { getFriendlyError } from '@/config/error-mapping.config';
 
 /**
  * Supported color variants for HeroUI Toasts.
@@ -14,16 +14,19 @@ type HeroUIColor = "default" | "primary" | "secondary" | "success" | "warning" |
 type ToastVariant = "solid" | "bordered" | "flat";
 
 /**
- * Configuration options for the API request execution and toast notification.
+ * Configuration options for the API request execution.
  */
 interface RequestOptions {
-  /** Whether to show a toast notification. Default is false for success, true for errors. */
+  /** * Whether to show a toast notification. 
+   * - Defaults to `false` for success (unless configured manually).
+   * - Defaults to `true` for errors.
+   */
   showToast?: boolean;
-  /** Custom title for the toast. Falls back to response status. */
+  /** Custom title override (Mainly for SUCCESS state). */
   title?: string;
-  /** Custom message for the toast. Falls back to response message. */
+  /** Custom message override (Mainly for SUCCESS state). */
   msg?: string;
-  /** Override toast color. If omitted, determined by backend code/status. */
+  /** Override toast color (Mainly for SUCCESS state). Auto-detected if omitted. */
   color?: HeroUIColor;
   /** Visual style of the toast. @default "flat" */
   variant?: ToastVariant;
@@ -42,21 +45,21 @@ interface UseApiResponse<TData, TArgs extends unknown[]> {
 }
 
 /**
- * Automatically determines the Toast color based on Backend Response status/code.
+ * Helper: Automatically determines the Toast color based on response status.
  */
 const getAutoColor = (res: ApiResponse<unknown>): HeroUIColor => {
   if (res.status === 'success') return 'success';
   if (res.status === 'warning') return 'warning';
   if (res.status === 'error' || res.status === 'fail') return 'danger';
-  
   if (res.code >= 200 && res.code < 300) return 'success';
-  if (res.code >= 400) return 'danger';
-  
-  return 'primary';
+  return 'danger';
 };
 
 /**
- * A custom hook for handling asynchronous API calls with integrated HeroUI Toast feedback.
+ * A custom hook for handling asynchronous API calls with:
+ * 1. Automatic Loading state.
+ * 2. Automatic Error Mapping (English Backend -> Vietnamese UI).
+ * 3. Integrated HeroUI Toast feedback.
  * * @template TData - The expected type of the data payload.
  * @template TArgs - The type of arguments accepted by the API function.
  * @param apiFunc - The service function performing the API request.
@@ -70,7 +73,7 @@ export const useApi = <TData = unknown, TArgs extends unknown[] = unknown[]>(
   const [error, setError] = useState<string | null>(null);
 
   const execute = useCallback(async (...allArgs: [...TArgs, RequestOptions?]): Promise<ApiResponse<TData>> => {
-    // Determine if the last argument is RequestOptions
+    // 1. Extract optional configuration from the last argument
     const hasOptions = allArgs.length > 0 && 
       typeof allArgs[allArgs.length - 1] === 'object' && 
       allArgs[allArgs.length - 1] !== null;
@@ -90,11 +93,14 @@ export const useApi = <TData = unknown, TArgs extends unknown[] = unknown[]>(
     setError(null);
 
     try {
+      // 2. Execute the API call (HAPPY PATH)
       const res = await apiFunc(...funcArgs);
       
       setResponse(res);
       setData(res.data);
 
+      // 3. Handle Success Toast
+      // Here we USE the custom title/msg/color provided in options
       if (showToast === true) {
         addToast({
           title: title || (res.status ? res.status.toUpperCase() : "SUCCESS"),
@@ -105,21 +111,34 @@ export const useApi = <TData = unknown, TArgs extends unknown[] = unknown[]>(
       }
 
       return res;
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : String(err);
-      setError(errorMessage);
 
-      // Errors default to showToast: true unless explicitly set to false
+    } catch (err: unknown) {
+      // 4. Handle Errors (ERROR PATH)
+      const rawErrorMessage = err instanceof Error ? err.message : String(err);
+      
+      // Auto-Mapping: Convert Backend Error -> Vietnamese UI Error
+      const { title: friendlyTitle, msg: friendlyMsg } = getFriendlyError(rawErrorMessage);
+      
+      // Update local error state
+      setError(friendlyMsg);
+
+      // 5. Handle Error Toast
+      // logic: Errors show toast by default unless explicitly disabled (showToast: false)
       if (showToast !== false) {
         addToast({
-          title: title || "ERROR",
-          description: msg || errorMessage,
-          color: color || "danger",
+          // --- BUG FIX ---
+          // Do NOT use 'title' or 'color' from options here. 
+          // Those are meant for the Success state (e.g., "Login Successful").
+          // For errors, we MUST use the mapped error title and Danger color.
+          
+          title: friendlyTitle || "Lỗi", 
+          description: friendlyMsg,     
+          color: "danger", // Force Red/Danger color for errors
           variant: variant,
         });
       }
       
-      throw err;
+      throw err; // Re-throw to allow component to handle specific logic
     } finally {
       setLoading(false);
     }
