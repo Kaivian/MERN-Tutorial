@@ -29,14 +29,6 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     path: '/login', 
     type: 'GUEST_ONLY' 
   },
-  { 
-    path: '/register', 
-    type: 'GUEST_ONLY' 
-  },
-  { 
-    path: '/forgot-password', 
-    type: 'GUEST_ONLY' 
-  },
 
   // ==============================
   // 3. PRIVATE ROUTES (Requires Token)

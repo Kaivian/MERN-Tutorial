@@ -45,6 +45,27 @@ dotenv.config({ path: envPath });
  * ========================================================================== */
 
 /**
+ * Helper to convert strings like "15m", "7d" to milliseconds.
+ * Fallback to default values if .env is missing.
+ */
+const parseDurationToMs = (durationStr, defaultMs) => {
+  if (!durationStr) return defaultMs;
+  
+  const unit = durationStr.slice(-1); // Get last character ('m', 'd', 'h')
+  const value = parseInt(durationStr.slice(0, -1), 10); // Get the number
+
+  if (isNaN(value)) return defaultMs;
+
+  switch (unit) {
+    case 's': return value * 1000;
+    case 'm': return value * 60 * 1000;
+    case 'h': return value * 60 * 60 * 1000;
+    case 'd': return value * 24 * 60 * 60 * 1000;
+    default: return defaultMs; // Return default if unit is unknown
+  }
+};
+
+/**
  * Helper function to retrieve environment variables.
  * Throws an error if a required variable is missing to prevent runtime failures.
  *
@@ -108,10 +129,12 @@ const config = {
     accessToken: {
       secret: getEnv('JWT_ACCESS_SECRET'),
       expiresIn: getEnv('JWT_ACCESS_EXPIRES_IN'),
+      maxAge: parseDurationToMs(getEnv('JWT_ACCESS_EXPIRES_IN'), 15 * 60 * 1000), // Default 15 minutes
     },
     refreshToken: {
       secret: getEnv('JWT_REFRESH_SECRET'),
       expiresIn: getEnv('JWT_REFRESH_EXPIRES_IN'),
+      maxAge: parseDurationToMs(getEnv('JWT_REFRESH_EXPIRES_IN'), 7 * 24 * 60 * 60 * 1000), // Default 7 days
     },
   },
 

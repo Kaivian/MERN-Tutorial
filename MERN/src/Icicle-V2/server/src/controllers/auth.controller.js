@@ -11,13 +11,27 @@ class AuthController {
 
   /**
    * Standardized cookie configuration for security.
+   * Note: 'maxAge' is not set here because it differs for Access/Refresh tokens.
    */
   get cookieOptions() {
     return {
-      httpOnly: true, // Prevents JavaScript access (XSS protection)
+      httpOnly: true,                 // Prevents JavaScript access (XSS protection)
       secure: config.app.env === 'production', // HTTPS only in production
-      sameSite: 'strict', // CSRF protection
-      path: '/'
+      sameSite: 'lax',                // CSRF protection (Use 'lax' for better UX with redirections, 'strict' if API only)
+      path: '/'                       // Available across the entire site
+    };
+  }
+
+  /**
+   * Centralized Token Expiration Times (in Milliseconds)
+   * MUST SYNC with your .env JWT configuration
+   */
+  get tokenMaxAges() {
+    return {
+      // 15 minutes (15 * 60 * 1000)
+      accessToken: config.jwt.accessToken.maxAge,
+      // 7 days (7 * 24 * 60 * 60 * 1000)
+      refreshToken: config.jwt.refreshToken.maxAge
     };
   }
 
@@ -43,15 +57,15 @@ class AuthController {
         userAgent
       });
 
-      // Set Cookies
+      // --- Set Cookies (Using centralized maxAges) ---
       res.cookie('refreshToken', refreshToken, {
         ...this.cookieOptions,
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        maxAge: this.tokenMaxAges.refreshToken
       });
 
       res.cookie('accessToken', accessToken, {
         ...this.cookieOptions,
-        maxAge: 15 * 60 * 1000 // 15 minutes
+        maxAge: this.tokenMaxAges.accessToken
       });
 
       logger.success(`[Auth] User logged in: ${user.username} (${user.email})`);
@@ -70,15 +84,11 @@ class AuthController {
    */
   async logout(req, res) {
     try {
-      // BEST PRACTICE: Try to invalidate session in DB if possible
-      // We assume verifyAccessToken *might* have run, or we decode strictly here
-      // But for logout, clearing cookies is the primary client-side action.
-      // If you want strict DB clearing, ensure verifyAccessToken is used on the /logout route
-
       if (req.user && req.user.id) {
         await authService.logout(req.user.id);
       }
 
+      // Clear cookies with the same options (path, secure, etc.)
       res.clearCookie('accessToken', this.cookieOptions);
       res.clearCookie('refreshToken', this.cookieOptions);
 
@@ -104,9 +114,16 @@ class AuthController {
 
       const { accessToken, refreshToken } = await authService.refreshToken(incomingRefreshToken);
 
-      // Update Cookies with rotated tokens
-      res.cookie('refreshToken', refreshToken, { ...this.cookieOptions, maxAge: 7 * 24 * 60 * 60 * 1000 });
-      res.cookie('accessToken', accessToken, { ...this.cookieOptions, maxAge: 15 * 60 * 1000 });
+      // --- Update Cookies with rotated tokens ---
+      res.cookie('refreshToken', refreshToken, { 
+        ...this.cookieOptions, 
+        maxAge: this.tokenMaxAges.refreshToken 
+      });
+      
+      res.cookie('accessToken', accessToken, { 
+        ...this.cookieOptions, 
+        maxAge: this.tokenMaxAges.accessToken 
+      });
 
       res.success(null, 'Token refreshed');
     } catch (error) {
@@ -120,12 +137,10 @@ class AuthController {
   }
 
   /**
- * Get Current User Context.
- * Returns sanitized user info + permissions for the UI.
- */
+   * Get Current User Context.
+   */
   async getMe(req, res) {
     try {
-      // req.user.id comes from the updated verifyAccessToken middleware
       const data = await authService.getMe(req.user.id);
       res.success({ user: data.user, permissions: data.permissions }, 'User context retrieved');
     } catch (error) {
@@ -140,8 +155,7 @@ class AuthController {
   async changePassword(req, res) {
     try {
       const { currentPassword, newPassword } = req.body;
-
-      const userId = req.user.id;
+      const userId = req.user.id; // From middleware
 
       if (!userId) {
         return res.error('User context missing', 401);
@@ -152,7 +166,6 @@ class AuthController {
       logger.success(`[Auth] Password changed successfully for UserID: ${userId}`);
       res.success(null, 'Password changed successfully');
     } catch (error) {
-      // Handle specific business logic errors
       if (error.message.includes('Incorrect current password') || error.message.includes('User not found')) {
         return res.error(error.message, 400, error);
       }
