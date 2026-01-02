@@ -1,84 +1,85 @@
 // client/src/services/auth.service.ts
-import { ApiResponse, AuthResponseData } from '@/types/api';
-
-const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/auth`;
+import { AuthResponse, LoginPayload } from "@/types/auth.types";
 
 /**
- * Generic HTTP wrapper to handle request configuration, JSON parsing, 
- * and standardized error throwing.
- * * @template T - The expected shape of the success response data.
- * @param {string} path - The API endpoint path (e.g., '/login').
- * @param {RequestInit} [config] - Optional fetch configuration (method, headers, body).
- * @returns {Promise<ApiResponse<T>>} The parsed JSON response from the server.
- * @throws {Error} Throws an error if the HTTP status is not 2xx.
+ * Base API URL configuration.
+ * Prioritizes environment variable, falls back to localhost for development.
  */
-async function http<T>(path: string, config: RequestInit = {}): Promise<ApiResponse<T>> {
-  const request = new Request(`${API_URL}${path}`, {
-    ...config,
-    headers: {
-      'Content-Type': 'application/json',
-      ...config.headers,
-    },
-  });
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000') + '/api';
 
-  const response = await fetch(request);
-
-  // 1. Safe JSON Parsing
-  // Attempt to parse the response body. If the server returns an empty body,
-  // plain text, or HTML (common in 500/502 errors), .json() would normally crash.
-  // Using .catch(() => null) prevents the crash and allows us to handle the error gracefully.
-  const body = await response.json().catch(() => null);
-
-  // 2. HTTP Error Handling
-  // The native fetch API does NOT throw errors for HTTP 4xx or 5xx status codes.
-  // We must explicitly check `response.ok` (status in the range 200-299).
-  if (!response.ok) {
-    // Priority for Error Message:
-    // 1. Message from Backend JSON body (e.g., "Invalid password")
-    // 2. Standard HTTP Status Text (e.g., "Unauthorized")
-    // 3. Fallback generic message
-    const errorMessage = body?.message || response.statusText || `Request failed with status ${response.status}`;
-    
-    // Throwing here ensures the flow jumps to the 'catch' block in useApi/components
-    throw new Error(errorMessage);
-  }
-
-  // 3. Success
-  return body as ApiResponse<T>;
-}
-
+/**
+ * Authentication Service.
+ * * Responsible for handling raw HTTP requests related to authentication (Login, Logout).
+ * This service is designed to be used with the `useApi` hook.
+ * * Key Features:
+ * - Uses `credentials: 'include'` to support HttpOnly Cookies.
+ * - Throws errors with server messages for upstream handling/mapping.
+ */
 export const authService = {
-  /**
-   * Authenticates a user with their credentials.
-   * @param credentials - Object containing identifier (username/email) and password.
-   */
-  login: (credentials: { identifier: string; password: string }) => 
-    http<AuthResponseData>('/login', {
-      method: 'POST',
-      body: JSON.stringify(credentials),
-    }),
 
   /**
-   * Logs out the current user.
-   * Typically clears the HttpOnly cookie on the server side.
+   * Authenticates the user using Username and Password.
+   * * @param {LoginPayload} payload - The login credentials (username, password).
+   * @returns {Promise<AuthResponse>} The full API response containing user data.
+   * * @throws {Error} Throws an error if the HTTP status is not 2xx. 
+   * The error message is taken from the server response (e.g., "User not found") 
+   * to allow `useApi` to map it to a friendly UI message.
+   * * @example
+   * const response = await authService.login({ username: 'kaivian', password: '123' });
+   * console.log(response.data.user);
    */
-  logout: () => 
-    http<null>('/logout', { method: 'POST' }),
+  login: async (payload: LoginPayload): Promise<AuthResponse> => {
+    try {
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add extra headers here if needed (e.g., Device-ID)
+        },
+        body: JSON.stringify(payload),
+        
+        // CRITICAL: Required for the browser to accept the 'Set-Cookie' header 
+        // from the server (HttpOnly Token).
+        credentials: 'include', 
+      });
+
+      const data = await response.json();
+
+      // Check for HTTP errors (400, 401, 403, 500, etc.)
+      if (!response.ok) {
+        // Throw the raw message from server so 'useApi' can map it using ERROR_MAP
+        // Fallback to status text if message is missing
+        throw new Error(data.message || `HTTP Error: ${response.status}`);
+      }
+
+      return data as AuthResponse;
+    } catch (error) {
+      // Re-throw the error to be caught by the useApi hook
+      throw error;
+    }
+  },
 
   /**
-   * Retrieves the profile and permissions of the currently authenticated user.
-   * Used for session persistence and hydration.
+   * Logs out the user.
+   * * Sends a request to the server to clear the HttpOnly cookie.
+   * This is more secure than just deleting client-side state.
+   * * @returns {Promise<void>} Resolves when the logout request is complete (regardless of success).
    */
-  getMe: () => 
-    http<AuthResponseData>('/me', { method: 'GET' }),
-
-  /**
-   * Updates the user's password.
-   * Applicable for both voluntary updates and force-change-password flows.
-   */
-  changePassword: (payload: { currentPassword: string; newPassword: string }) => 
-    http<null>('/change-password', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    }),
+  logout: async (): Promise<void> => {
+    try {
+      await fetch(`${API_URL}/auth/logout`, { 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        // CRITICAL: Required to send the existing cookie to the server 
+        // so the server knows WHICH session to invalidate.
+        credentials: 'include', 
+      });
+    } catch (error) {
+      // Logout failures are usually non-blocking for the UX, 
+      // but we log them for debugging purposes.
+      console.error("Logout service error:", error);
+    }
+  }
 };
