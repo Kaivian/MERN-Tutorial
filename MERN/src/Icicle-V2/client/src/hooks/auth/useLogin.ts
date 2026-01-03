@@ -90,9 +90,7 @@ export const useLogin = (): UseLoginReturn => {
           color: "success",
         });
 
-        setTimeout(() => {
-          router.push("/dashboard");
-        }, 1000);
+        router.push("/dashboard");
       }
 
     } catch (error) {
