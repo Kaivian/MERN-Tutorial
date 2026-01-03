@@ -3,7 +3,7 @@ import "@/styles/globals.css";
 import clsx from "clsx";
 import { Metadata, Viewport } from "next";
 import { Providers } from "./providers";
-import { fontSans, fontMono } from "@/config/font";
+import { fontSans, fontMono } from "@/config/font.config";
 
 export const metadata: Metadata = {
   title: { default: "Gia Lực", template: `Kaivian Template` },

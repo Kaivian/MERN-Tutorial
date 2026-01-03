@@ -1,3 +1,9 @@
+// client/src/config/font.config.ts
+/**
+ * @file font.config.ts
+ * @description Centralized font configuration using Next.js Font Optimization.
+ * Defines and exports font instances for global use.
+ */
 import { 
   Fira_Code as FontMono, 
   Inter as FontSans,

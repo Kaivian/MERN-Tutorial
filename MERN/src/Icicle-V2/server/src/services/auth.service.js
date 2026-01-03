@@ -37,6 +37,7 @@ class AuthService {
 
     const accessPayload = {
       sub: user._id.toString(), // Standard Subject Claim
+      username: user.username, // Custom Claim
       roles: roleSlugs,         // Custom Claim: ["super_admin", "user"]
       mustChangePassword: user.mustChangePassword, // Custom Claim
       type: 'access'            // Security Claim

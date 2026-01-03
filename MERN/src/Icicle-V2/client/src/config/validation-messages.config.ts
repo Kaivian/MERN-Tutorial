@@ -1,3 +1,9 @@
+// client/src/config/validation-messages.config.ts
+/**
+ * @file validation-messages.config.ts
+ * @description Centralized validation messages for form fields.
+ * Provides a single source of truth for consistent user feedback.
+ */
 export const VALIDATION_MESSAGES = {
   // BRL1.1: Required field
   REQUIRED: "Trường này là bắt buộc.",
