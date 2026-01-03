@@ -4,7 +4,7 @@ import React, { useMemo, useState, Suspense, useEffect } from "react"; // Thêm 
 import { useSearchParams } from "next/navigation"; // Thêm hook này
 import { Eye, EyeOff } from "lucide-react";
 import { Form, Input, Button, Link } from "@heroui/react";
-import { VALIDATION_MESSAGES } from "@/config/validation-messages";
+import { VALIDATION_MESSAGES } from "@/config/validation-messages.config";
 import { useDebounce } from "@/hooks/generals/useDebounce";
 
 export const PASSWORD_REGEX = /^[\x21-\x7E]{8,25}$/;

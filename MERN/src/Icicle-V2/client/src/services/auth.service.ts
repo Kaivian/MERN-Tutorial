@@ -1,85 +1,84 @@
 // client/src/services/auth.service.ts
-import { AuthResponse, LoginPayload } from "@/types/auth.types";
-
 /**
- * Base API URL configuration.
- * Prioritizes environment variable, falls back to localhost for development.
+ * @file services/auth.service.ts
+ * @description Service responsible for handling authentication API requests.
  */
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000') + '/api';
 
-/**
- * Authentication Service.
- * * Responsible for handling raw HTTP requests related to authentication (Login, Logout).
- * This service is designed to be used with the `useApi` hook.
- * * Key Features:
- * - Uses `credentials: 'include'` to support HttpOnly Cookies.
- * - Throws errors with server messages for upstream handling/mapping.
- */
+import { env } from "@/config/env.config";
+import type { AuthResponse, LoginPayload } from "@/types/auth.types";
+
+// ============================================================================
+// CONFIGURATION
+// ============================================================================
+
+/** Base API Endpoint for Authentication */
+const AUTH_BASE_URL = `${env.API_URL}/api/auth`;
+
+/** Standard headers for JSON requests */
+const HEADERS = {
+  'Content-Type': 'application/json',
+  'Accept': 'application/json',
+};
+
+// ============================================================================
+// SERVICE IMPLEMENTATION
+// ============================================================================
+
 export const authService = {
-
   /**
-   * Authenticates the user using Username and Password.
-   * * @param {LoginPayload} payload - The login credentials (username, password).
-   * @returns {Promise<AuthResponse>} The full API response containing user data.
-   * * @throws {Error} Throws an error if the HTTP status is not 2xx. 
-   * The error message is taken from the server response (e.g., "User not found") 
-   * to allow `useApi` to map it to a friendly UI message.
-   * * @example
-   * const response = await authService.login({ username: 'kaivian', password: '123' });
-   * console.log(response.data.user);
+   * Authenticates the user with credentials.
+   * * @param {LoginPayload} payload - The username and password.
+   * @returns {Promise<AuthResponse>} The user data and access status.
+   * @throws {Error} If authentication fails.
    */
   login: async (payload: LoginPayload): Promise<AuthResponse> => {
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
+      const response = await fetch(`${AUTH_BASE_URL}/login`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // Add extra headers here if needed (e.g., Device-ID)
-        },
+        headers: HEADERS,
         body: JSON.stringify(payload),
-        
-        // CRITICAL: Required for the browser to accept the 'Set-Cookie' header 
-        // from the server (HttpOnly Token).
-        credentials: 'include', 
+        credentials: 'include', // Required for HttpOnly Cookies
       });
 
-      const data = await response.json();
+      // 1. Handle Response Data
+      // We explicitly try/catch json parsing because sometimes servers return 
+      // HTML (500 Error) or Empty Body instead of JSON.
+      const data = await response.json().catch(() => null);
 
-      // Check for HTTP errors (400, 401, 403, 500, etc.)
+      // 2. Handle HTTP Errors (4xx, 5xx)
       if (!response.ok) {
-        // Throw the raw message from server so 'useApi' can map it using ERROR_MAP
-        // Fallback to status text if message is missing
-        throw new Error(data.message || `HTTP Error: ${response.status}`);
+        // Prefer server message, fallback to status text
+        const errorMessage = data?.message || `Authentication failed (${response.status})`;
+        throw new Error(errorMessage);
       }
 
+      // 3. Return Typed Data
       return data as AuthResponse;
+
     } catch (error) {
-      // Re-throw the error to be caught by the useApi hook
+      // Re-throw to be handled by the calling hook (useApi)
       throw error;
     }
   },
 
   /**
-   * Logs out the user.
-   * * Sends a request to the server to clear the HttpOnly cookie.
-   * This is more secure than just deleting client-side state.
-   * * @returns {Promise<void>} Resolves when the logout request is complete (regardless of success).
+   * Logs out the current user.
+   * Typically clears HttpOnly cookies on the server.
    */
   logout: async (): Promise<void> => {
     try {
-      await fetch(`${API_URL}/auth/logout`, { 
+      const response = await fetch(`${AUTH_BASE_URL}/logout`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        // CRITICAL: Required to send the existing cookie to the server 
-        // so the server knows WHICH session to invalidate.
-        credentials: 'include', 
+        headers: HEADERS,
+        credentials: 'include',
       });
+
+      if (!response.ok) {
+        console.warn(`[AuthService] Logout returned status: ${response.status}`);
+      }
     } catch (error) {
-      // Logout failures are usually non-blocking for the UX, 
-      // but we log them for debugging purposes.
-      console.error("Logout service error:", error);
+      // Logout errors are often non-critical for UI, but good to log
+      console.error("[AuthService] Logout request failed:", error);
     }
   }
 };

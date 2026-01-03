@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { Form, Input, Button, Link } from "@heroui/react";
-import { VALIDATION_MESSAGES } from "@/config/validation-messages";
+import { VALIDATION_MESSAGES } from "@/config/validation-messages.config";
 import { useLogin } from "@/hooks/auth/useLogin";
 
 export default function LoginPage() {
@@ -13,15 +13,11 @@ export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  // 2. USE HOOK
-  // Lấy hàm xử lý và trạng thái loading từ hook
   const { handleLogin, isLoading } = useLogin();
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!username || !password) return;
-
-    // 3. EXECUTE LOGIN
     await handleLogin({ username, password });
   };
 
@@ -44,7 +40,6 @@ export default function LoginPage() {
             placeholder="Nhập tên đăng nhập"
             value={username}
             onValueChange={setUsername}
-            // 4. UX: Disable input khi đang gọi API
             isDisabled={isLoading} 
           />
 
@@ -59,7 +54,6 @@ export default function LoginPage() {
             value={password}
             onValueChange={setPassword}
             type={isVisible ? "text" : "password"}
-            // 4. UX: Disable input khi đang gọi API
             isDisabled={isLoading}
             endContent={
               <button
@@ -68,7 +62,7 @@ export default function LoginPage() {
                 type="button"
                 onClick={() => setIsVisible(!isVisible)}
                 tabIndex={-1}
-                disabled={isLoading} // Disable nút mắt luôn
+                disabled={isLoading}
               >
                 {isVisible ? <Eye size={22} /> : <EyeOff size={22} />}
               </button>
@@ -79,7 +73,6 @@ export default function LoginPage() {
             fullWidth 
             type="submit" 
             color="primary"
-            // 5. UX: Hiển thị trạng thái loading trên nút
             isLoading={isLoading}
           >
             Đăng nhập
@@ -96,7 +89,7 @@ export default function LoginPage() {
           <Button 
             color="default" 
             variant="faded" 
-            isDisabled={isLoading} // Chặn click khi đang login thường
+            isDisabled={isLoading}
           >
             <FcGoogle size={20} className="mr-2" />
             Đăng nhập với Google

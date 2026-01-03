@@ -1,109 +1,95 @@
-// client/src/hooks/useLogin.ts
+// client/src/hooks/auth/useLogin.ts
+/**
+ * @file client/src/hooks/auth/useLogin.ts
+ * @description Hook to handle user authentication, server state synchronization, and conditional navigation.
+ */
+
 "use client";
 
+import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { addToast } from "@heroui/react";
 import { useApi } from "@/hooks/generals/useApi";
 import { authService } from "@/services/auth.service";
 import { LoginPayload } from "@/types/auth.types";
+import { siteConfig } from "@/config/site.config";
 
-/**
- * Interface for the return value of the useLogin hook.
- */
 interface UseLoginReturn {
-  /**
-   * Function to execute the login sequence.
-   * Handles multi-scenario toast feedback and conditional redirection.
-   * @param {LoginPayload} payload - User credentials.
-   */
   handleLogin: (payload: LoginPayload) => Promise<void>;
-
-  /**
-   * Loading state for the login request.
-   */
   isLoading: boolean;
 }
 
-/**
- * Custom Hook: useLogin
- * ---------------------
- * Orchestrates the authentication process, managing user redirection 
- * and specific toast feedback for both standard login and forced password change.
- *
- * @returns {UseLoginReturn} The login handler and loading state.
- */
 export const useLogin = (): UseLoginReturn => {
   const router = useRouter();
-
-  // Initialize the API handler with authService.login
+  const [isPending, startTransition] = useTransition();
   const { execute, loading } = useApi(authService.login);
 
-  /**
-   * Handles the login form submission.
-   * Logic splits based on the 'mustChangePassword' flag or 'requireAction' field from the server.
-   * @param {LoginPayload} payload - Credentials provided by the user.
-   */
   const handleLogin = async (payload: LoginPayload): Promise<void> => {
+    // 1. Basic Validation
     if (!payload.username || !payload.password) {
+      addToast({
+        title: "Thiếu thông tin",
+        description: "Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.",
+        color: "danger",
+        variant: "flat",
+      });
       return;
     }
 
     try {
-      /**
-       * 1. PRE-DETERMINE THE FLOW
-       * We first check the response without showing a toast immediately if we want
-       * absolute precision, but since 'execute' usually triggers the toast based on 
-       * the success of the call, we handle the two scenarios here.
-       */
-      
+      // 2. Execute API
+      // The API should set the HttpOnly cookie upon success.
       const res = await execute(payload, { showToast: false });
+      
+      // Safety check in case useApi doesn't throw but returns null/undefined on error
+      if (!res?.data?.user) return;
 
       const { user } = res.data;
 
-      // Check if the server requires a password change
-      const isPasswordChangeRequired = user.mustChangePassword;
+      // 3. Determine Scenario (Standard vs Forced Change)
+      // Normalize flag to boolean to handle both true (boolean) and "true" (string)
+      const isForceChange = user.mustChangePassword === true;
 
-      if (isPasswordChangeRequired) {
-        /**
-         * SCENARIO A: Forced Password Change
-         * Trigger a custom warning toast manually through the API wrapper or global toast system.
-         */
-        await execute(payload, {
-          showToast: true,
+      // 4. Config UI Feedback & Destination
+      const targetPath = isForceChange
+        ? siteConfig.links.changeDefaultPassword.path
+        : siteConfig.links.dashboard.path;
+
+      if (isForceChange) {
+        addToast({
           title: "Hành động cần thiết",
-          msg: "Vui lòng đổi mật khẩu để bảo vệ tài khoản của bạn trước khi tiếp tục.",
+          description: "Vui lòng đổi mật khẩu để bảo vệ tài khoản.",
+          color: "warning",
           variant: "flat",
-          color: "warning", // Using warning color for password change requirement
         });
-
-        const targetUrl = `/login/change-default-password?username=${encodeURIComponent(user.username)}`;
-        router.push(targetUrl);
       } else {
-        /**
-         * SCENARIO B: Standard Success Access
-         * Trigger the standard success toast.
-         */
-        await execute(payload, {
-          showToast: true,
+        addToast({
           title: "Đăng nhập thành công",
-          msg: `Chào mừng ${user.fullName || user.username} quay trở lại hệ thống!`,
-          variant: "flat",
+          description: `Chào mừng ${user.fullName || user.username} quay trở lại!`,
           color: "success",
+          variant: "flat",
         });
-
-        router.push("/dashboard");
       }
 
+      // 5. Sync Server State & Navigate
+      // Wrapping both actions in startTransition ensures high-priority UI updates 
+      // are not blocked and helps coordinate the router cache invalidation.
+      startTransition(() => {
+        router.refresh(); // Invalidate Client Cache & Re-fetch Server Components (RootLayout)
+        router.push(targetPath); // Navigate to the determined path
+      });
+
     } catch (error) {
-      /**
-       * Error Handling
-       * Errors are typically caught and displayed as toasts by the 'useApi' internal logic.
-       */
-      console.debug("[Auth Flow] Login aborted or failed.", error);
+      console.error("[useLogin] Login process failed:", error);
+      // Note: useApi usually handles generic error toasts. 
+      // Add manual handling here only if needed.
     }
   };
 
   return {
     handleLogin,
-    isLoading: loading,
+    // Combine API loading state with the transition pending state
+    // to prevent user interaction while redirecting.
+    isLoading: loading || isPending,
   };
 };
