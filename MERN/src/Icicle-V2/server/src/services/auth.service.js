@@ -264,26 +264,76 @@ class AuthService {
   /* ==================== ACCOUNT MANAGEMENT ==================== */
 
   /**
-   * Changes the authenticated user's password.
-   * @param {string} userId 
-   * @param {string} currentPassword 
-   * @param {string} newPassword 
+   * Changes the authenticated user's password and automatically refreshes their session.
+   * * This method performs the following:
+   * 1. Validates the current password.
+   * 2. Updates the password in the database.
+   * 3. Resets the `mustChangePassword` flag to false.
+   * 4. Generates a new pair of Access/Refresh tokens (Auto-Login).
+   * 5. Updates the user's active session.
+   * * @param {string} userId - The unique identifier of the user.
+   * @param {string} currentPassword - The user's current password for verification.
+   * @param {string} newPassword - The new password to set.
+   * @param {Object} context - Context required for creating a new session.
+   * @param {string} context.ipAddress - The client's IP address.
+   * @param {string} context.userAgent - The client's User-Agent string.
+   * @returns {Promise<{user: Object, accessToken: string, refreshToken: string}>} The updated user profile and new tokens.
+   * @throws {Error} If validation fails or user is not found.
    */
-  async changePassword(userId, currentPassword, newPassword) {
+  async changePassword(userId, currentPassword, newPassword, { ipAddress, userAgent }) {
+    // 1. Fetch user with password field included
     const user = await userRepository.findByIdWithPassword(userId);
     if (!user) throw new Error('User not found');
 
+    // 2. Validate Current Password
     const isMatch = await user.matchPassword(currentPassword);
     if (!isMatch) throw new Error('Incorrect current password');
 
+    // 3. Validate New Password logic
     if (currentPassword === newPassword) {
       throw new Error('New password cannot be the same as the current password');
     }
 
+    // 4. Hash the new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await userRepository.updatePassword(userId, hashedPassword);
+
+    // 5. Update Database:
+    // - Set new hashed password
+    // - Force `mustChangePassword` to false (since they just changed it)
+    await userRepository.update(userId, {
+      password: hashedPassword,
+      mustChangePassword: false 
+    });
+
+    // --- AUTO RE-AUTHENTICATION LOGIC ---
+
+    // 6. Update local user object state for token generation
+    user.mustChangePassword = false;
     
-    logger.info(`[AuthService] Password changed successfully for UserID: ${userId}`);
+    // Ensure roles are populated to generate a valid Access Token
+    await user.populate('roles', 'slug name');
+
+    // 7. Generate new Token Pair
+    const { accessToken, refreshToken } = this.generateTokens(user);
+
+    // 8. Create new Session Data
+    const tokenHash = this.hashToken(refreshToken);
+    const sessionExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 Days
+
+    // 9. Update Session in DB (Revokes old tokens by overwriting session)
+    await userRepository.updateSession(user._id, {
+      tokenHash,
+      ipAddress,
+      deviceInfo: { userAgent, type: 'unknown' },
+      expiresAt: sessionExpiresAt
+    });
+
+    // 10. Return valid auth data (Sanitized user + Tokens)
+    return {
+      user: this.sanitizeUser(user),
+      accessToken,
+      refreshToken
+    };
   }
 }
 

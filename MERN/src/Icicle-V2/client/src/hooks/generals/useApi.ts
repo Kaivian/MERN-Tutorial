@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { addToast } from "@heroui/react";
-import { ApiResponse } from '@/types/api';
+import { ApiResponse } from '@/types/api.types';
 import { getFriendlyError } from '@/config/error-mapping.config';
 
 /**

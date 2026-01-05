@@ -5,7 +5,7 @@ import axios, {
   InternalAxiosRequestConfig, 
   AxiosResponse 
 } from 'axios';
-import { ApiResponse } from '../types/api';
+import { ApiResponse } from '../types/api.types';
 
 /**
  * Standardized API Error class for handling backend-specific errors.

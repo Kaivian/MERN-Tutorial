@@ -1,4 +1,8 @@
 // client/src/types/auth.types.ts
+/**
+ * @file client/src/types/auth.types.ts
+ * @description Type definitions for authentication, user roles, and API responses.
+ */
 
 // ==========================================
 // 1. CONSTANTS (SYSTEM DEFINITIONS)
@@ -96,6 +100,15 @@ export interface LoginPayload {
 }
 
 /**
+ * Payload required for Change Password API.
+ */
+export interface ChangePasswordPayload {
+  username: string;
+  currentPassword?: string;
+  newPassword?: string;
+}
+
+/**
  * Standard API Response structure wrapper.
  * @template T - The type of the data payload.
  */
@@ -115,6 +128,12 @@ export type AuthResponse = ApiResponse<{
   /** Access Token (JWT) */
   accessToken?: string;
 }>;
+
+/**
+ * Specific response structure for Change Password.
+ * Since the API returns data: null, we define the generic type as null.
+ */
+export type ChangePasswordResponse = ApiResponse<null>;
 
 // ==========================================
 // 4. ROUTING & PERMISSION CONFIG

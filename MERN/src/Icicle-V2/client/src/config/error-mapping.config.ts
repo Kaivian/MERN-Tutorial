@@ -1,4 +1,9 @@
 // client/src/config/error-mapping.config.ts
+/**
+ * @file client/src/config/error-mapping.config.ts
+ * @description Maps raw backend error messages to friendly Vietnamese UI messages.
+ */
+
 // Define the structure of our UI friendly error
 export interface UIError {
   title: string;
@@ -30,9 +35,17 @@ const ERROR_MAP: Record<string, UIError> = {
     title: "Tài khoản bị khóa",
     msg: "Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ Admin.",
   },
-  "Account is banned": { // Duplicate case handling
-    title: "Tài khoản bị khóa",
-    msg: "Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ Admin.",
+
+  /* -------------------------------------------------------------------------- */
+  /* PASSWORD CHANGE ERRORS (Mới thêm)                                          */
+  /* -------------------------------------------------------------------------- */
+  "Incorrect current password": {
+    title: "Mật khẩu cũ không đúng",
+    msg: "Mật khẩu hiện tại bạn nhập không chính xác. Vui lòng kiểm tra lại.",
+  },
+  "New password cannot be the same as current password": {
+    title: "Trùng mật khẩu cũ",
+    msg: "Mật khẩu mới không được giống với mật khẩu hiện tại.",
   },
 
   /* -------------------------------------------------------------------------- */

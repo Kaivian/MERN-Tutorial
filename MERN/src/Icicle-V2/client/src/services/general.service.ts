@@ -1,6 +1,6 @@
 // client/src/services/general.service.ts
 import axiosClient from "@/utils/axios-client.utils";
-import { ApiResponse } from "@/types/api";
+import { ApiResponse } from "@/types/api.types";
 
 /**
  * Interface for the Health Check response data.

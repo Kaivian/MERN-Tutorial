@@ -1,25 +1,25 @@
+// client/src/app/(auth)/change-password/page.tsx
 "use client";
 
-import React, { useMemo, useState, Suspense, useEffect } from "react"; // Thêm Suspense và useEffect
-import { useSearchParams } from "next/navigation"; // Thêm hook này
+import React, { useMemo, useState, Suspense, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { Form, Input, Button, Link } from "@heroui/react";
 import { VALIDATION_MESSAGES } from "@/config/validation-messages.config";
 import { useDebounce } from "@/hooks/generals/useDebounce";
+import { useChangePassword } from "@/hooks/auth/useChangePassword";
+import { PASSWORD_REGEX } from "@/utils/regex.utils";
 
-export const PASSWORD_REGEX = /^[\x21-\x7E]{8,25}$/;
-
-// 1. Tách logic Form ra thành một component con
 function ChangePasswordForm() {
   const searchParams = useSearchParams();
-  // Lấy username từ URL, nếu không có thì trả về chuỗi rỗng
   const initialUsername = searchParams.get("username") || "";
+
+  const { handleChangePassword, isLoading } = useChangePassword();
 
   const [isVisible, setIsVisible] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
 
-  // Khởi tạo state username bằng giá trị lấy từ URL
   const [username, setUsername] = useState(initialUsername);
   
   const [currentPassword, setCurrentPassword] = useState("");
@@ -29,7 +29,6 @@ function ChangePasswordForm() {
   const debouncedNewPassword = useDebounce(newPassword);
   const debouncedConfirmPassword = useDebounce(confirmPassword);
 
-  // Nếu URL thay đổi mà component chưa unmount, cập nhật lại username (Optional nhưng tốt cho UX)
   useEffect(() => {
     if (initialUsername) {
       setUsername(initialUsername);
@@ -55,14 +54,21 @@ function ChangePasswordForm() {
     return errors;
   }, [debouncedConfirmPassword, newPassword]);
 
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     
+    // Client-side guard clauses (extra safety before calling hook)
     if (!username || !currentPassword || !newPassword || !confirmPassword) return;
     if (newPassword.length < 8 || newPassword.length > 25 || !PASSWORD_REGEX.test(newPassword)) return;
     if (newPassword !== confirmPassword) return;
 
-    console.log({ username, currentPassword, newPassword, confirmPassword });
+    // Call the hook
+    await handleChangePassword({
+      username,
+      currentPassword,
+      newPassword,
+      confirmPassword,
+    });
   };
 
   const isSubmitDisabled = 
@@ -88,8 +94,6 @@ function ChangePasswordForm() {
             placeholder="Nhập tên đăng nhập"
             value={username}
             onValueChange={setUsername}
-            // Nếu muốn không cho user sửa tên đăng nhập lấy từ URL thì thêm dòng dưới:
-            // isReadOnly={!!initialUsername} 
           />
           
           <Input
@@ -184,7 +188,13 @@ function ChangePasswordForm() {
             </div>
           </div>
           
-          <Button fullWidth type="submit" color="primary" isDisabled={isSubmitDisabled}>
+          <Button 
+            fullWidth 
+            type="submit" 
+            color="primary" 
+            isDisabled={isSubmitDisabled || isLoading}
+            isLoading={isLoading}
+          >
             Đổi mật khẩu
           </Button>
         </Form>
@@ -193,8 +203,6 @@ function ChangePasswordForm() {
   );
 }
 
-// 2. Export default Component bọc Suspense
-// Next.js yêu cầu bọc Suspense khi dùng useSearchParams để tránh lỗi build
 export default function ChangePasswordPage() {
   return (
     <Suspense fallback={<div>Đang tải...</div>}>

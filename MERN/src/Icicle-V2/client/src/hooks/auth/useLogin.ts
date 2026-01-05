@@ -52,13 +52,13 @@ export const useLogin = (): UseLoginReturn => {
 
       // 4. Config UI Feedback & Destination
       const targetPath = isForceChange
-        ? siteConfig.links.changeDefaultPassword.path
+        ? siteConfig.links.changeDefaultPassword.path+`?username=${encodeURIComponent(user.username)}`
         : siteConfig.links.dashboard.path;
 
       if (isForceChange) {
         addToast({
           title: "Hành động cần thiết",
-          description: "Vui lòng đổi mật khẩu để bảo vệ tài khoản.",
+          description: "Vui lòng đổi mật khẩu để bảo vệ tài khoản trước khi sử dụng.",
           color: "warning",
           variant: "flat",
         });

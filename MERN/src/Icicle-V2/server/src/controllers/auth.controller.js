@@ -11,14 +11,14 @@ class AuthController {
 
   /**
    * Standardized cookie configuration for security.
-   * Note: 'maxAge' is not set here because it differs for Access/Refresh tokens.
+   * Centralized to ensure consistency across Login, Refresh, and ChangePassword.
    */
   get cookieOptions() {
     return {
-      httpOnly: true,                 // Prevents JavaScript access (XSS protection)
+      httpOnly: true,               // Prevents JavaScript access (XSS protection)
       secure: config.app.env === 'production', // HTTPS only in production
-      sameSite: 'lax',                // CSRF protection (Use 'lax' for better UX with redirections, 'strict' if API only)
-      path: '/'                       // Available across the entire site
+      sameSite: 'lax',              // 'lax' allows navigation from external sites, 'strict' is safer for APIs
+      path: '/'                     // Available across the entire site
     };
   }
 
@@ -57,7 +57,7 @@ class AuthController {
         userAgent
       });
 
-      // --- Set Cookies (Using centralized maxAges) ---
+      // --- Set Cookies (Using centralized config) ---
       res.cookie('refreshToken', refreshToken, {
         ...this.cookieOptions,
         maxAge: this.tokenMaxAges.refreshToken
@@ -69,17 +69,15 @@ class AuthController {
       });
 
       // CHECK STATUS: Force Password Change
-      // Logic: If user must change password, we return a specific message 
-      // and potentially a specific code for the frontend to handle the redirect.
       if (user.mustChangePassword) {
         logger.info(`[Auth] User logged in but requires password change: ${user.username}`);
         
         return res.success(
           { 
             user,
-            requireAction: 'CHANGE_PASSWORD' // Explicit flag for Frontend
+            requireAction: 'CHANGE_PASSWORD' 
           }, 
-          'Password change required to proceed' // Distinct message
+          'Password change required to proceed'
         );
       }
 
@@ -103,7 +101,7 @@ class AuthController {
         await authService.logout(req.user.id);
       }
 
-      // Clear cookies with the same options (path, secure, etc.)
+      // Clear cookies
       res.clearCookie('accessToken', this.cookieOptions);
       res.clearCookie('refreshToken', this.cookieOptions);
 
@@ -166,21 +164,56 @@ class AuthController {
 
   /**
    * Handle Change Password.
+   * [CRITICAL FIX]: Now sets HttpOnly cookies for BOTH tokens (Token Rotation).
    */
   async changePassword(req, res) {
     try {
       const { currentPassword, newPassword } = req.body;
-      const userId = req.user.id; // From middleware
+      const userId = req.user.id; 
 
       if (!userId) {
         return res.error('User context missing', 401);
       }
 
-      await authService.changePassword(userId, currentPassword, newPassword);
+      const ipAddress = req.ip || req.headers['x-forwarded-for'] || '127.0.0.1';
+      const userAgent = req.headers['user-agent'] || 'Unknown';
 
-      logger.success(`[Auth] Password changed successfully for UserID: ${userId}`);
-      res.success(null, 'Password changed successfully');
+      // Execute Service Logic
+      // Assuming authService.changePassword returns: { user, accessToken, refreshToken }
+      const result = await authService.changePassword(
+        userId, 
+        currentPassword, 
+        newPassword,
+        { ipAddress, userAgent }
+      );
+
+      // --- [FIXED] COOKIE HANDLING ---
+      // Apply the same cookie logic as Login/Refresh
+      
+      // 1. Set Refresh Token Cookie
+      res.cookie('refreshToken', result.refreshToken, {
+        ...this.cookieOptions,
+        maxAge: this.tokenMaxAges.refreshToken
+      });
+
+      // 2. Set Access Token Cookie (Crucial for Client Middleware to see the new state)
+      res.cookie('accessToken', result.accessToken, {
+        ...this.cookieOptions,
+        maxAge: this.tokenMaxAges.accessToken
+      });
+
+      logger.success(`[Auth] Password changed & tokens rotated for UserID: ${userId}`);
+
+      // Return Success
+      res.success({
+        message: 'Password changed successfully',
+        user: result.user
+        // Tokens are in cookies, no need to return in body, 
+        // but can keep 'user' for UI updates.
+      });
+
     } catch (error) {
+      // Handle known operational errors
       if (error.message.includes('Incorrect current password') || error.message.includes('User not found')) {
         return res.error(error.message, 400, error);
       }
@@ -195,6 +228,7 @@ class AuthController {
 }
 
 const controller = new AuthController();
+// Bind methods to ensure 'this' refers to the controller instance
 export default {
   login: controller.login.bind(controller),
   logout: controller.logout.bind(controller),
