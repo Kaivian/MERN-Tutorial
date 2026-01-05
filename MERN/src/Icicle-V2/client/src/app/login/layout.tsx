@@ -3,7 +3,6 @@
 
 import { Image } from "@heroui/react";
 import { useSyncImage } from "@/hooks/generals/useSyncImage";
-import ThemeSwitchButton from "@/components/theme-switch/ThemeSwitchButton";
 
 export default function AuthLayout({
   children,
@@ -20,7 +19,7 @@ export default function AuthLayout({
           <Image
             src="/login/chart.png"
             alt="Hệ thống quản lý"
-            className="w-5/6 mx-auto mb-10 drop-shadow-xl"
+            className="w-5/6 mx-auto mb-10 drop-shadow-xl size-3/4"
           />
           <div className="flex flex-col items-center justify-center gap-4">
             <h1 className="font-medium font-roboto text-[32px] leading-12 tracking-[-0.01em]">
@@ -29,7 +28,6 @@ export default function AuthLayout({
             <h2 className="font-normal font-roboto text-lg leading-6">
               Giải pháp tối ưu vận hành và kiểm soát chi phí hiệu quả.
             </h2>
-            <ThemeSwitchButton />
           </div>
         </div>
       </section>
