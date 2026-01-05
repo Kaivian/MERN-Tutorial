@@ -62,7 +62,7 @@ export default function AppTemplateLayout({
       <Sidebar isCollapsed={!isSidebarOpen} />
 
       <div className="flex flex-col flex-1 min-w-0 m-4 gap-4 transition-all duration-300">
-        <PageHeader toggleSidebar={toggleSidebar} />
+        <PageHeader toggleSidebar={toggleSidebar} title="Dashboard" />
 
         <main className="rounded-medium border-small border-divider flex w-full flex-col gap-4 h-full overflow-auto p-4">
           {children}

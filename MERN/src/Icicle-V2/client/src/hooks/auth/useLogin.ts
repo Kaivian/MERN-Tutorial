@@ -80,7 +80,7 @@ export const useLogin = (): UseLoginReturn => {
       });
 
     } catch (error) {
-      console.error("[useLogin] Login process failed:", error);
+      console.warn("[useLogin] Login process failed:", error);
       // Note: useApi usually handles generic error toasts. 
       // Add manual handling here only if needed.
     }

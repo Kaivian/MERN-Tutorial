@@ -5,12 +5,13 @@ import IconSwitch from "../icons/IconSwitch";
 
 interface PageHeaderProps {
   toggleSidebar: () => void;
+  title: string;
 }
 
-export default function PageHeader({ toggleSidebar }: PageHeaderProps) {
+export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
   return (
     <header className="rounded-medium border-small border-divider flex items-center justify-between p-4 bg-background">
-      {/* Cụm bên trái: Button + Title */}
+      {/* Left Section: Button + Dynamic Title */}
       <div className="flex items-center gap-2">
         <Button
           onPress={toggleSidebar}
@@ -20,10 +21,11 @@ export default function PageHeader({ toggleSidebar }: PageHeaderProps) {
           size="sm"
           radius="sm"
         />
-        <h2 className="text-medium text-default-700 font-medium">Overview</h2>
+        {/* Render the title passed via props */}
+        <h2 className="text-medium text-default-700 font-medium">{title}</h2>
       </div>
 
-      {/* Cụm bên phải: User */}
+      {/* Right Section: User Profile */}
       <div className="flex items-center h-full">
         <User
           avatarProps={{

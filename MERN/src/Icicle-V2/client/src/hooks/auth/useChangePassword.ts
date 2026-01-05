@@ -84,7 +84,7 @@ export const useChangePassword = (): UseChangePasswordReturn => {
       });
 
     } catch (error) {
-      console.error("[useChangePassword] Process failed:", (error as Error).message);
+      console.warn("[useChangePassword] Process failed:", (error as Error).message);
       // useApi handles the error toast display automatically
     }
   };
