@@ -1,9 +1,9 @@
 // client/src/services/auth.service.ts
 /**
- * @file services/auth.service.ts
+ * @file src/services/auth.service.ts
  * @description Authentication Service.
- * Used by Client Components to interact with Auth APIs.
- * Utilizes the centralized axiosClient for consistent error handling and interceptors.
+ * Centralizes all auth-related API interactions for Client Components.
+ * Utilizes the configured axiosClient to handle request interception and response unwrapping.
  */
 
 import axiosClient from "@/utils/axios-client.utils";
@@ -11,7 +11,8 @@ import type {
   AuthResponse, 
   LoginPayload, 
   ChangePasswordPayload, 
-  ChangePasswordResponse 
+  ChangePasswordResponse,
+  AuthMeResponse 
 } from "@/types/auth.types";
 
 // ============================================================================
@@ -23,6 +24,7 @@ const ENDPOINTS = {
   LOGOUT: '/auth/logout',
   REFRESH: '/auth/refresh',
   CHANGE_PASSWORD: '/auth/change-password',
+  ME: '/auth/me',
 } as const;
 
 // ============================================================================
@@ -31,50 +33,58 @@ const ENDPOINTS = {
 
 export const authService = {
   /**
-   * Authenticates the user with credentials.
-   * @param {LoginPayload} payload - The username/email and password.
-   * @returns {Promise<AuthResponse>} The user data and access status.
+   * Authenticates a user using their credentials.
+   * * @param {LoginPayload} payload - The object containing username/email and password.
+   * @returns {Promise<AuthResponse>} A promise resolving to the user data and access tokens.
    */
   login: async (payload: LoginPayload): Promise<AuthResponse> => {
-    // [FIX]: Cast the return type to Promise<AuthResponse>
-    // Since our Interceptor unwraps response.data, TypeScript needs to know
-    // that the 'AxiosResponse' wrapper is gone.
+    // Note: The return type is cast because the axiosClient interceptor 
+    // is configured to return `response.data` directly, bypassing the Axios wrapper.
     return axiosClient.post(ENDPOINTS.LOGIN, payload) as Promise<AuthResponse>;
   },
 
   /**
-   * Logs out the current user.
-   * Clears cookies on the server side via the API call.
+   * Logs out the current user and invalidates the session.
+   * Clears server-side HTTP-only cookies via the API endpoint.
+   * * @remarks
+   * This method suppresses any errors during the logout process (e.g., if the token 
+   * is already expired) to ensure the client-side cleanup always proceeds smoothly.
    */
   logout: async (): Promise<void> => {
     try {
       await axiosClient.post(ENDPOINTS.LOGOUT);
     } catch (error) {
-      // Logout errors are usually non-blocking (e.g., token already expired),
-      // so we just log a warning instead of crashing the UI flow.
-      console.warn("[AuthService] Logout warning:", error);
+      // Non-blocking error handling: Log warning but allow UI to redirect.
+      console.warn("[AuthService] Logout warning (non-fatal):", error);
     }
   },
 
   /**
-   * Changes the user's password.
-   * @param {ChangePasswordPayload} payload - Contains currentPassword and newPassword.
-   * @returns {Promise<ChangePasswordResponse>} Result of the operation.
+   * Updates the authenticated user's password.
+   * * @param {ChangePasswordPayload} payload - Object containing the current and new passwords.
+   * @returns {Promise<ChangePasswordResponse>} The status of the password change operation.
    */
   changePassword: async (payload: ChangePasswordPayload): Promise<ChangePasswordResponse> => {
-    // [FIX]: Cast to Promise<ChangePasswordResponse>
-    // This fixes the "Type 'AxiosResponse' is missing properties..." error.
     return axiosClient.post(ENDPOINTS.CHANGE_PASSWORD, payload) as Promise<ChangePasswordResponse>;
   },
 
   /**
-   * Manually triggers a token refresh.
-   * Note: The axiosClient interceptor handles this automatically on 401 errors.
-   * This method is exposed only for specific use cases (e.g., pre-fetching validity).
-   * @returns {Promise<AuthResponse>} The new access token data.
+   * Manually triggers an access token refresh.
+   * * @remarks
+   * Typically, the axios interceptor handles token refreshing automatically on 401 errors.
+   * Use this method only when a manual refresh is explicitly required (e.g., pre-checks).
+   * * @returns {Promise<AuthResponse>} The new access token and user data.
    */
   refreshToken: async (): Promise<AuthResponse> => {
-    // [FIX]: Cast to Promise<AuthResponse>
     return axiosClient.post(ENDPOINTS.REFRESH) as Promise<AuthResponse>;
+  },
+
+  /**
+   * Retrieves the current user's profile, roles, and permissions.
+   * Essential for client-side state hydration and RBAC permission checks.
+   * * @returns {Promise<AuthMeResponse>} The detailed user context including permissions.
+   */
+  getMe: async (): Promise<AuthMeResponse> => {
+    return axiosClient.get(ENDPOINTS.ME) as Promise<AuthMeResponse>;
   }
 };
