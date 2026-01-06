@@ -1,3 +1,4 @@
+// client/src/components/sidebar/SidebarData.tsx
 import React from "react";
 import { BadgeProps } from "@heroui/react";
 import { InternalIconName } from "../icons/IconSwitch";
@@ -51,6 +52,7 @@ export const sidebarSections: SidebarSection[] = [
         label: "Khách hàng",
         icon: (props) => <UsersGroupTwoRounded {...props}/>,
         iconSize: 32,
+        isDisabled: true,
       },
       {
         key: "products",

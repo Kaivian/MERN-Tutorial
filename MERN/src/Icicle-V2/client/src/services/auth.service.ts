@@ -1,10 +1,12 @@
 // client/src/services/auth.service.ts
 /**
  * @file services/auth.service.ts
- * @description Service responsible for handling authentication API requests.
+ * @description Authentication Service.
+ * Used by Client Components to interact with Auth APIs.
+ * Utilizes the centralized axiosClient for consistent error handling and interceptors.
  */
 
-import { env } from "@/config/env.config";
+import axiosClient from "@/utils/axios-client.utils";
 import type { 
   AuthResponse, 
   LoginPayload, 
@@ -13,15 +15,15 @@ import type {
 } from "@/types/auth.types";
 
 // ============================================================================
-// CONFIGURATION
+// ENDPOINTS CONSTANTS
 // ============================================================================
 
-const AUTH_BASE_URL = `${env.API_URL}/api/auth`;
-
-const HEADERS = {
-  'Content-Type': 'application/json',
-  'Accept': 'application/json',
-};
+const ENDPOINTS = {
+  LOGIN: '/auth/login',
+  LOGOUT: '/auth/logout',
+  REFRESH: '/auth/refresh',
+  CHANGE_PASSWORD: '/auth/change-password',
+} as const;
 
 // ============================================================================
 // SERVICE IMPLEMENTATION
@@ -30,106 +32,49 @@ const HEADERS = {
 export const authService = {
   /**
    * Authenticates the user with credentials.
-   * @param {LoginPayload} payload - The username and password.
+   * @param {LoginPayload} payload - The username/email and password.
    * @returns {Promise<AuthResponse>} The user data and access status.
    */
   login: async (payload: LoginPayload): Promise<AuthResponse> => {
-    try {
-      const response = await fetch(`${AUTH_BASE_URL}/login`, {
-        method: 'POST',
-        headers: HEADERS,
-        body: JSON.stringify(payload),
-        credentials: 'include',
-      });
-
-      const data = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        const errorMessage = data?.message || `Authentication failed (${response.status})`;
-        throw new Error(errorMessage);
-      }
-
-      return data as AuthResponse;
-
-    } catch (error) {
-      throw error;
-    }
+    // [FIX]: Cast the return type to Promise<AuthResponse>
+    // Since our Interceptor unwraps response.data, TypeScript needs to know
+    // that the 'AxiosResponse' wrapper is gone.
+    return axiosClient.post(ENDPOINTS.LOGIN, payload) as Promise<AuthResponse>;
   },
 
   /**
    * Logs out the current user.
+   * Clears cookies on the server side via the API call.
    */
   logout: async (): Promise<void> => {
     try {
-      const response = await fetch(`${AUTH_BASE_URL}/logout`, {
-        method: 'POST',
-        headers: HEADERS,
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        console.warn(`[AuthService] Logout returned status: ${response.status}`);
-      }
+      await axiosClient.post(ENDPOINTS.LOGOUT);
     } catch (error) {
-      console.error("[AuthService] Logout request failed:", error);
+      // Logout errors are usually non-blocking (e.g., token already expired),
+      // so we just log a warning instead of crashing the UI flow.
+      console.warn("[AuthService] Logout warning:", error);
     }
   },
 
   /**
    * Changes the user's password.
-   * @param {ChangePasswordPayload} payload - Contains username, currentPassword, and newPassword.
-   * @returns {Promise<void>}
+   * @param {ChangePasswordPayload} payload - Contains currentPassword and newPassword.
+   * @returns {Promise<ChangePasswordResponse>} Result of the operation.
    */
   changePassword: async (payload: ChangePasswordPayload): Promise<ChangePasswordResponse> => {
-    try {
-      const response = await fetch(`${AUTH_BASE_URL}/change-password`, {
-        method: 'POST',
-        headers: HEADERS,
-        body: JSON.stringify(payload),
-        credentials: 'include', 
-      });
-
-      // 1. Parse Data
-      const data = await response.json().catch(() => null);
-
-      // 2. Handle Errors
-      if (!response.ok) {
-        const errorMessage = data?.message || `Change password failed (${response.status})`;
-        throw new Error(errorMessage);
-      }
-      
-      // 3. Return Data (Crucial for useApi type compatibility)
-      return data as ChangePasswordResponse;
-
-    } catch (error) {
-      throw error;
-    }
+    // [FIX]: Cast to Promise<ChangePasswordResponse>
+    // This fixes the "Type 'AxiosResponse' is missing properties..." error.
+    return axiosClient.post(ENDPOINTS.CHANGE_PASSWORD, payload) as Promise<ChangePasswordResponse>;
   },
 
   /**
-   * Attempts to refresh the access token using the HttpOnly refresh token cookie.
-   * Useful for client-side interceptors or manual refresh calls.
+   * Manually triggers a token refresh.
+   * Note: The axiosClient interceptor handles this automatically on 401 errors.
+   * This method is exposed only for specific use cases (e.g., pre-fetching validity).
    * @returns {Promise<AuthResponse>} The new access token data.
    */
   refreshToken: async (): Promise<AuthResponse> => {
-    try {
-      // Assuming the backend endpoint is /refresh-token
-      const response = await fetch(`${AUTH_BASE_URL}/refresh-token`, {
-        method: 'POST',
-        headers: HEADERS,
-        credentials: 'include', // Important: sends the Refresh Token cookie
-      });
-
-      const data = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        const errorMessage = data?.message || `Token refresh failed (${response.status})`;
-        throw new Error(errorMessage);
-      }
-
-      return data as AuthResponse;
-    } catch (error) {
-      throw error;
-    }
+    // [FIX]: Cast to Promise<AuthResponse>
+    return axiosClient.post(ENDPOINTS.REFRESH) as Promise<AuthResponse>;
   }
 };

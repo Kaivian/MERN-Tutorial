@@ -65,7 +65,7 @@ export const siteConfig = {
     // ========================================================================
     // 3. SYSTEM PRIVATE ROUTES (Login Required)
     // ========================================================================
-    // Note: Implicitly 'PRIVATE' because neither isPublic nor guestOnly is true.
+    // No flags = Implicitly PRIVATE
     changeDefaultPassword: { 
       label: "Đổi mật khẩu mặc định", 
       path: "/login/change-default-password" 
@@ -92,25 +92,26 @@ export const siteConfig = {
     // ========================================================================
     // 5. ADMIN ROUTES (Login + Permissions Required)
     // ========================================================================
+    // Note: These have requiredPerms, so logic will force them to PRIVATE
     userAccount: { 
       label: "Người dùng", 
-      path: "/user-account", 
-      requiredPerms: ["user-account:view"] as const 
+      path: "/user-accounts", 
+      requiredPerms: ["user-accounts:view"] as const 
     },
     createAccount: { 
       label: "Tạo tài khoản", 
-      path: "/user-account/create", 
-      requiredPerms: ["user-account:create"] as const 
+      path: "/user-accounts/create", 
+      requiredPerms: ["user-accounts:create"] as const 
     },
     role: { 
       label: "Phân quyền", 
-      path: "/role", 
-      requiredPerms: ["role:view"] as const 
+      path: "/roles", 
+      requiredPerms: ["roles:view"] as const 
     },
     createRole: { 
       label: "Tạo phân quyền", 
-      path: "/role/create", 
-      requiredPerms: ["role:create"] as const 
+      path: "/roles/create", 
+      requiredPerms: ["roles:create"] as const 
     },
 
   } satisfies Record<string, RouteLinkEntry>,
@@ -121,25 +122,31 @@ export const siteConfig = {
 
 /**
  * Generates the configuration array required by the Middleware/AuthGuard.
- * * Logic:
- * 1. Converts the `siteConfig.links` object values into an array.
- * 2. Determines the route `type` (PUBLIC, GUEST_ONLY, or PRIVATE).
- * - Defaults to 'PRIVATE' if no flags are set.
- * 3. Sorts routes by path length (descending) to ensure nested routes 
- * are matched correctly before their parents (Specific > General).
+ * * Logic flow for determining Route Type:
+ * 1. Has Permissions? -> FORCE PRIVATE (Security First).
+ * 2. isPublic flag? -> PUBLIC.
+ * 3. guestOnly flag? -> GUEST_ONLY.
+ * 4. Default -> PRIVATE.
  * * @returns {RouteConfig[]} Sorted array of route configurations.
  */
 export const ROUTES_CONFIG: RouteConfig[] = (Object.values(siteConfig.links) as RouteLinkEntry[])
   .map((link) => {
-    // 1. Default to PRIVATE (Secure by default)
+    // 1. Initialize as PRIVATE (Default safe state)
     let type: RouteConfig['type'] = 'PRIVATE';
 
-    // 2. Override based on specific flags
-    if (link.isPublic) {
-      type = 'PUBLIC';
+    const hasPermissions = link.requiredPerms && link.requiredPerms.length > 0;
+
+    // 2. Determine Type with Priority
+    if (hasPermissions) {
+        // SAFETY: If permissions are required, it MUST be PRIVATE.
+        // This prevents accidental exposure even if isPublic is wrongly set to true.
+        type = 'PRIVATE'; 
+    } else if (link.isPublic) {
+        type = 'PUBLIC';
     } else if (link.guestOnly) {
-      type = 'GUEST_ONLY';
+        type = 'GUEST_ONLY';
     }
+    // else: remains 'PRIVATE'
 
     // 3. Construct the config object
     return {
@@ -149,4 +156,4 @@ export const ROUTES_CONFIG: RouteConfig[] = (Object.values(siteConfig.links) as 
       requiredPerms: link.requiredPerms ? [...link.requiredPerms] : undefined,
     };
   })
-  .sort((a, b) => b.path.length - a.path.length); // Critical: Nested routes first
+  .sort((a, b) => b.path.length - a.path.length); // Critical: Nested routes first (Specific > General)

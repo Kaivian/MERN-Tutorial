@@ -2,39 +2,59 @@
 /**
  * @file src/proxy.ts
  * @description
- * Next.js 16 Proxy (Middleware).
- * Handles request interception, authentication validation, route protection,
- * and enforces the "Force Password Change" policy using Edge Runtime compatible logic.
+ * Next.js Middleware (Edge Runtime).
+ *
+ * Responsibilities:
+ * 1. Intercepts all requests matching the config matcher.
+ * 2. Manages Token Lifecycle:
+ * - Checks for Access Token.
+ * - Attempts Server-Side Refresh if Access Token is missing but Refresh Token exists.
+ * 3. Decodes JWT to extract User State (isAuthenticated, mustChangePassword).
+ * 4. Enforces Route Protection (Public, Guest-Only, Private).
+ * 5. Syncs new tokens to the browser via Cookies.
  */
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { ROUTES_CONFIG, siteConfig } from '@/config/site.config';
 import { RouteConfig } from '@/types/auth.types';
+import { env } from '@/config/env.config';
 
 // ============================================================================
 // TYPE DEFINITIONS
 // ============================================================================
 
 /**
- * Defines the shape of the decoded JWT Payload.
- * We only define the fields we strictly need to access in the Middleware.
+ * Structure of the JWT Payload extracted from the Access Token.
  */
 interface JWTPayload {
+  /** User ID or Subject */
+  sub?: string;
+  /** Custom claim for password change policy */
   mustChangePassword?: boolean | string;
-  // We use 'unknown' for other potential fields to strictly avoid 'any'
-  // while acknowledging the object might have more data.
+  /** Expiration timestamp (Unix) */
+  exp?: number;
+  /** Allow flexibility for other claims */
+  [key: string]: unknown;
+}
+
+/**
+ * Expected response from the Backend Refresh Endpoint.
+ */
+interface RefreshTokenResponse {
+  accessToken: string;
   [key: string]: unknown;
 }
 
 // ============================================================================
-// CONSTANTS
+// CONSTANTS & CONFIG
 // ============================================================================
 
-/** The name of the cookie containing the JWT access token. */
-const COOKIE_NAME = 'accessToken';
+const COOKIES = {
+  ACCESS_TOKEN: 'accessToken',
+  REFRESH_TOKEN: 'refreshToken',
+} as const;
 
-/** Centralized path definitions for redirection logic. */
 const PATHS = {
   LOGIN: siteConfig.links.login.path,
   DASHBOARD: siteConfig.links.dashboard.path,
@@ -46,31 +66,31 @@ const PATHS = {
 // ============================================================================
 
 /**
- * Matches the current request path against the sorted route configuration.
- *
- * @param {string} pathname - The current request URL path.
- * @returns {RouteConfig | undefined} The matching route configuration or undefined.
+ * Matches the current pathname against the route configuration.
+ * @param {string} pathname - The current request path.
+ * @returns {RouteConfig | undefined} The matching configuration or undefined.
  */
 function getRouteConfig(pathname: string): RouteConfig | undefined {
-  // ROUTES_CONFIG is assumed to be sorted by path length (descending)
   return ROUTES_CONFIG.find((route) =>
     pathname === route.path || pathname.startsWith(`${route.path}/`)
   );
 }
 
 /**
- * Manually decodes a JWT payload in the Edge Runtime environment.
- * Note: This function only reads the payload and does NOT verify the signature.
- *
- * @param {string} token - The JWT string.
- * @returns {JWTPayload | null} The typed JSON payload or null if invalid.
+ * Safely parses a JWT payload in an Edge environment without external libraries.
+ * Handles URL-safe Base64 decoding and UTF-8 characters properly.
+ * * @param {string} token - The JWT string.
+ * @returns {JWTPayload | null} The decoded payload or null if invalid.
  */
 function parseJwt(token: string): JWTPayload | null {
   try {
-    const base64Url = token.split('.')[1];
-    if (!base64Url) return null;
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
 
+    const base64Url = parts[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    
+    // Decoding compliant with Edge Runtime (Node.js Buffer might not be available)
     const jsonPayload = decodeURIComponent(
       atob(base64)
         .split('')
@@ -78,124 +98,170 @@ function parseJwt(token: string): JWTPayload | null {
         .join('')
     );
 
-    // Safe Type Assertion: We assert the parsed JSON matches our Interface
     return JSON.parse(jsonPayload) as JWTPayload;
   } catch (error) {
-    // In Edge runtime, console.error might be limited, but useful for local debug
-    console.error('[Proxy] Failed to parse JWT:', error);
+    // Silent fail on invalid tokens
+    return null;
+  }
+}
+
+/**
+ * Calls the Backend API to refresh the access token using the Refresh Token cookie.
+ * This runs on the Server (Edge) before the request reaches the Client.
+ * * @param {NextRequest} request - The incoming request containing cookies.
+ * @returns {Promise<string | null>} The new access token or null if failed.
+ */
+async function refreshAccessToken(request: NextRequest): Promise<string | null> {
+  const refreshToken = request.cookies.get(COOKIES.REFRESH_TOKEN)?.value;
+  
+  if (!refreshToken) return null;
+
+  try {
+    // Forward the Cookie header to the backend so it can read the httpOnly refreshToken
+    const headers = new Headers();
+    headers.set('Content-Type', 'application/json');
+    if (request.headers.get('cookie')) {
+      headers.set('Cookie', request.headers.get('cookie')!);
+    }
+
+    const res = await fetch(`${env.API_URL}/auth/refresh`, {
+      method: 'POST',
+      headers,
+    });
+
+    if (!res.ok) {
+      return null;
+    }
+
+    const responseData = await res.json();
+    
+    // Flexible handling depending on your backend response structure
+    // Adjust 'data.accessToken' or 'accessToken' based on your ApiResponse wrapper
+    return (responseData.data?.accessToken as string) || (responseData.accessToken as string) || null;
+
+  } catch (error) {
+    console.error('[Middleware] Token refresh failed:', error);
     return null;
   }
 }
 
 // ============================================================================
-// MAIN LOGIC
+// MAIN MIDDLEWARE LOGIC
 // ============================================================================
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  let response = NextResponse.next();
+  
+  // --------------------------------------------------------------------------
+  // 1. Token Management (Check & Refresh)
+  // --------------------------------------------------------------------------
+  
+  let accessToken = request.cookies.get(COOKIES.ACCESS_TOKEN)?.value;
+  let hasRefreshed = false;
+
+  // If Access Token is missing but Refresh Token exists, attempt auto-refresh
+  if (!accessToken && request.cookies.has(COOKIES.REFRESH_TOKEN)) {
+    const newAccessToken = await refreshAccessToken(request);
+    if (newAccessToken) {
+      accessToken = newAccessToken;
+      hasRefreshed = true;
+    }
+  }
 
   // --------------------------------------------------------------------------
-  // 1. Authentication & Token Parsing
+  // 2. State Extraction
   // --------------------------------------------------------------------------
-  const token = request.cookies.get(COOKIE_NAME)?.value;
+
   let isAuthenticated = false;
   let mustChangePassword = false;
 
-  if (token) {
-    isAuthenticated = true;
-    const payload = parseJwt(token);
-
+  if (accessToken) {
+    const payload = parseJwt(accessToken);
     if (payload) {
-      // Handle both boolean true and string "true" from backend
+      // Optional: Check 'exp' here if you want to save a backend call on expired tokens
+      // const isExpired = payload.exp ? Date.now() >= payload.exp * 1000 : true;
+      
+      isAuthenticated = true;
       const rawFlag = payload.mustChangePassword;
       mustChangePassword = rawFlag === true || rawFlag === 'true';
     }
   }
 
   // --------------------------------------------------------------------------
-  // 2. Route Configuration Matching
+  // 3. Routing Authorization
   // --------------------------------------------------------------------------
+
   const routeConfig = getRouteConfig(pathname);
+  const isPublicRoute = !routeConfig || routeConfig.type === 'PUBLIC';
+  const isGuestOnlyRoute = routeConfig?.type === 'GUEST_ONLY';
 
-  // Case A: Unconfigured Routes (Assets, API, 404s) -> Pass through
-  if (!routeConfig) {
-    return NextResponse.next();
-  }
-
-  // Case B: Public Routes -> Always Allow
-  if (routeConfig.type === 'PUBLIC') {
-    return NextResponse.next();
-  }
-
-  // --------------------------------------------------------------------------
-  // 3. Guest Only Routes (e.g., Login Page)
-  // --------------------------------------------------------------------------
-  if (routeConfig.type === 'GUEST_ONLY') {
+  // SCENARIO 1: Guest Only Routes (e.g., Login)
+  if (isGuestOnlyRoute) {
     if (isAuthenticated) {
-      // EXCEPTION: If the user is forced to change password but wants to access
-      // the Login page (to logout or switch accounts), we ALLOW it.
+      // If user is logged in, redirect to Dashboard
+      // EXCEPT: If they are forced to change password, allow/redirect to that page
       if (mustChangePassword) {
-        return NextResponse.next();
+         // Logic choice: Redirect to change pass or stay? 
+         // Usually we redirect to change-password to force the flow.
+         response = NextResponse.redirect(new URL(PATHS.CHANGE_PASS, request.url));
+      } else {
+         response = NextResponse.redirect(new URL(PATHS.DASHBOARD, request.url));
       }
-
-      // Standard behavior: Authenticated users are redirected to Dashboard
-      return NextResponse.redirect(new URL(PATHS.DASHBOARD, request.url));
     }
-    // Not authenticated -> Allow access to Login
-    return NextResponse.next();
+    // If not authenticated, allow access to Login page (response is already .next())
   }
-
-  // --------------------------------------------------------------------------
-  // 4. Private Routes (Dashboard, Admin, Business Logic)
-  // --------------------------------------------------------------------------
-  if (routeConfig.type === 'PRIVATE') {
-    // 4.1. Not Authenticated -> Redirect to Login
+  
+  // SCENARIO 2: Private Routes (Dashboard, Profile, etc.)
+  else if (!isPublicRoute) {
+    
+    // 2a. Not Authenticated -> Redirect to Login
     if (!isAuthenticated) {
       const loginUrl = new URL(PATHS.LOGIN, request.url);
-      // Append callbackUrl so the Login page knows where to return
       loginUrl.searchParams.set('callbackUrl', pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-
-    // 4.2. Authenticated but Forced to Change Password
-    if (mustChangePassword) {
-      // If already on the Change Password page -> Allow
-      if (pathname === PATHS.CHANGE_PASS) {
-        return NextResponse.next();
+      response = NextResponse.redirect(loginUrl);
+    } 
+    
+    // 2b. Authenticated but Password Change Required
+    else if (mustChangePassword) {
+      if (pathname !== PATHS.CHANGE_PASS) {
+        response = NextResponse.redirect(new URL(PATHS.CHANGE_PASS, request.url));
       }
-
-      // If trying to access any other private route -> Redirect to Change Password
-      return NextResponse.redirect(new URL(PATHS.CHANGE_PASS, request.url));
+      // If currently on CHANGE_PASS page, allow access (.next())
     }
-
-    // 4.3. Authenticated and Standard Status (No force change)
-    // Prevent access to Change Password page if not required
-    if (pathname === PATHS.CHANGE_PASS && !mustChangePassword) {
-      return NextResponse.redirect(new URL(PATHS.DASHBOARD, request.url));
+    
+    // 2c. Authenticated + No Password Change Needed + Trying to access Change Password Page
+    else if (pathname === PATHS.CHANGE_PASS && !mustChangePassword) {
+      response = NextResponse.redirect(new URL(PATHS.DASHBOARD, request.url));
     }
-
-    // Allow access to the requested private route
-    return NextResponse.next();
+    
+    // 2d. All good -> Allow access (.next())
   }
 
-  // Fallback -> Allow
-  return NextResponse.next();
+  // --------------------------------------------------------------------------
+  // 4. Finalization: Cookie Sync
+  // --------------------------------------------------------------------------
+  
+  // If we performed a server-side refresh, we MUST set the new cookie on the outgoing response.
+  // This ensures the browser receives the new token and subsequent client-side requests use it.
+  if (hasRefreshed && accessToken) {
+    response.cookies.set({
+      name: COOKIES.ACCESS_TOKEN,
+      value: accessToken,
+      httpOnly: false, // Set 'true' if Client Components NEVER need to read this cookie
+      path: '/',
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 15 * 60, // 15 minutes (Sync with Backend JWT expiry)
+    });
+  }
+
+  return response;
 }
 
-// ============================================================================
-// CONFIGURATION
-// ============================================================================
-
 export const config = {
+  // Matcher ignoring static files and API routes
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico, sitemap.xml, robots.txt (metadata files)
-     * - public folder assets (images, fonts, etc.)
-     */
     '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

@@ -82,11 +82,10 @@ export default function AppTemplateLayout({
     <div className="flex h-screen w-screen overflow-hidden bg-background">
       <Sidebar isCollapsed={!isSidebarOpen} />
 
-      <div className="flex flex-col flex-1 min-w-0 m-4 gap-4 transition-all duration-300">
-        {/* 5. Pass the calculated pageTitle here */}
+      <div className="flex flex-col flex-1 min-w-0 m-2 xl:m-3 2xl:m-4 gap-2 xl:gap-3 2xl:gap-4 transition-all duration-300">
         <PageHeader toggleSidebar={toggleSidebar} title={pageTitle} />
 
-        <main className="rounded-medium border-small border-divider flex w-full flex-col gap-4 h-full overflow-auto p-4">
+        <main className="rounded-medium border-small border-divider flex w-full flex-col h-full overflow-auto">
           {children}
         </main>
       </div>

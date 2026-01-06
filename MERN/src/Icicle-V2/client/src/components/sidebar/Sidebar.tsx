@@ -1,9 +1,9 @@
+// client/src/components/sidebar/Sidebar.tsx
 "use client";
 
 import React from "react";
 import { usePathname } from "next/navigation";
 import {
-  Avatar,
   Button,
   ButtonGroup,
   Tooltip,
@@ -27,24 +27,24 @@ const SidebarExpanded = () => {
   return (
     <div className="flex flex-col gap-3 2xl:gap-4 flex-1 overflow-hidden h-full w-full animate-[fadeIn_0.3s_ease-in-out]">
 
+      {/* Header & User */}
+      <div className="flex flex-col gap-4 pt-1 mx-2">
+        <section className="flex items-center gap-3 h-15 w-full">
+          <Image
+            {...useSyncImage("/logo-name.png")}
+            alt="logo"
+          />
+        </section>
+      </div>
+
+      <Divider className="bg-divider w-full" />
+
       {/* --- A. PRIMARY AREA (HEADER + MENU) --- */}
       <ScrollShadow className="flex flex-col gap-4 2xl:gap-6 shrink min-h-0 -mx-2 px-2" hideScrollBar>
-        {/* Header & User */}
-        <div className="flex flex-col gap-4 pt-1 mx-2">
-          <section className="flex items-center gap-3 h-15 w-full">
-            <Image
-              {...useSyncImage("/logo-name.png")}
-              alt="logo"
-            />
-          </section>
-        </div>
-
-        <Divider className="bg-divider w-full" />
-
         {/* Menu Sections */}
         <div className="flex flex-col gap-4 2xl:gap-6 pb-2">
           {/* Section 1 */}
-          <section className="flex flex-col gap-0.5 2xl:gap-1">
+          <section className="flex flex-col gap-1 2xl:gap-2">
             {sidebarSections.map((section) => (
               <React.Fragment key={section.title}>
                 <h2 className="text-tiny text-foreground-500 mb-1">{section.title}</h2>
@@ -60,16 +60,16 @@ const SidebarExpanded = () => {
                         <IconSwitch
                           name={item.icon}
                           size={20}
-                          className={`w-5 h-5 2xl:w-6 2xl:h-6 ${item.isDisabled ? "text-default-300" : "text-default-500"} ${isSelected ? "text-foreground" : ""}`}
+                          className={`w-5 h-5 xl:w-7 xl:h-7 2xl:w-10 2xl:h-10 ${isSelected ? "text-foreground" : ""}`}
                         />
                       }
                       fullWidth
-                      size="md"
-                      className={`text-left px-3 gap-3 justify-start ${isSelected ? "bg-default-100" : ""}`}
+                      size="lg"
+                      className={`h-9 xl:h-10 2xl:h-12 text-left px-3 gap-3 justify-start ${isSelected ? "bg-primary/30" : ""}`}
                       variant="light"
                       endContent={item.endContent}
                     >
-                      <span className={`text-small 2xl:text-medium font-medium flex-1 text-left ${item.isDisabled ? "text-default-300" : "text-default-500"} ${isSelected ? "text-foreground" : ""}`}>
+                      <span className={`text-small 2xl:text-medium font-medium flex-1 text-left ${isSelected ? "text-foreground" : ""}`}>
                         {item.label}
                       </span>
                     </Button>
@@ -80,7 +80,7 @@ const SidebarExpanded = () => {
           </section>
 
           {/* Section 2 */}
-          <section className="flex flex-col gap-0.5 2xl:gap-1">
+          <section className="flex flex-col gap-1 2xl:gap-2">
             {sidebarSections2.map((section) => (
               <React.Fragment key={section.title}>
                 <h2 className="text-tiny text-foreground-500 mb-1">{section.title}</h2>
@@ -97,16 +97,16 @@ const SidebarExpanded = () => {
                         <IconSwitch
                           name={item.icon}
                           size={20}
-                          className={`w-5 h-5 2xl:w-6 2xl:h-6 ${item.isDisabled ? "text-default-300" : "text-default-500"} ${isSelected ? "text-foreground" : ""}`}
+                          className={`w-5 h-5 xl:w-7 xl:h-7 2xl:w-10 2xl:h-10 ${isSelected ? "text-primary" : ""}`}
                         />
                       }
                       fullWidth
-                      size="md"
-                      className={`text-left px-3 gap-3 justify-start ${isSelected ? "bg-default-100" : ""}`}
+                      size="lg"
+                      className={`h-9 xl:h-10 2xl:h-12 text-left px-3 gap-3 justify-start ${isSelected ? "bg-primary/15 dark:bg-default-100/50" : ""}`}
                       variant="light"
                       endContent={item.endContent}
                     >
-                      <span className={`text-small 2xl:text-medium font-medium flex-1 text-left ${item.isDisabled ? "text-default-300" : "text-default-500"} ${isSelected ? "text-foreground" : ""}`}>
+                      <span className={`text-small 2xl:text-medium font-medium flex-1 text-left ${isSelected ? "text-primary" : ""}`}>
                         {item.label}
                       </span>
                     </Button>
@@ -171,11 +171,11 @@ const SidebarCollapsed = () => {
       <Divider className="bg-divider w-full" />
 
       {/* --- A. PRIMARY AREA (HEADER + MENU) --- */}
-      <ScrollShadow className="flex flex-col gap-3 2xl:gap-4 w-full items-center shrink min-h-0" hideScrollBar>
+      <ScrollShadow className="flex flex-col gap-2 2xl:gap-4 w-full items-center shrink min-h-0" hideScrollBar>
 
         {/* Sections */}
         <div className="flex flex-col gap-2 w-full items-center pb-2">
-          <section className="flex flex-col gap-1 w-full items-center">
+          <section className="flex flex-col gap-1 2xl:gap-2 w-full items-center">
             {sidebarSections.map((section) => (
               <React.Fragment key={section.title}>
                 {section.items.map((item: SidebarItem) => {
@@ -189,13 +189,13 @@ const SidebarCollapsed = () => {
                         isIconOnly
                         isDisabled={item.isDisabled}
                         size="md"
-                        className={`w-10 h-10 ${isSelected ? "bg-default-100" : ""}`}
+                        className={`w-11 h-11 2xl:w-12 2xl:h-12 ${isSelected ? "bg-primary/15" : ""}`}
                         variant="light"
                       >
                         <IconSwitch
                           name={item.icon}
                           size={22}
-                          className={`w-5 h-5 2xl:w-6 2xl:h-6 ${item.isDisabled ? "text-default-300" : "text-default-500"} ${isSelected ? "bg-blue" : ""}`}
+                          className={`w-6 h-6 2xl:w-7 2xl:h-7 ${isSelected ? "bg-primary/15" : ""}`}
                         />
                       </Button>
                     </Tooltip>
@@ -208,7 +208,7 @@ const SidebarCollapsed = () => {
           <Divider className="bg-divider w-full" />
 
           {/* Section 2 */}
-          <section className="flex flex-col gap-1 w-full items-center">
+          <section className="flex flex-col gap-1 2xl:gap-2 w-full items-center">
             {sidebarSections2.map((section) => (
               <React.Fragment key={section.title}>
                 {section.items.map((item: SidebarItem) => {
@@ -222,13 +222,13 @@ const SidebarCollapsed = () => {
                         isIconOnly
                         isDisabled={item.isDisabled}
                         size="md"
-                        className={`w-10 h-10 ${isSelected ? "bg-default-100" : ""}`}
+                        className={`w-11 h-11 2xl:w-12 2xl:h-12 ${isSelected ? "bg-primary/15" : ""}`}
                         variant="light"
                       >
                         <IconSwitch
                           name={item.icon}
                           size={22}
-                          className={`w-5 h-5 2xl:w-6 2xl:h-6 ${item.isDisabled ? "text-default-300" : "text-default-500"} ${isSelected ? "text-foreground" : ""}`}
+                          className={`w-6 h-6 2xl:w-7 2xl:h-7 ${isSelected ? "text-primary" : ""}`}
                         />
                       </Button>
                     </Tooltip>
@@ -241,20 +241,20 @@ const SidebarCollapsed = () => {
       </ScrollShadow>
 
       {/* --- C. FOOTER (FIXED) --- */}
-      <footer className="shrink-0 flex flex-col gap-1 w-full items-center pb-4 pt-2 border-t-small border-divider">
+      <footer className="shrink-0 flex flex-col gap-1 w-full items-center pb-4 pt-2 border-t-small border-divider mt-auto">
         <Tooltip content="Help & Information" placement="right">
-          <Button isIconOnly variant="light" size="md" className="w-10 h-10">
-            <IconSwitch name="Info" size={22} className="text-default-500 w-5 h-5 2xl:w-6 2xl:h-6" />
+          <Button isIconOnly variant="light" size="md" className="w-11 h-11">
+            <IconSwitch name="Info" size={22} className="text-default-500 w-6 h-6 2xl:w-7 2xl:h-7" />
           </Button>
         </Tooltip>
         <Tooltip content="Settings" placement="right">
-          <Button isIconOnly variant="light" size="md" className="w-10 h-10">
-            <IconSwitch name="Settings" size={22} className="text-default-500 w-5 h-5 2xl:w-6 2xl:h-6" />
+          <Button isIconOnly variant="light" size="md" className="w-11 h-11">
+            <IconSwitch name="Settings" size={22} className="text-default-500 w-6 h-6 2xl:w-7 2xl:h-7" />
           </Button>
         </Tooltip>
         <Tooltip content="Logout" placement="right">
-          <Button isIconOnly variant="light" size="md" className="w-10 h-10">
-            <IconSwitch name="Logout" size={22} className="text-default-500 w-5 h-5 2xl:w-6 2xl:h-6" />
+          <Button isIconOnly variant="light" size="md" className="w-11 h-11">
+            <IconSwitch name="Logout" size={22} className="text-default-500 w-6 h-6 2xl:w-7 2xl:h-7" />
           </Button>
         </Tooltip>
       </footer>
