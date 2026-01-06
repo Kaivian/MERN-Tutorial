@@ -38,14 +38,6 @@ interface JWTPayload {
   [key: string]: unknown;
 }
 
-/**
- * Expected response from the Backend Refresh Endpoint.
- */
-interface RefreshTokenResponse {
-  accessToken: string;
-  [key: string]: unknown;
-}
-
 // ============================================================================
 // CONSTANTS & CONFIG
 // ============================================================================
@@ -99,8 +91,7 @@ function parseJwt(token: string): JWTPayload | null {
     );
 
     return JSON.parse(jsonPayload) as JWTPayload;
-  } catch (error) {
-    // Silent fail on invalid tokens
+  } catch {
     return null;
   }
 }
