@@ -104,5 +104,32 @@ export const authService = {
     } catch (error) {
       throw error;
     }
+  },
+
+  /**
+   * Attempts to refresh the access token using the HttpOnly refresh token cookie.
+   * Useful for client-side interceptors or manual refresh calls.
+   * @returns {Promise<AuthResponse>} The new access token data.
+   */
+  refreshToken: async (): Promise<AuthResponse> => {
+    try {
+      // Assuming the backend endpoint is /refresh-token
+      const response = await fetch(`${AUTH_BASE_URL}/refresh-token`, {
+        method: 'POST',
+        headers: HEADERS,
+        credentials: 'include', // Important: sends the Refresh Token cookie
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        const errorMessage = data?.message || `Token refresh failed (${response.status})`;
+        throw new Error(errorMessage);
+      }
+
+      return data as AuthResponse;
+    } catch (error) {
+      throw error;
+    }
   }
 };

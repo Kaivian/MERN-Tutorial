@@ -141,14 +141,21 @@ const IconMap = {
   Sidebar: SidebarIcon,
 };
 
-export type IconName = keyof typeof IconMap;
+export type InternalIconName = keyof typeof IconMap;
 
-interface IconSwitchProps extends IconProps {
-  name: IconName;
+// SỬ DỤNG OMIT Ở ĐÂY
+// Ý nghĩa: Lấy tất cả props của IconProps TRỪ prop "name", sau đó định nghĩa lại "name" mới
+interface IconSwitchProps extends Omit<IconProps, 'name'> {
+  name: InternalIconName | React.ElementType;
 }
 
 const IconSwitch: React.FC<IconSwitchProps> = ({ name, ...props }) => {
-  const IconComponent = IconMap[name];
+  if (typeof name !== 'string') {
+    const IconComponent = name;
+    return <IconComponent {...props} />;
+  }
+
+  const IconComponent = IconMap[name as InternalIconName];
 
   if (!IconComponent) {
     console.warn(`Icon "${name}" not found in IconMap.`);
