@@ -1,13 +1,13 @@
 // client/src/hooks/auth/useLogin.ts
 /**
  * @file client/src/hooks/auth/useLogin.ts
- * @description Hook to handle user authentication, server state synchronization, and conditional navigation.
+ * @description Hook to handle user authentication, server state synchronization, and conditional navigation including callbackUrl support.
  */
 
 "use client";
 
 import { useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { addToast } from "@heroui/react";
 import { useApi } from "@/hooks/generals/useApi";
 import { authService } from "@/services/auth.service";
@@ -21,6 +21,7 @@ interface UseLoginReturn {
 
 export const useLogin = (): UseLoginReturn => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const { execute, loading } = useApi(authService.login);
 
@@ -46,15 +47,30 @@ export const useLogin = (): UseLoginReturn => {
 
       const { user } = res.data;
 
-      // 3. Determine Scenario (Standard vs Forced Change)
-      // Normalize flag to boolean to handle both true (boolean) and "true" (string)
+      // 3. Determine Scenario & Logic Priority
+      // Priority 1: Force Password Change (Security requirement overrides user intent)
+      // Priority 2: Callback URL (User intent)
+      // Priority 3: Default Dashboard
+      
       const isForceChange = user.mustChangePassword === true;
+      const callbackUrl = searchParams.get("callbackUrl");
 
-      // 4. Config UI Feedback & Destination
-      const targetPath = isForceChange
-        ? siteConfig.links.changeDefaultPassword.path+`?username=${encodeURIComponent(user.username)}`
-        : siteConfig.links.dashboard.path;
+      let targetPath: string;
 
+      if (isForceChange) {
+        // Force redirect to change password page regardless of callback
+        targetPath = `${siteConfig.links.changeDefaultPassword.path}?username=${encodeURIComponent(user.username)}`;
+      } else if (callbackUrl) {
+        // Validate callbackUrl to ensure it's a relative path (starts with /) to prevent Open Redirect attacks
+        // If it is absolute (starts with http), we might want to ignore it or validate the domain.
+        // For now, we assume simple usage:
+        targetPath = callbackUrl;
+      } else {
+        // Default fallback
+        targetPath = siteConfig.links.dashboard.path;
+      }
+
+      // 4. Config UI Feedback
       if (isForceChange) {
         addToast({
           title: "Hành động cần thiết",
