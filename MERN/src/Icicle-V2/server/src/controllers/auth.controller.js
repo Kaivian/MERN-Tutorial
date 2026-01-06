@@ -3,36 +3,61 @@ import authService from '../services/auth.service.js';
 import logger from '../utils/logger.utils.js';
 import config from '../config/env.config.js';
 
+// ============================================================================
+// CONFIGURATION & CONSTANTS
+// ============================================================================
+
 /**
- * Controller handling all Authentication endpoints.
- * Interacts with AuthService and manages HTTP responses/cookies.
+ * Centralized Cookie Configuration.
+ * Ensures consistency across Login, Refresh, and ChangePassword.
  */
+const COOKIE_OPTS = {
+  httpOnly: true,
+  secure: config.app.env === 'production', // HTTPS only in production
+  sameSite: 'lax',                         // 'lax' allows navigation from external sites
+  path: '/',
+};
+
+const COOKIE_NAMES = {
+  ACCESS: 'accessToken',
+  REFRESH: 'refreshToken',
+};
+
+// ============================================================================
+// CONTROLLER IMPLEMENTATION
+// ============================================================================
+
 class AuthController {
 
   /**
-   * Standardized cookie configuration for security.
-   * Centralized to ensure consistency across Login, Refresh, and ChangePassword.
+   * Helper to set authentication cookies in the response.
+   * @param {Response} res - Express Response object
+   * @param {Object} tokens - Object containing accessToken and refreshToken
    */
-  get cookieOptions() {
-    return {
-      httpOnly: true,               // Prevents JavaScript access (XSS protection)
-      secure: config.app.env === 'production', // HTTPS only in production
-      sameSite: 'lax',              // 'lax' allows navigation from external sites, 'strict' is safer for APIs
-      path: '/'                     // Available across the entire site
-    };
+  setAuthCookies(res, { accessToken, refreshToken }) {
+    if (refreshToken) {
+      res.cookie(COOKIE_NAMES.REFRESH, refreshToken, {
+        ...COOKIE_OPTS,
+        maxAge: config.jwt.refreshToken.maxAge, // e.g., 7 days
+      });
+    }
+
+    if (accessToken) {
+      res.cookie(COOKIE_NAMES.ACCESS, accessToken, {
+        ...COOKIE_OPTS,
+        maxAge: config.jwt.accessToken.maxAge, // e.g., 15 mins
+      });
+    }
   }
 
   /**
-   * Centralized Token Expiration Times (in Milliseconds)
-   * MUST SYNC with your .env JWT configuration
+   * Helper to clear authentication cookies.
+   * used for Logout or Error handling.
    */
-  get tokenMaxAges() {
-    return {
-      // 15 minutes (15 * 60 * 1000)
-      accessToken: config.jwt.accessToken.maxAge,
-      // 7 days (7 * 24 * 60 * 60 * 1000)
-      refreshToken: config.jwt.refreshToken.maxAge
-    };
+  clearAuthCookies(res) {
+    const clearOpts = { ...COOKIE_OPTS, maxAge: 0 };
+    res.clearCookie(COOKIE_NAMES.ACCESS, clearOpts);
+    res.clearCookie(COOKIE_NAMES.REFRESH, clearOpts);
   }
 
   /**
@@ -47,79 +72,62 @@ class AuthController {
         return res.error('Username or Email is required', 400);
       }
 
-      const ipAddress = req.ip;
-      const userAgent = req.headers['user-agent'] || 'Unknown';
-
-      const { user, accessToken, refreshToken } = await authService.login({
+      const { user, accessToken, refreshToken, mustChangePassword } = await authService.login({
         identifier: loginIdentifier,
         password,
-        ipAddress,
-        userAgent
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent']
       });
 
-      // --- Set Cookies (Using centralized config) ---
-      res.cookie('refreshToken', refreshToken, {
-        ...this.cookieOptions,
-        maxAge: this.tokenMaxAges.refreshToken
-      });
+      // 1. Set Cookies
+      this.setAuthCookies(res, { accessToken, refreshToken });
 
-      res.cookie('accessToken', accessToken, {
-        ...this.cookieOptions,
-        maxAge: this.tokenMaxAges.accessToken
-      });
-
-      // CHECK STATUS: Force Password Change
-      if (user.mustChangePassword) {
+      // 2. Check Force Password Change Policy
+      if (mustChangePassword) {
         logger.info(`[Auth] User logged in but requires password change: ${user.username}`);
-        
         return res.success(
-          { 
-            user,
-            requireAction: 'CHANGE_PASSWORD' 
-          }, 
+          { user, requireAction: 'CHANGE_PASSWORD' },
           'Password change required to proceed'
         );
       }
 
-      // Standard Success Flow
-      logger.success(`[Auth] User logged in: ${user.username} (${user.email})`);
+      // 3. Success Response
+      logger.success(`[Auth] User logged in: ${user.username}`);
       res.success({ user }, 'Login successful');
+
     } catch (error) {
-      const statusCode = error.message === 'Account is banned' ? 403 : 401;
+      const status = error.message === 'Account is banned' ? 403 : 401;
       logger.warn(`[Auth] Login failed: ${error.message}`);
-      res.error(error.message, statusCode, error);
+      res.error(error.message, status, error);
     }
   }
 
   /**
    * Handle User Logout.
-   * Clears cookies and invalidates session in DB.
    */
   async logout(req, res) {
     try {
-      if (req.user && req.user.id) {
+      if (req.user?.id) {
         await authService.logout(req.user.id);
       }
-
-      // Clear cookies
-      res.clearCookie('accessToken', this.cookieOptions);
-      res.clearCookie('refreshToken', this.cookieOptions);
-
+      
+      this.clearAuthCookies(res);
       logger.info(`[Auth] User logged out (IP: ${req.ip})`);
-
+      
       res.success(null, 'Logged out successfully');
     } catch (error) {
-      logger.error(`[Auth] Logout error`, error.message);
+      logger.error(`[Auth] Logout error: ${error.message}`);
       res.error('Logout failed', 500, error);
     }
   }
 
   /**
    * Refresh Access Token.
+   * Critical for keeping the user session alive transparently.
    */
   async refreshToken(req, res) {
     try {
-      const incomingRefreshToken = req.cookies.refreshToken;
+      const incomingRefreshToken = req.cookies[COOKIE_NAMES.REFRESH];
 
       if (!incomingRefreshToken) {
         return res.error('Refresh token missing', 401);
@@ -127,33 +135,27 @@ class AuthController {
 
       const { accessToken, refreshToken } = await authService.refreshToken(incomingRefreshToken);
 
-      // --- Update Cookies with rotated tokens ---
-      res.cookie('refreshToken', refreshToken, { 
-        ...this.cookieOptions, 
-        maxAge: this.tokenMaxAges.refreshToken 
-      });
-      
-      res.cookie('accessToken', accessToken, { 
-        ...this.cookieOptions, 
-        maxAge: this.tokenMaxAges.accessToken 
-      });
+      // Rotate Tokens (Set new cookies)
+      this.setAuthCookies(res, { accessToken, refreshToken });
 
-      res.success(null, 'Token refreshed');
+      // [IMPORTANT]: Return accessToken in body for Client Middleware/Proxy to intercept
+      return res.success({ accessToken }, 'Token refreshed');
+
     } catch (error) {
-      // Security: Clear cookies immediately if refresh fails
-      res.clearCookie('accessToken', this.cookieOptions);
-      res.clearCookie('refreshToken', this.cookieOptions);
-
+      // If refresh fails (expired/reuse), clear everything to force re-login
+      this.clearAuthCookies(res);
+      
       logger.error(`[Auth] Refresh token failed: ${error.message}`);
-      res.error(error.message, 403, error);
+      return res.error(error.message, 403, error);
     }
   }
 
   /**
-   * Get Current User Context.
+   * Get Current User Context (/me).
    */
   async getMe(req, res) {
     try {
+      // req.user.id comes from the verifyToken middleware
       const data = await authService.getMe(req.user.id);
       res.success({ user: data.user, permissions: data.permissions }, 'User context retrieved');
     } catch (error) {
@@ -164,62 +166,40 @@ class AuthController {
 
   /**
    * Handle Change Password.
-   * [CRITICAL FIX]: Now sets HttpOnly cookies for BOTH tokens (Token Rotation).
+   * Auto-refreshes session (token rotation) upon success.
    */
   async changePassword(req, res) {
     try {
       const { currentPassword, newPassword } = req.body;
-      const userId = req.user.id; 
+      const userId = req.user.id;
 
-      if (!userId) {
-        return res.error('User context missing', 401);
-      }
-
-      const ipAddress = req.ip || req.headers['x-forwarded-for'] || '127.0.0.1';
-      const userAgent = req.headers['user-agent'] || 'Unknown';
-
-      // Execute Service Logic
-      // Assuming authService.changePassword returns: { user, accessToken, refreshToken }
       const result = await authService.changePassword(
-        userId, 
-        currentPassword, 
+        userId,
+        currentPassword,
         newPassword,
-        { ipAddress, userAgent }
+        { 
+          ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1', 
+          userAgent: req.headers['user-agent'] || 'Unknown' 
+        }
       );
 
-      // --- [FIXED] COOKIE HANDLING ---
-      // Apply the same cookie logic as Login/Refresh
+      // Rotate tokens immediately so user stays logged in with new state
+      this.setAuthCookies(res, { 
+        accessToken: result.accessToken, 
+        refreshToken: result.refreshToken 
+      });
+
+      logger.success(`[Auth] Password changed for UserID: ${userId}`);
       
-      // 1. Set Refresh Token Cookie
-      res.cookie('refreshToken', result.refreshToken, {
-        ...this.cookieOptions,
-        maxAge: this.tokenMaxAges.refreshToken
-      });
-
-      // 2. Set Access Token Cookie (Crucial for Client Middleware to see the new state)
-      res.cookie('accessToken', result.accessToken, {
-        ...this.cookieOptions,
-        maxAge: this.tokenMaxAges.accessToken
-      });
-
-      logger.success(`[Auth] Password changed & tokens rotated for UserID: ${userId}`);
-
-      // Return Success
-      res.success({
-        message: 'Password changed successfully',
-        user: result.user
-        // Tokens are in cookies, no need to return in body, 
-        // but can keep 'user' for UI updates.
+      res.success({ 
+        message: 'Password changed successfully', 
+        user: result.user 
       });
 
     } catch (error) {
-      // Handle known operational errors
-      if (error.message.includes('Incorrect current password') || error.message.includes('User not found')) {
-        return res.error(error.message, 400, error);
-      }
-      if (error.message.includes('New password cannot be')) {
-        return res.error(error.message, 422, error);
-      }
+      // Map specific service errors to HTTP codes
+      if (error.message.includes('Incorrect current')) return res.error(error.message, 400);
+      if (error.message.includes('New password')) return res.error(error.message, 422);
 
       logger.warn(`[Auth] Change password failed: ${error.message}`);
       res.error(error.message, 500, error);
@@ -227,8 +207,14 @@ class AuthController {
   }
 }
 
+// ============================================================================
+// EXPORT & BINDING
+// ============================================================================
+
 const controller = new AuthController();
-// Bind methods to ensure 'this' refers to the controller instance
+
+// Explicitly bind methods to the controller instance to preserve 'this' context
+// when used as Express route handlers.
 export default {
   login: controller.login.bind(controller),
   logout: controller.logout.bind(controller),

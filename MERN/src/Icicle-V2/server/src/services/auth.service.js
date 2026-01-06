@@ -7,6 +7,8 @@ import userRepository from '../repositories/user.repository.js';
 import loginHistoryRepository from '../repositories/login-history.repository.js';
 import logger from '../utils/logger.utils.js';
 
+const GRACE_PERIOD_MS = 10000; // 10 Seconds allow for concurrency
+
 /**
  * Service class handling all authentication and authorization business logic.
  * Encapsulates complexity of token management, password hashing, and audit logging.
@@ -61,36 +63,21 @@ class AuthService {
 
   /**
    * Sanitizes the user object for API responses.
-   * - Removes sensitive data (password, sessions, __v).
-   * - Flattens nested objects (profile.fullName -> fullName).
-   * - Normalizes IDs (_id -> id).
-   * * @param {import('mongoose').Document} user - The user document.
+   * @param {import('mongoose').Document} user - The user document.
    * @returns {Object} Clean DTO object.
    */
   sanitizeUser(user) {
     const userObj = user.toObject ? user.toObject() : user;
 
-    // 1. Flatten Profile Data (Developer Experience improvement)
-    const fullName = userObj.profile?.fullName || '';
-    const avatarUrl = userObj.profile?.avatarUrl || '';
-
-    // 2. Map Roles to Slugs (Lightweight payload)
-    // If you need the full Role name, use: r => ({ name: r.name, slug: r.slug })
-    const roles = Array.isArray(userObj.roles) 
-      ? userObj.roles.map(r => r.slug) 
-      : [];
-
-    // 3. Construct Clean Object
     return {
-      id: userObj._id.toString(), // Standardize ID
+      id: userObj._id.toString(),
       username: userObj.username,
       email: userObj.email,
-      fullName: fullName,
-      avatarUrl: avatarUrl,
-      roles: roles,
+      fullName: userObj.profile?.fullName || '',
+      avatarUrl: userObj.profile?.avatarUrl || '',
+      roles: Array.isArray(userObj.roles) ? userObj.roles.map(r => r.slug) : [],
       mustChangePassword: userObj.mustChangePassword,
       status: userObj.status,
-      // Explicitly excluding: password, __v, _id, activeSession, loginHistory, etc.
     };
   }
 
@@ -98,42 +85,27 @@ class AuthService {
 
   /**
    * Authenticate a user using Username OR Email.
-   * @param {Object} input
-   * @returns {Promise<Object>}
    */
   async login({ identifier, password, ipAddress, userAgent }) {
-    let failReason = '';
-    
-    // 1. Find User by Credentials
+    // 1. Find User
     const user = await userRepository.findByCredentials(identifier);
 
     try {
-      // 2. Validate User Existence
-      if (!user) {
-        failReason = 'User not found';
-        throw new Error('Invalid username/email or password');
-      }
-
-      // 3. Validate Password
+      // 2. Validate Existence & Password
+      if (!user) throw new Error('Invalid credentials');
       const isMatch = await user.matchPassword(password);
-      if (!isMatch) {
-        failReason = 'Invalid password';
-        throw new Error('Invalid username/email or password');
-      }
+      if (!isMatch) throw new Error('Invalid credentials'); // Generic msg for security
 
-      // 4. Check Account Status
-      if (user.status === 'banned') {
-        failReason = 'Account banned';
-        throw new Error('Account is banned');
-      }
+      // 3. Check Status
+      if (user.status === 'banned') throw new Error('Account is banned');
 
-      // 5. Populate Roles (Critical for Token & Response)
+      // 4. Populate Roles
       await user.populate('roles', 'slug name');
 
-      // 6. Generate Tokens
+      // 5. Generate Tokens
       const { accessToken, refreshToken } = this.generateTokens(user);
 
-      // 7. Create/Update Session
+      // 6. Update Session
       const tokenHash = this.hashToken(refreshToken);
       const sessionExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 Days
 
@@ -141,10 +113,11 @@ class AuthService {
         tokenHash,
         ipAddress,
         deviceInfo: { userAgent, type: 'unknown' },
-        expiresAt: sessionExpiresAt
+        expiresAt: sessionExpiresAt,
+        lastRefreshedAt: new Date() // [NEW] Track initial login time
       });
 
-      // 8. Audit Log: SUCCESS
+      // 7. Audit Log
       await loginHistoryRepository.create({
         userId: user._id,
         ipAddress,
@@ -152,8 +125,6 @@ class AuthService {
         status: 'SUCCESS'
       });
 
-      // 9. Return Response
-      // Note: Login response usually doesn't need full permissions, but can include them if needed.
       return {
         user: this.sanitizeUser(user),
         accessToken,
@@ -162,14 +133,13 @@ class AuthService {
       };
 
     } catch (error) {
-      // 10. Audit Log: FAILURE
       if (user) {
         await loginHistoryRepository.create({
           userId: user._id,
           ipAddress,
           deviceInfo: { userAgent },
           status: 'FAILED',
-          failReason
+          failReason: error.message
         });
       }
       throw error;
@@ -178,7 +148,6 @@ class AuthService {
 
   /**
    * Logs out the user.
-   * @param {string} userId
    */
   async logout(userId) {
     if (userId) {
@@ -187,38 +156,56 @@ class AuthService {
   }
 
   /**
-   * Refreshes the Access Token.
-   * @param {string} incomingRefreshToken
-   * @returns {Promise<Object>}
+   * Refreshes the Access Token with Grace Period logic.
+   * This prevents legitimate concurrent requests from logging the user out.
    */
   async refreshToken(incomingRefreshToken) {
-    // 1. Verify JWT
+    // 1. Verify JWT Signature
     let decoded;
     try {
       decoded = jwt.verify(incomingRefreshToken, config.jwt.refreshToken.secret);
-      if (decoded.type !== 'refresh') throw new Error('Invalid token type');
+      if (decoded.type !== 'refresh') throw new Error();
     } catch {
       throw new Error('Invalid refresh token');
     }
 
-    // 2. Check User & Session
+    // 2. Fetch User & Session
     const user = await userRepository.findByIdWithSession(decoded.sub);
     if (!user || !user.activeSession) {
       throw new Error('Session expired or revoked');
     }
 
-    // 3. Token Reuse Detection
     const incomingHash = this.hashToken(incomingRefreshToken);
-    if (incomingHash !== user.activeSession.tokenHash) {
-      await userRepository.clearSession(user._id);
-      logger.warn(`[AuthService] SECURITY ALERT: Token reuse detected for User ${user._id}`);
-      throw new Error('Security Alert: Invalid token reuse detected.');
+    const storedHash = user.activeSession.tokenHash;
+
+    // 3. Token Rotation & Reuse Detection
+    if (incomingHash !== storedHash) {
+      // --- GRACE PERIOD LOGIC ---
+      const lastRefreshed = user.activeSession.lastRefreshedAt 
+        ? new Date(user.activeSession.lastRefreshedAt).getTime() 
+        : 0;
+      const timeDiff = Date.now() - lastRefreshed;
+
+      if (timeDiff < GRACE_PERIOD_MS) {
+        // Safe Concurrency:
+        // The token was rotated just moments ago (< 10s). 
+        // Likely the Client sent 2 requests at once. 
+        // ACTION: Allow this request to generate a new pair (or return current) to stabilize the client.
+        logger.info(`[Auth] Grace period active for User ${user._id}. Allowing concurrent refresh.`);
+      } else {
+        // Dangerous Reuse:
+        // Token mismatch and time > 10s. Likely a token theft attempt.
+        // ACTION: Nuke the session.
+        await userRepository.clearSession(user._id);
+        logger.warn(`[Auth] SECURITY ALERT: Token reuse detected for User ${user._id}`);
+        throw new Error('Security Alert: Invalid token reuse detected.');
+      }
     }
 
     // 4. Populate Roles
     await user.populate('roles', 'slug name');
 
-    // 5. Rotate Tokens
+    // 5. Generate NEW Tokens (Rotate)
     const { accessToken, refreshToken: newRefreshToken } = this.generateTokens(user);
     const newHash = this.hashToken(newRefreshToken);
 
@@ -226,35 +213,28 @@ class AuthService {
     await userRepository.updateSession(user._id, {
       ...user.activeSession, 
       tokenHash: newHash,    
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) 
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      lastRefreshedAt: new Date() // [IMPORTANT] Update timestamp for next check
     });
 
     return { accessToken, refreshToken: newRefreshToken };
   }
 
   /**
-   * Gets the current user context (Profile + Permissions).
-   * Used for the /auth/me endpoint.
-   * @param {string} userId
+   * Gets the current user context.
    */
   async getMe(userId) {
     const user = await userRepository.findById(userId);
     if (!user) throw new Error('User not found');
     
-    // 1. Populate Roles to get permissions
-    // Assuming Role schema has 'permissions' field
     await user.populate('roles', 'name slug permissions');
     
-    // 2. Calculate Permissions (Hybrid approach)
-    // Aggregate permissions from all roles into a single array
+    // Deduplicate permissions
     const allPermissions = user.roles.reduce((acc, role) => {
       return [...acc, ...(role.permissions || [])];
     }, []);
-    
-    // Deduplicate permissions
     const uniquePermissions = [...new Set(allPermissions)];
 
-    // 3. Return Clean User + Permissions
     return {
       user: this.sanitizeUser(user),
       permissions: uniquePermissions
@@ -263,72 +243,41 @@ class AuthService {
 
   /* ==================== ACCOUNT MANAGEMENT ==================== */
 
-  /**
-   * Changes the authenticated user's password and automatically refreshes their session.
-   * * This method performs the following:
-   * 1. Validates the current password.
-   * 2. Updates the password in the database.
-   * 3. Resets the `mustChangePassword` flag to false.
-   * 4. Generates a new pair of Access/Refresh tokens (Auto-Login).
-   * 5. Updates the user's active session.
-   * * @param {string} userId - The unique identifier of the user.
-   * @param {string} currentPassword - The user's current password for verification.
-   * @param {string} newPassword - The new password to set.
-   * @param {Object} context - Context required for creating a new session.
-   * @param {string} context.ipAddress - The client's IP address.
-   * @param {string} context.userAgent - The client's User-Agent string.
-   * @returns {Promise<{user: Object, accessToken: string, refreshToken: string}>} The updated user profile and new tokens.
-   * @throws {Error} If validation fails or user is not found.
-   */
   async changePassword(userId, currentPassword, newPassword, { ipAddress, userAgent }) {
-    // 1. Fetch user with password field included
     const user = await userRepository.findByIdWithPassword(userId);
     if (!user) throw new Error('User not found');
 
-    // 2. Validate Current Password
     const isMatch = await user.matchPassword(currentPassword);
     if (!isMatch) throw new Error('Incorrect current password');
 
-    // 3. Validate New Password logic
     if (currentPassword === newPassword) {
       throw new Error('New password cannot be the same as the current password');
     }
 
-    // 4. Hash the new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // 5. Update Database:
-    // - Set new hashed password
-    // - Force `mustChangePassword` to false (since they just changed it)
+    // Update Password & Reset Flag
     await userRepository.update(userId, {
       password: hashedPassword,
       mustChangePassword: false 
     });
 
-    // --- AUTO RE-AUTHENTICATION LOGIC ---
-
-    // 6. Update local user object state for token generation
+    // --- Auto Re-login ---
     user.mustChangePassword = false;
-    
-    // Ensure roles are populated to generate a valid Access Token
     await user.populate('roles', 'slug name');
 
-    // 7. Generate new Token Pair
     const { accessToken, refreshToken } = this.generateTokens(user);
-
-    // 8. Create new Session Data
     const tokenHash = this.hashToken(refreshToken);
-    const sessionExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 Days
 
-    // 9. Update Session in DB (Revokes old tokens by overwriting session)
+    // Update Session (Revoke old tokens)
     await userRepository.updateSession(user._id, {
       tokenHash,
       ipAddress,
       deviceInfo: { userAgent, type: 'unknown' },
-      expiresAt: sessionExpiresAt
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      lastRefreshedAt: new Date() // [NEW]
     });
 
-    // 10. Return valid auth data (Sanitized user + Tokens)
     return {
       user: this.sanitizeUser(user),
       accessToken,

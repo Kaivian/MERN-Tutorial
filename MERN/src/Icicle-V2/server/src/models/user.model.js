@@ -10,15 +10,26 @@ const { Schema } = mongoose;
  */
 const activeSessionSchema = new Schema({
   tokenHash: { type: String, required: true, index: true },
+  
   deviceInfo: {
     os: String,
     browser: String,
     type: { type: String, default: 'unknown' },
     userAgent: String
   },
+  
   ipAddress: String,
+  
+  // Thời điểm tạo session (Login)
   issuedAt: { type: Date, default: Date.now },
-  expiresAt: { type: Date, required: true }
+  
+  // Thời điểm hết hạn của Refresh Token (7 ngày)
+  expiresAt: { type: Date, required: true },
+
+  // [CRITICAL FOR SCALING]
+  // Thời điểm cuối cùng token được refresh. 
+  // Dùng để tính toán "Grace Period" (Ân hạn) khi xử lý request song song.
+  lastRefreshedAt: { type: Date, default: Date.now } 
 }, { _id: false });
 
 /**
@@ -59,7 +70,7 @@ const userSchema = new Schema({
    */
   password: {
     type: String,
-    required: true,
+    required: true, // Lưu ý: Nếu sau này làm Social Login (Google), có thể cần bỏ required
     select: false,
     minlength: 8 
   },
@@ -78,7 +89,7 @@ const userSchema = new Schema({
    * Forces the user to reset their password upon next login.
    * Default is true: Admin-created users must change password immediately.
    */
-  mustChangePassword: { type: Boolean, default: true },
+  mustChangePassword: { type: Boolean, default: false }, // Đổi default false nếu luồng đăng ký tự do là chính
 
   /**
    * Indicates if the user has verified their email address.
