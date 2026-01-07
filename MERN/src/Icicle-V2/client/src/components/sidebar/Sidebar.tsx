@@ -15,47 +15,41 @@ import {
 } from "@heroui/react";
 import IconSwitch from "../icons/IconSwitch";
 import { useSyncImage } from "@/hooks/generals/useSyncImage";
-import {
-  sidebarSections,
-  sidebarSections2,
-  SidebarItem,
-} from "./SidebarData";
+import { useSidebarMenu } from "@/hooks/generals/useSidebarMenu";
+import { SidebarItem, SidebarSection } from "./SidebarData";
 
 // ============================================================================
-// SHARED: SIDEBAR MENU CONTENT (Used for Desktop Expanded & Mobile)
+// SHARED: SIDEBAR MENU CONTENT
 // ============================================================================
 
 interface SidebarContentProps {
-  onItemClick?: () => void; // To close drawer on mobile
+  onItemClick?: () => void;
+  menuGroup1: SidebarSection[];
+  menuGroup2: SidebarSection[];
 }
 
-const SidebarContent = ({ onItemClick }: SidebarContentProps) => {
+const SidebarContent = ({ onItemClick, menuGroup1, menuGroup2 }: SidebarContentProps) => {
   const pathname = usePathname();
 
   return (
     <div className="flex flex-col gap-3 2xl:gap-4 flex-1 overflow-hidden h-full w-full">
-      
-      {/* Header & Logo */}
       <div className="flex flex-col gap-4 pt-1 mx-2">
         <section className="flex items-center gap-3 h-15 w-full">
-           {/* Logo - Adjust size via class if needed */}
           <div className="h-10 w-full flex items-center">
              <Image
                 {...useSyncImage("/logo-name.png")}
                 alt="logo"
-              />
+             />
           </div>
         </section>
       </div>
 
       <Divider className="bg-divider w-full" />
 
-      {/* Primary Menu Area */}
       <ScrollShadow className="flex flex-col gap-4 2xl:gap-6 shrink min-h-0 -mx-2 px-2" hideScrollBar>
         <div className="flex flex-col gap-4 2xl:gap-6 pb-2">
           
-          {/* Loop through Sections */}
-          {[sidebarSections, sidebarSections2].map((sections, groupIndex) => (
+          {[menuGroup1, menuGroup2].map((sections, groupIndex) => (
              <div key={groupIndex} className="flex flex-col gap-4"> 
                 {sections.map((section) => (
                   <section key={section.title} className="flex flex-col gap-1 2xl:gap-2">
@@ -68,7 +62,7 @@ const SidebarContent = ({ onItemClick }: SidebarContentProps) => {
                         <Button
                           key={item.key}
                           isDisabled={item.isDisabled}
-                          onPress={onItemClick} // Close drawer on click (Mobile)
+                          onPress={onItemClick}
                           startContent={
                             <IconSwitch
                               name={item.icon}
@@ -96,7 +90,6 @@ const SidebarContent = ({ onItemClick }: SidebarContentProps) => {
         </div>
       </ScrollShadow>
 
-      {/* Footer (Fixed) */}
       <footer className="mt-auto w-full">
         <ButtonGroup fullWidth variant="light" className="border-t border-divider pt-2">
           <Tooltip content="Help & Information" showArrow>
@@ -115,14 +108,19 @@ const SidebarContent = ({ onItemClick }: SidebarContentProps) => {
 };
 
 // ============================================================================
-// COMPONENT: SIDEBAR COLLAPSED (Desktop Only)
+// COMPONENT: SIDEBAR COLLAPSED
 // ============================================================================
-const SidebarCollapsed = () => {
+
+interface SidebarCollapsedProps {
+  menuGroup1: SidebarSection[];
+  menuGroup2: SidebarSection[];
+}
+
+const SidebarCollapsed = ({ menuGroup1, menuGroup2 }: SidebarCollapsedProps) => {
   const pathname = usePathname();
 
   return (
     <div className="flex flex-col items-center gap-3 2xl:gap-4 flex-1 h-full w-full animate-[fadeIn_0.3s_ease-in-out]">
-      {/* Header */}
       <div className="flex flex-col items-center gap-4 w-full pt-1">
         <div className="flex justify-center w-10 h-10">
            <Image {...useSyncImage("/logo.png")} alt="logo" className="w-full h-full object-contain" />
@@ -131,9 +129,8 @@ const SidebarCollapsed = () => {
 
       <Divider className="bg-divider w-full" />
 
-      {/* Menu Icons */}
       <ScrollShadow className="flex flex-col gap-2 2xl:gap-4 w-full items-center shrink min-h-0" hideScrollBar>
-        {[sidebarSections, sidebarSections2].map((sections, idx) => (
+        {[menuGroup1, menuGroup2].map((sections, idx) => (
           <React.Fragment key={idx}>
              {sections.map(section => (
                 <section key={section.title} className="flex flex-col gap-1 w-full items-center">
@@ -165,13 +162,16 @@ const SidebarCollapsed = () => {
         ))}
       </ScrollShadow>
 
-      {/* Footer */}
       <footer className="shrink-0 flex flex-col gap-1 w-full items-center pb-4 pt-2 border-t-small border-divider mt-auto">
         <Button isIconOnly variant="light" size="md"><IconSwitch name="Settings" size={22}/></Button>
       </footer>
     </div>
   );
 };
+
+// ============================================================================
+// MAIN COMPONENT: SIDEBAR
+// ============================================================================
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -181,6 +181,8 @@ interface SidebarProps {
 
 export default function SideBar({ isCollapsed, isMobileOpen, onMobileChange }: SidebarProps) {
   
+  const { menuGroup1, menuGroup2 } = useSidebarMenu();
+
   const desktopClasses = `
     hidden md:flex 
     border-r-small border-divider relative h-full flex-col
@@ -206,7 +208,11 @@ export default function SideBar({ isCollapsed, isMobileOpen, onMobileChange }: S
         <DrawerContent>
           {(onClose) => (
             <DrawerBody>
-               <SidebarContent onItemClick={onClose} />
+               <SidebarContent 
+                  onItemClick={onClose} 
+                  menuGroup1={menuGroup1} 
+                  menuGroup2={menuGroup2} 
+               />
             </DrawerBody>
           )}
         </DrawerContent>
@@ -215,10 +221,16 @@ export default function SideBar({ isCollapsed, isMobileOpen, onMobileChange }: S
       {/* --- B. DESKTOP SIDEBAR --- */}
       <aside className={desktopClasses}>
         {isCollapsed ? (
-          <SidebarCollapsed />
+          <SidebarCollapsed 
+            menuGroup1={menuGroup1} 
+            menuGroup2={menuGroup2} 
+          />
         ) : (
           <div className="animate-[fadeIn_0.3s_ease-in-out] h-full">
-             <SidebarContent />
+             <SidebarContent 
+                menuGroup1={menuGroup1} 
+                menuGroup2={menuGroup2} 
+             />
           </div>
         )}
       </aside>

@@ -14,7 +14,6 @@ import type { NextRequest } from 'next/server';
 import { ROUTES_CONFIG, siteConfig } from '@/config/site.config';
 import { RouteConfig, AuthMeResponse } from '@/types/auth.types';
 import { env } from '@/config/env.config';
-import { hasAllPermissions } from '@/utils/permission-matcher.utils';
 
 // ============================================================================
 // CONSTANTS & CONFIG
@@ -92,29 +91,6 @@ async function refreshAccessToken(request: NextRequest): Promise<string | null> 
   } catch { return null; }
 }
 
-/**
- * Fetches the full user profile and permissions from the backend.
- */
-async function fetchUserContext(accessToken: string): Promise<AuthMeResponse | null> {
-  try {
-    const res = await fetch(`${env.API_URL}/auth/me`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
-      },
-      cache: 'no-store'
-    });
-
-    if (!res.ok) return null;
-    const json = await res.json();
-    return json.data as AuthMeResponse;
-  } catch (error) {
-    console.error('[Middleware] fetchUserContext error:', error);
-    return null;
-  }
-}
-
 // ============================================================================
 // MAIN MIDDLEWARE LOGIC
 // ============================================================================
@@ -185,9 +161,7 @@ export async function proxy(request: NextRequest) {
     const jwtPayload = parseJwt(accessToken);
     const mustChangePassword = jwtPayload?.mustChangePassword === true || jwtPayload?.mustChangePassword === 'true';
 
-    // *** CRITICAL LOGIC: Enforce Password Change ***
     if (mustChangePassword) {
-      // If already on the Change Password page, allow access.
       if (pathname === PATHS.CHANGE_PASS) {
         return response;
       }
@@ -198,36 +172,9 @@ export async function proxy(request: NextRequest) {
     
     // B3. Fetch User Context (Only if password change is NOT required)
     else {
-      
       // Edge Case: If a compliant user tries to access Change Password unnecessarily, redirect to Dashboard.
       if (pathname === PATHS.CHANGE_PASS) {
         return NextResponse.redirect(new URL(PATHS.DASHBOARD, request.url));
-      }
-
-      // Fetch fresh status and permissions from API
-      const userContext = await fetchUserContext(accessToken);
-
-      // Invalid Token or User Deleted -> Redirect to Login
-      if (!userContext) {
-         const loginUrl = new URL(PATHS.LOGIN, request.url);
-         loginUrl.searchParams.set('callbackUrl', pathname);
-         return NextResponse.redirect(loginUrl);
-      }
-
-      // Check Account Status
-      if (userContext.user.status !== 'active') {
-         return NextResponse.redirect(new URL(PATHS.LOGIN + '?error=account_disabled', request.url));
-      }
-
-      // Check Permissions (RBAC)
-      if (requiredPerms && requiredPerms.length > 0) {
-        const hasAccess = hasAllPermissions(userContext.permissions, requiredPerms);
-
-        if (!hasAccess) {
-          console.warn(`[Access Denied] User ${userContext.user.username} tried to access ${pathname}`);
-          const url = new URL(PATHS.ACCESS_DENIED, request.url);
-          return NextResponse.rewrite(url); 
-        }
       }
     }
   }

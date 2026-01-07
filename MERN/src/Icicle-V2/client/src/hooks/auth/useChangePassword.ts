@@ -10,7 +10,7 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { addToast } from "@heroui/react";
 import { useApi } from "@/hooks/generals/useApi";
-import { authService } from "@/services/auth.service";
+import { authService } from "@/services/auth-client.service";
 import { ChangePasswordPayload } from "@/types/auth.types";
 import { siteConfig } from "@/config/site.config";
 import { VALIDATION_MESSAGES } from "@/config/validation-messages.config";

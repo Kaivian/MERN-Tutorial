@@ -5,7 +5,7 @@ import {
   changePasswordSchema 
 } from '../validations/auth.validation.js';
 import authController from '../controllers/auth.controller.js';
-import { verifyAccessToken, requirePasswordChanged } from '../middlewares/auth.middleware.js';
+import { verifyAccessToken, requireActiveAndSynced } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
@@ -46,7 +46,7 @@ router.post('/refresh', authController.refreshToken);
  */
 router.get('/me',
   verifyAccessToken,
-  requirePasswordChanged,
+  requireActiveAndSynced,
   authController.getMe
 );
 

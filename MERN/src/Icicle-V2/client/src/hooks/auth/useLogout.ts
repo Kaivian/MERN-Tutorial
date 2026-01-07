@@ -3,7 +3,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { authService } from "@/services/auth.service";
+import { authService } from "@/services/auth-client.service";
 
 interface UseLogoutOptions {
   redirectTo?: string;

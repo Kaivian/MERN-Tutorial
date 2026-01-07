@@ -5,7 +5,8 @@ import {
   PieChart2, UsersGroupTwoRounded,
   Box, Bus, BillList, Delivery,
   Chart, User, ShieldUser,
-} from '@solar-icons/react'
+} from '@solar-icons/react';
+import { siteConfig } from "@/config/site.config";
 
 export interface SidebarItem {
   key: string;
@@ -15,6 +16,7 @@ export interface SidebarItem {
   isDisabled?: boolean;
   isHidden?: boolean;
   endContent?: React.ReactNode;
+  requiredPerms?: readonly string[]; 
 }
 
 export interface SidebarSection {
@@ -22,52 +24,49 @@ export interface SidebarSection {
   items: SidebarItem[];
 }
 
-// --- DATA ---
-
 export const sidebarSections: SidebarSection[] = [
   {
     title: "Quản lý",
     items: [
       {
         key: "dashboard",
-        label: "Bảng thống kê",
+        label: siteConfig.links.dashboard.label,
         icon: (props) => <PieChart2 {...props}/>,
         iconSize: 31,
       },
       {
         key: "customers",
-        label: "Khách hàng",
+        label: siteConfig.links.customer.label,
         icon: (props) => <UsersGroupTwoRounded {...props}/>,
         iconSize: 32,
-        isDisabled: true,
       },
       {
         key: "products",
-        label: "Sản phẩm",
+        label: siteConfig.links.product.label,
         icon: (props) => <Box {...props}/>,
         iconSize: 36,
       },
       {
         key: "trucks",
-        label: "Xe chở hàng",
+        label: siteConfig.links.truck.label,
         icon: (props) => <Bus {...props}/>,
         iconSize: 32,
       },
       {
         key: "orders",
-        label: "Đơn hàng",
+        label: siteConfig.links.order.label,
         icon: (props) => <BillList {...props}/>,
         iconSize: 31,
       },
       {
         key: "deliveries",
-        label: "Giao hàng",
+        label: siteConfig.links.delivery.label,
         icon: (props) => <Delivery {...props}/>,
         iconSize: 31,
       },
       {
         key: "analytics",
-        label: "Báo cáo",
+        label: siteConfig.links.report.label,
         icon: (props) => <Chart {...props}/>,
         iconSize: 31,
       },
@@ -81,15 +80,17 @@ export const sidebarSections2: SidebarSection[] = [
     items: [
       {
         key: "user-accounts",
-        label: "Người dùng",
+        label: siteConfig.links.userAccount.label,
         icon: (props) => <User {...props}/>,
         iconSize: 31,
+        requiredPerms: siteConfig.links.userAccount.requiredPerms,
       },
       {
         key: "roles",
-        label: "Phân quyền",
+        label: siteConfig.links.role.label,
         icon: (props) => <ShieldUser {...props}/>,
         iconSize: 31,
+        requiredPerms: siteConfig.links.role.requiredPerms,
       },
     ],
   },
