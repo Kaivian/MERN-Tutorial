@@ -12,7 +12,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { ROUTES_CONFIG, siteConfig } from '@/config/site.config';
-import { RouteConfig, AuthMeResponse } from '@/types/auth.types';
+import { RouteConfig } from '@/types/auth.types';
 import { env } from '@/config/env.config';
 
 // ============================================================================
@@ -120,7 +120,6 @@ export async function proxy(request: NextRequest) {
   const routeConfig = getRouteConfig(pathname);
   const isPublicRoute = !routeConfig || routeConfig.type === 'PUBLIC';
   const isGuestOnlyRoute = routeConfig?.type === 'GUEST_ONLY';
-  const requiredPerms = routeConfig?.requiredPerms;
 
   // --------------------------------------------------------------------------
   // 3. Authorization Logic
