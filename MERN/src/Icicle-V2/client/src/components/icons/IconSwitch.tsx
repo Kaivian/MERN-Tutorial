@@ -124,7 +124,7 @@ const SidebarIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', .
   </svg>
 );
 
-const AccessDeniedIcon: React.FC<IconProps> = ({ size, color, strokeWidth, ...props }) => (
+const AccessDeniedIcon: React.FC<IconProps> = ({ size, ...props }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     // Nếu có truyền size thì dùng size, không thì dùng size gốc 400x300

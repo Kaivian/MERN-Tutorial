@@ -12,7 +12,7 @@ import IconSwitch from "@/components/icons/IconSwitch";
 
 export default function AccessDenied() {
     return (
-        <div className="flex h-full w-full flex-col items-center justify-center gap-6 p-8 text-center animate-appearance-in">
+        <div className="flex h-full w-full flex-col items-center justify-center gap-6 p-8 text-center">
             <IconSwitch 
                 name="AccessDenied"
                 className="dark:opacity-50"

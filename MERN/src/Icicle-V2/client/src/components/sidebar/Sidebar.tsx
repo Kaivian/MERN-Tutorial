@@ -36,10 +36,10 @@ const SidebarContent = ({ onItemClick, menuGroup1, menuGroup2 }: SidebarContentP
       <div className="flex flex-col gap-4 pt-1 mx-2">
         <section className="flex items-center gap-3 h-15 w-full">
           <div className="h-10 w-full flex items-center">
-             <Image
-                {...useSyncImage("/logo-name.png")}
-                alt="logo"
-             />
+            <Image
+              {...useSyncImage("/logo-name.png")}
+              alt="logo"
+            />
           </div>
         </section>
       </div>
@@ -48,14 +48,22 @@ const SidebarContent = ({ onItemClick, menuGroup1, menuGroup2 }: SidebarContentP
 
       <ScrollShadow className="flex flex-col gap-4 2xl:gap-6 shrink min-h-0 -mx-2 px-2" hideScrollBar>
         <div className="flex flex-col gap-4 2xl:gap-6 pb-2">
-          
+
           {[menuGroup1, menuGroup2].map((sections, groupIndex) => (
-             <div key={groupIndex} className="flex flex-col gap-4"> 
-                {sections.map((section) => (
+            <div key={groupIndex} className="flex flex-col gap-4">
+              {sections.map((section) => {
+                // --- LOGIC MỚI: Lọc item trước ---
+                const visibleItems = section.items.filter(item => !item.isHidden);
+
+                // Nếu không có item nào hiển thị, ẩn luôn cả Section (bao gồm Title)
+                if (visibleItems.length === 0) return null;
+
+                return (
                   <section key={section.title} className="flex flex-col gap-1 2xl:gap-2">
                     <h2 className="text-tiny text-foreground-500 mb-1 px-2">{section.title}</h2>
-                    {section.items.map((item: SidebarItem) => {
-                      if (item.isHidden) return null;
+
+                    {/* Map qua danh sách đã lọc (visibleItems) */}
+                    {visibleItems.map((item: SidebarItem) => {
                       const isSelected = pathname?.includes(item.key);
 
                       return (
@@ -63,19 +71,25 @@ const SidebarContent = ({ onItemClick, menuGroup1, menuGroup2 }: SidebarContentP
                           key={item.key}
                           isDisabled={item.isDisabled}
                           onPress={onItemClick}
+                          className={`relative overflow-hidden h-9 xl:h-10 2xl:h-12 text-left px-3 gap-3 justify-start ${isSelected ? "bg-primary/15 dark:bg-gray-100/15" : ""
+                            }`}
+                          fullWidth
+                          radius="md"
+                          size="lg"
+                          variant="light"
                           startContent={
                             <IconSwitch
                               name={item.icon}
                               size={20}
-                              className={`w-5 h-5 xl:w-7 xl:h-7 2xl:w-10 2xl:h-10 ${isSelected ? "text-primary dark:text-default-900" : ""}`}
+                              className={`w-5 h-5 xl:w-7 xl:h-7 2xl:w-10 2xl:h-10 ${isSelected ? "text-primary dark:text-default-900" : ""
+                                }`}
                             />
                           }
-                          fullWidth
-                          size="lg"
-                          className={`h-9 xl:h-10 2xl:h-12 text-left px-3 gap-3 justify-start ${isSelected ? "bg-primary/15 dark:bg-gray-100/15" : ""}`}
-                          variant="light"
                           endContent={item.endContent}
                         >
+                          {isSelected && (
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-1/2 w-1 bg-primary rounded-r-small" />
+                          )}
                           <span className={`text-small 2xl:text-medium font-medium flex-1 text-left ${isSelected ? "text-primary dark:text-default-900" : ""}`}>
                             {item.label}
                           </span>
@@ -83,23 +97,25 @@ const SidebarContent = ({ onItemClick, menuGroup1, menuGroup2 }: SidebarContentP
                       );
                     })}
                   </section>
-                ))}
-             </div>
+                );
+              })}
+            </div>
           ))}
 
         </div>
       </ScrollShadow>
 
+      {/* ... Footer  ... */}
       <footer className="mt-auto w-full">
-        <ButtonGroup fullWidth variant="light" className="border-t border-divider pt-2">
+        <ButtonGroup fullWidth size="sm" variant="light" className="border-t border-divider pt-2">
           <Tooltip content="Help & Information" showArrow>
-            <Button isIconOnly startContent={<IconSwitch name="Info" />} className="flex-1" />
+            <Button isIconOnly startContent={<IconSwitch name="Info" size={20} />} className="flex-1" />
           </Tooltip>
           <Tooltip content="Cài đặt" showArrow>
-            <Button isIconOnly startContent={<IconSwitch name="Settings" />} className="flex-1" />
+            <Button isIconOnly startContent={<IconSwitch name="Settings" size={20} />} className="flex-1" />
           </Tooltip>
           <Tooltip content="Đăng xuất" showArrow color="danger">
-            <Button isIconOnly startContent={<IconSwitch name="Logout" />} className="flex-1" />
+            <Button isIconOnly startContent={<IconSwitch name="Logout" size={20} />} className="flex-1" />
           </Tooltip>
         </ButtonGroup>
       </footer>
@@ -121,9 +137,10 @@ const SidebarCollapsed = ({ menuGroup1, menuGroup2 }: SidebarCollapsedProps) => 
 
   return (
     <div className="flex flex-col items-center gap-3 2xl:gap-4 flex-1 h-full w-full animate-[fadeIn_0.3s_ease-in-out]">
+      {/* ... Header Logo giữ nguyên ... */}
       <div className="flex flex-col items-center gap-4 w-full pt-1">
         <div className="flex justify-center w-10 h-10">
-           <Image {...useSyncImage("/logo.png")} alt="logo" className="w-full h-full object-contain" />
+          <Image {...useSyncImage("/logo.png")} alt="logo" className="w-full h-full object-contain" />
         </div>
       </div>
 
@@ -132,38 +149,56 @@ const SidebarCollapsed = ({ menuGroup1, menuGroup2 }: SidebarCollapsedProps) => 
       <ScrollShadow className="flex flex-col gap-2 2xl:gap-4 w-full items-center shrink min-h-0" hideScrollBar>
         {[menuGroup1, menuGroup2].map((sections, idx) => (
           <React.Fragment key={idx}>
-             {sections.map(section => (
+            {sections.map(section => {
+              const visibleItems = section.items.filter(item => !item.isHidden);
+              if (visibleItems.length === 0) return null;
+
+              return (
                 <section key={section.title} className="flex flex-col gap-1 w-full items-center">
-                   {section.items.map((item) => {
-                      if (item.isHidden) return null;
-                      const isSelected = pathname?.includes(item.key);
-                      return (
-                        <Tooltip key={item.key} content={item.label} placement="right">
-                          <Button
-                            isIconOnly
-                            isDisabled={item.isDisabled}
-                            size="md"
-                            className={`w-11 h-11 2xl:w-12 2xl:h-12 ${isSelected ? "bg-primary/15 dark:bg-gray-100/15" : ""}`}
-                            variant="light"
-                          >
-                            <IconSwitch
-                              name={item.icon}
-                              size={22}
-                              className={`w-6 h-6 ${isSelected ? "text-primary dark:text-default-900" : ""}`}
-                            />
-                          </Button>
-                        </Tooltip>
-                      );
-                   })}
+                  {visibleItems.map((item) => {
+                    const isSelected = pathname?.includes(item.key);
+                    return (
+                      <Tooltip key={item.key} content={item.label} placement="right">
+                        <Button
+                          isIconOnly
+                          isDisabled={item.isDisabled}
+                          size="md"
+                          className={`w-11 h-11 2xl:w-12 2xl:h-12 ${isSelected ? "bg-primary/15 dark:bg-gray-100/15" : ""}`}
+                          variant="light"
+                        >
+                          <IconSwitch
+                            name={item.icon}
+                            size={22}
+                            className={`w-6 h-6 ${isSelected ? "text-primary dark:text-default-900" : ""}`}
+                          />
+                        </Button>
+                      </Tooltip>
+                    );
+                  })}
                 </section>
-             ))}
-             {idx === 0 && <Divider className="bg-divider w-8" />}
+              );
+            })}
+            {idx === 0 && <Divider className="bg-divider w-8" />}
           </React.Fragment>
         ))}
       </ScrollShadow>
-
+      {/* --- C. FOOTER (FIXED) --- */}
       <footer className="shrink-0 flex flex-col gap-1 w-full items-center pb-4 pt-2 border-t-small border-divider mt-auto">
-        <Button isIconOnly variant="light" size="md"><IconSwitch name="Settings" size={22}/></Button>
+        <Tooltip content="Help & Information" placement="right">
+          <Button isIconOnly variant="light" size="md" className="w-11 h-11">
+            <IconSwitch name="Info" size={20} className="w-6 h-6 2xl:w-7 2xl:h-7" />
+          </Button>
+        </Tooltip>
+        <Tooltip content="Settings" placement="right">
+          <Button isIconOnly variant="light" size="md" className="w-11 h-11">
+            <IconSwitch name="Settings" size={20} className="w-6 h-6 2xl:w-7 2xl:h-7" />
+          </Button>
+        </Tooltip>
+        <Tooltip content="Logout" placement="right" color="danger">
+          <Button isIconOnly variant="light" size="md" className="w-11 h-11">
+            <IconSwitch name="Logout" size={20} className="w-6 h-6 2xl:w-7 2xl:h-7" />
+          </Button>
+        </Tooltip>
       </footer>
     </div>
   );
@@ -180,7 +215,7 @@ interface SidebarProps {
 }
 
 export default function SideBar({ isCollapsed, isMobileOpen, onMobileChange }: SidebarProps) {
-  
+
   const { menuGroup1, menuGroup2 } = useSidebarMenu();
 
   const desktopClasses = `
@@ -200,19 +235,19 @@ export default function SideBar({ isCollapsed, isMobileOpen, onMobileChange }: S
         placement="left"
         size="xs"
         classNames={{
-             base: "bg-background", 
-             body: "p-4",
+          base: "bg-background",
+          body: "p-4",
         }}
         backdrop="blur"
       >
         <DrawerContent>
           {(onClose) => (
             <DrawerBody>
-               <SidebarContent 
-                  onItemClick={onClose} 
-                  menuGroup1={menuGroup1} 
-                  menuGroup2={menuGroup2} 
-               />
+              <SidebarContent
+                onItemClick={onClose}
+                menuGroup1={menuGroup1}
+                menuGroup2={menuGroup2}
+              />
             </DrawerBody>
           )}
         </DrawerContent>
@@ -221,16 +256,16 @@ export default function SideBar({ isCollapsed, isMobileOpen, onMobileChange }: S
       {/* --- B. DESKTOP SIDEBAR --- */}
       <aside className={desktopClasses}>
         {isCollapsed ? (
-          <SidebarCollapsed 
-            menuGroup1={menuGroup1} 
-            menuGroup2={menuGroup2} 
+          <SidebarCollapsed
+            menuGroup1={menuGroup1}
+            menuGroup2={menuGroup2}
           />
         ) : (
           <div className="animate-[fadeIn_0.3s_ease-in-out] h-full">
-             <SidebarContent 
-                menuGroup1={menuGroup1} 
-                menuGroup2={menuGroup2} 
-             />
+            <SidebarContent
+              menuGroup1={menuGroup1}
+              menuGroup2={menuGroup2}
+            />
           </div>
         )}
       </aside>
