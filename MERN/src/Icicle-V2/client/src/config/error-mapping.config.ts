@@ -23,13 +23,9 @@ const ERROR_MAP: Record<string, UIError> = {
     title: "Tài khoản không tồn tại",
     msg: "Email hoặc tên đăng nhập này chưa được đăng ký trong hệ thống.",
   },
-  "Invalid username/email or password": {
+  "Invalid credentials": {
     title: "Đăng nhập thất bại",
     msg: "Tên đăng nhập hoặc mật khẩu không chính xác.",
-  },
-  "Invalid password": {
-    title: "Sai mật khẩu",
-    msg: "Mật khẩu bạn nhập không đúng. Vui lòng thử lại.",
   },
   "Account banned": {
     title: "Tài khoản bị khóa",
