@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
-import { Form, Input, Button, Link } from "@heroui/react";
+import { Form, Input, Button, Divider } from "@heroui/react";
 import { VALIDATION_MESSAGES } from "@/config/validation-messages.config";
 import { useLogin } from "@/hooks/auth/useLogin";
 
@@ -40,7 +40,7 @@ export default function LoginPage() {
             placeholder="Nhập tên đăng nhập"
             value={username}
             onValueChange={setUsername}
-            isDisabled={isLoading} 
+            isDisabled={isLoading}
           />
 
           <Input
@@ -69,9 +69,9 @@ export default function LoginPage() {
             }
           />
 
-          <Button 
-            fullWidth 
-            type="submit" 
+          <Button
+            fullWidth
+            type="submit"
             color="primary"
             isLoading={isLoading}
           >
@@ -82,13 +82,15 @@ export default function LoginPage() {
 
       {/* Social Login */}
       <section>
-        <div className="mt-6 text-center font-roboto text-sm leading-5 text-[#71717a]">
-          Hoặc
+        <div className="flex items-center gap-4 pt-4">
+          <Divider className="flex-1" />
+          <p className="text-tiny text-default-500 shrink-0">OR</p>
+          <Divider className="flex-1" />
         </div>
         <div className="mt-4 flex items-center justify-center gap-4">
-          <Button 
-            color="default" 
-            variant="faded" 
+          <Button
+            color="default"
+            variant="faded"
             isDisabled={isLoading}
           >
             <FcGoogle size={20} className="mr-2" />
