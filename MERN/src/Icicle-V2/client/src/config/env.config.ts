@@ -10,7 +10,7 @@ export const env = {
   // 1. API & Network Configuration
   // -----------------------------------------------------------------
   /** The base URL of the Backend API server. */
-  API_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000",
+  API_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
 
   /** The public URL of this Frontend application. */
   APP_URL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",

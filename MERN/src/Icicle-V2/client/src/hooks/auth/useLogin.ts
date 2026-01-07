@@ -90,6 +90,7 @@ export const useLogin = (): UseLoginReturn => {
       // 5. Sync Server State & Navigate
       // Wrapping both actions in startTransition ensures high-priority UI updates 
       // are not blocked and helps coordinate the router cache invalidation.
+      // It fetch 2 times but it's acceptable/
       startTransition(() => {
         router.refresh(); // Invalidate Client Cache & Re-fetch Server Components (RootLayout)
         router.push(targetPath); // Navigate to the determined path

@@ -88,7 +88,7 @@ const SidebarContent = ({ onItemClick, menuGroup1, menuGroup2 }: SidebarContentP
                           endContent={item.endContent}
                         >
                           {isSelected && (
-                            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-1/2 w-1 bg-primary rounded-r-small" />
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-1/2 w-1 bg-primary dark:bg-default-500 rounded-r-small" />
                           )}
                           <span className={`text-small 2xl:text-medium font-medium flex-1 text-left ${isSelected ? "text-primary dark:text-default-900" : ""}`}>
                             {item.label}
