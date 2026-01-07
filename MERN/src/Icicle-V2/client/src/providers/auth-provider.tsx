@@ -77,8 +77,18 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
  */
 export function AuthProvider({ children, initialData }: AuthProviderProps) {
   // 1. Extract data (Safe defaults)
-  const user = initialData?.user || null;
-  const permissions = initialData?.permissions || [];
+  // We use useMemo here to ensure 'user' and 'permissions' maintain stable references.
+  // This prevents downstream hooks (useCallback, context value) from recalculating unnecessarily
+  // because [] !== [] in JavaScript.
+
+  const user = useMemo(() => {
+    return initialData?.user || null;
+  }, [initialData]);
+
+  const permissions = useMemo(() => {
+    return initialData?.permissions || [];
+  }, [initialData]);
+
   const isAuthenticated = !!user;
 
   // 2. Define Helper Functions (Stable References via useCallback)
