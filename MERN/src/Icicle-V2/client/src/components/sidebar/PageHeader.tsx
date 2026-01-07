@@ -12,7 +12,7 @@ interface PageHeaderProps {
 
 export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
   return (
-    <header className="rounded-medium border-small border-divider flex items-center justify-between p-4 bg-primary dark:bg-background transition-colors duration-300">
+    <header className="rounded-medium border-small border-divider flex items-center justify-between p-4 bg-primary dark:bg-background transition-colors duration-200">
       {/* Left Section: Button + Dynamic Title */}
       <div className="flex items-center gap-2">
         <Button
@@ -34,7 +34,6 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
           avatarProps={{
             src: "/images/Avatar.JPG",
             alt: "User Avatar",
-            isBordered: true,
           }}
           description="Software Engineer"
           name="Thế Lực"

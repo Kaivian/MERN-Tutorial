@@ -1,6 +1,5 @@
 // client/src/components/sidebar/SidebarData.tsx
 import React from "react";
-import { BadgeProps } from "@heroui/react";
 import { InternalIconName } from "../icons/IconSwitch";
 import {
   PieChart2, UsersGroupTwoRounded,
@@ -15,24 +14,12 @@ export interface SidebarItem {
   iconSize: number;
   isDisabled?: boolean;
   isHidden?: boolean;
-  isSelected?: boolean;
   endContent?: React.ReactNode;
 }
 
 export interface SidebarSection {
   title: string;
   items: SidebarItem[];
-}
-
-export interface TeamMember {
-  key: string;
-  name: string;
-  avatarChar: string;
-  statusColor?: BadgeProps["color"];
-  statusContent?: string;
-  isInvisibleBadge?: boolean;
-  isDisabled?: boolean;
-  isHidden?: boolean;
 }
 
 // --- DATA ---
