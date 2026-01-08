@@ -74,7 +74,7 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
                   className: "transition-transform duration-300 group-hover:scale-97",
                   showFallback: true,
                 }}
-                description={user?.email || "Email"}
+                description={user?.email || user?.username || "..."}
                 name={user?.fullName || "User"}
                 classNames={{
                   wrapper: "hidden md:flex text-start",
