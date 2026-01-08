@@ -1,12 +1,21 @@
-// client/src/app/not-found.tsx
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button, Card, CardBody } from "@heroui/react";
 import { useLogout } from "@/hooks/auth/useLogout";
 
 export default function NotFound() {
+  const router = useRouter();
   const { logout, isLoading } = useLogout({ redirectTo: "/login" });
+
+  const handleGoBack = () => {
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/");
+    }
+  };
 
   return (
     <div className="min-h-screen grid place-items-center bg-background text-foreground">
@@ -28,7 +37,7 @@ export default function NotFound() {
               <Button color="primary">Về trang chủ</Button>
             </Link>
 
-            <Button variant="flat" onPress={() => window.history.back()}>
+            <Button variant="flat" onPress={handleGoBack}>
               Quay lại
             </Button>
 

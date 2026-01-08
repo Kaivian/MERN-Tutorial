@@ -4,7 +4,6 @@ import React from "react";
 import { usePathname } from "next/navigation";
 import {
   Button,
-  ButtonGroup,
   Tooltip,
   ScrollShadow,
   Divider,
@@ -12,6 +11,7 @@ import {
   Drawer,
   DrawerContent,
   DrawerBody,
+  Link,
 } from "@heroui/react";
 import IconSwitch from "../icons/IconSwitch";
 import { useSyncImage } from "@/hooks/generals/useSyncImage";
@@ -28,7 +28,7 @@ interface SidebarContentProps {
   menuGroup2: SidebarSection[];
 }
 
-const SidebarContent = ({ onItemClick, menuGroup1, menuGroup2 }: SidebarContentProps) => {
+const SidebarContent = ({ menuGroup1, menuGroup2 }: SidebarContentProps) => {
   const pathname = usePathname();
 
   return (
@@ -70,7 +70,8 @@ const SidebarContent = ({ onItemClick, menuGroup1, menuGroup2 }: SidebarContentP
                         <Button
                           key={item.key}
                           isDisabled={item.isDisabled}
-                          onPress={onItemClick}
+                          as={Link}
+                          href={item.key}
                           className={`relative overflow-hidden h-9 xl:h-10 2xl:h-12 text-left px-3 gap-3 justify-start ${isSelected ? "bg-primary/15 dark:bg-gray-100/15" : ""
                             }`}
                           fullWidth
@@ -145,6 +146,8 @@ const SidebarCollapsed = ({ menuGroup1, menuGroup2 }: SidebarCollapsedProps) => 
                     return (
                       <Tooltip key={item.key} content={item.label} placement="right">
                         <Button
+                          as={Link}
+                          href={item.key}
                           isIconOnly
                           isDisabled={item.isDisabled}
                           size="md"

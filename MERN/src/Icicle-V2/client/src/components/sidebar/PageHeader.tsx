@@ -5,6 +5,7 @@ import IconSwitch from "../icons/IconSwitch";
 import ThemeSwitchButton from "../theme-switch/ThemeSwitchButton";
 import { Bell, Letter, AltArrowDown } from '@solar-icons/react'
 import { useAuth } from "@/providers/auth.provider";
+import { useLogout } from "@/hooks/auth/useLogout";
 import ThemeSwitchDropdown from "../theme-switch/ThemeSwitchDropDown";
 import {
   Button, User, Divider, Dropdown,
@@ -25,6 +26,8 @@ interface PageHeaderProps {
 
 export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
   const { user } = useAuth();
+
+  const { logout, isLoading } = useLogout({ redirectTo: "/login" });
   return (
     <header className="rounded-medium border-small border-divider flex items-center justify-between bg-primary dark:bg-background transition-colors duration-200">
       {/* Left Section: Button + Dynamic Title */}
@@ -99,6 +102,7 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
           <DropdownMenu aria-label="User Menu">
             <DropdownSection showDivider>
               <DropdownItem
+                closeOnSelect
                 key="profile"
                 shortcut="⌘+P"
                 startContent={<UserRounded />}
@@ -106,6 +110,7 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
                 Xem Hồ Sơ
               </DropdownItem>
               <DropdownItem
+                closeOnSelect
                 key="settings"
                 shortcut="⌘+S"
                 startContent={<Settings />}
@@ -114,14 +119,15 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
               </DropdownItem>
               <DropdownItem
                 key="theme"
-                startContent={<Pallete2/>}
-                endContent={<ThemeSwitchDropdown className="border-foreground/20 text-foreground/80"/>}
+                startContent={<Pallete2 />}
+                endContent={<ThemeSwitchDropdown className="border-foreground/20 hover:border-foreground/80 text-foreground/80" />}
               >
                 Giao diện
               </DropdownItem>
             </DropdownSection>
             <DropdownSection showDivider>
               <DropdownItem
+                closeOnSelect
                 key="profile"
                 shortcut="⌘+H"
                 startContent={<History />}
@@ -129,6 +135,7 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
                 Nhật ký thay đổi
               </DropdownItem>
               <DropdownItem
+                closeOnSelect
                 key="settings"
                 shortcut="⌘+T"
                 startContent={<UsersGroupTwoRounded />}
@@ -138,6 +145,7 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
             </DropdownSection>
             <DropdownSection showDivider>
               <DropdownItem
+                closeOnSelect
                 key="help"
                 shortcut="⌘+I"
                 startContent={<QuestionCircle />}
@@ -145,6 +153,7 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
                 Thông tin & Trợ giúp
               </DropdownItem>
               <DropdownItem
+                closeOnSelect
                 key="feedback"
                 shortcut="⌘+F"
                 startContent={<InfoSquare />}
@@ -154,11 +163,13 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
             </DropdownSection>
             <DropdownSection>
               <DropdownItem
+                closeOnSelect
                 key="logout"
                 shortcut="⌘+⇧+Q"
                 startContent={<Logout2 />}
                 className="text-danger"
                 color="danger"
+                onPress={logout}
               >
                 Đăng Xuất
               </DropdownItem>
