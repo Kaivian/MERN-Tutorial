@@ -1,6 +1,6 @@
 // client/src/hooks/useSidebarMenu.ts
 import { useMemo, useCallback } from "react";
-import { useAuth } from "@/providers/auth-provider";
+import { useAuth } from "@/providers/auth.provider";
 import { sidebarSections, sidebarSections2, SidebarItem } from "@/components/sidebar/SidebarData";
 
 export const useSidebarMenu = () => {

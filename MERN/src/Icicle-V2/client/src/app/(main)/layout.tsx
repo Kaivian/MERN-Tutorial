@@ -6,7 +6,7 @@ import { useDisclosure } from "@heroui/react";
 import Sidebar from "@/components/sidebar/Sidebar";
 import PageHeader from "@/components/sidebar/PageHeader";
 import { siteConfig, ROUTES_CONFIG } from "@/config/site.config";
-import { useAuth } from "@/providers/auth-provider";
+import { useAuth } from "@/providers/auth.provider";
 import AccessDenied from "@/components/errors/AccessDenied";
 
 const STORAGE_KEY = "sidebar_is_collapsed";
@@ -111,7 +111,7 @@ export default function AppTemplateLayout({
       <div className="flex flex-col flex-1 min-w-0 m-2 xl:m-3 2xl:m-4 gap-2 xl:gap-3 2xl:gap-4">
         <PageHeader toggleSidebar={handleToggle} title={pageTitle} />
         
-        <main className="rounded-medium border-small border-divider flex w-full flex-col h-full overflow-auto bg-background/50 relative">
+        <main className="rounded-medium border-small border-divider flex w-full flex-col h-full overflow-auto bg-background relative">
           {hasAccess ? (
             children
           ) : (

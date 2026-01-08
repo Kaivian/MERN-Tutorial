@@ -5,7 +5,7 @@ import { Metadata } from "next";
 import { Providers } from "./providers";
 import { fontSans, fontMono } from "@/config/font.config";
 import { getCurrentUser } from "@/services/auth-server.service";
-import { AuthProvider } from "@/providers/auth-provider";
+import { AuthProvider } from "@/providers/auth.provider";
 
 export const metadata: Metadata = {
   title: { default: "Gia Lực", template: `Kaivian Template` },
