@@ -104,21 +104,6 @@ const SidebarContent = ({ onItemClick, menuGroup1, menuGroup2 }: SidebarContentP
 
         </div>
       </ScrollShadow>
-
-      {/* ... Footer  ... */}
-      <footer className="mt-auto w-full">
-        <ButtonGroup fullWidth size="sm" variant="light" className="border-t border-divider pt-2">
-          <Tooltip content="Help & Information" showArrow>
-            <Button isIconOnly startContent={<IconSwitch name="Info" size={20} />} className="flex-1" />
-          </Tooltip>
-          <Tooltip content="Cài đặt" showArrow>
-            <Button isIconOnly startContent={<IconSwitch name="Settings" size={20} />} className="flex-1" />
-          </Tooltip>
-          <Tooltip content="Đăng xuất" showArrow color="danger">
-            <Button isIconOnly startContent={<IconSwitch name="Logout" size={20} />} className="flex-1" />
-          </Tooltip>
-        </ButtonGroup>
-      </footer>
     </div>
   );
 };
@@ -182,24 +167,6 @@ const SidebarCollapsed = ({ menuGroup1, menuGroup2 }: SidebarCollapsedProps) => 
           </React.Fragment>
         ))}
       </ScrollShadow>
-      {/* --- C. FOOTER (FIXED) --- */}
-      <footer className="shrink-0 flex flex-col gap-1 w-full items-center pb-4 pt-2 border-t-small border-divider mt-auto">
-        <Tooltip content="Help & Information" placement="right">
-          <Button isIconOnly variant="light" size="md" className="w-11 h-11">
-            <IconSwitch name="Info" size={20} className="w-6 h-6 2xl:w-7 2xl:h-7" />
-          </Button>
-        </Tooltip>
-        <Tooltip content="Settings" placement="right">
-          <Button isIconOnly variant="light" size="md" className="w-11 h-11">
-            <IconSwitch name="Settings" size={20} className="w-6 h-6 2xl:w-7 2xl:h-7" />
-          </Button>
-        </Tooltip>
-        <Tooltip content="Logout" placement="right" color="danger">
-          <Button isIconOnly variant="light" size="md" className="w-11 h-11">
-            <IconSwitch name="Logout" size={20} className="w-6 h-6 2xl:w-7 2xl:h-7" />
-          </Button>
-        </Tooltip>
-      </footer>
     </div>
   );
 };

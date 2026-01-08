@@ -27,16 +27,20 @@ export default function ThemeSwitchDropdown(restProps: ThemeSwitchDropdownProps)
   const { theme, setTheme, resolvedTheme } = useTheme();
   const isSSR = useIsSSR();
 
+  // Extract isIconOnly, className, and variant to handle logic specifically
+  const { isIconOnly, className, variant, ...otherProps } = restProps;
+
   if (isSSR) return null;
 
   const currentDisplay: ThemeMode = theme === "system" ? "system" : (resolvedTheme as ThemeMode) ?? "light";
-
   const currentSelection: ThemeMode = (theme as ThemeMode) ?? "light";
 
   const Icon = ICONS[currentDisplay];
 
-  const defaultClassName = "w-26 border-1";
-  const combinedClassName = `${defaultClassName} ${restProps.className || ''}`;
+  // Adjust width: remove fixed width 'w-26' if it is icon-only mode
+  const widthClass = isIconOnly ? "" : "w-26";
+  const defaultClassName = `${widthClass} border-1`;
+  const combinedClassName = `${defaultClassName} ${className || ''}`;
 
   return (
     <div className="transition-colors">
@@ -44,14 +48,21 @@ export default function ThemeSwitchDropdown(restProps: ThemeSwitchDropdownProps)
         <DropdownTrigger>
           <Button
             size="sm"
-            {...restProps}
-
-            variant={restProps.variant || "light"}
+            {...otherProps}
+            isIconOnly={isIconOnly}
+            variant={variant || "light"}
             className={combinedClassName}
             aria-label="Chọn giao diện"
-            endContent={<Icon className="h-4 w-4" />}
+            // If icon only, endContent should be undefined to center the main icon
+            endContent={!isIconOnly ? <Icon className="h-4 w-4" /> : undefined}
           >
-            {LABELS[currentDisplay]}
+            {isIconOnly ? (
+              // Show Icon as main child if icon-only
+              <Icon className="h-4 w-4" />
+            ) : (
+              // Show Text if standard button
+              LABELS[currentDisplay]
+            )}
           </Button>
         </DropdownTrigger>
 
@@ -60,7 +71,7 @@ export default function ThemeSwitchDropdown(restProps: ThemeSwitchDropdownProps)
           selectionMode="single"
           selectedKeys={new Set([currentSelection])}
           onAction={(key) => setTheme(String(key))}
-          className="min-w-[120px]"
+          className="min-w-30"
         >
           <DropdownItem key="light" startContent={<Sun className="h-4 w-4" />}>
             {LABELS.light}

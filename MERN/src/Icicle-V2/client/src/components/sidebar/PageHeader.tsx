@@ -1,11 +1,22 @@
 // client/src/components/sidebar/PageHeader.tsx
 "use client"
 
-import { Button, User, Divider, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/react";
 import IconSwitch from "../icons/IconSwitch";
 import ThemeSwitchButton from "../theme-switch/ThemeSwitchButton";
 import { Bell, Letter, AltArrowDown } from '@solar-icons/react'
 import { useAuth } from "@/providers/auth.provider";
+import ThemeSwitchDropdown from "../theme-switch/ThemeSwitchDropDown";
+import {
+  Button, User, Divider, Dropdown,
+  DropdownTrigger, DropdownMenu, DropdownItem,
+  DropdownSection
+} from "@heroui/react";
+import {
+  UserRounded, Settings, Logout2,
+  InfoSquare, QuestionCircle,
+  UsersGroupTwoRounded, History,
+  Pallete2
+} from '@solar-icons/react'
 
 interface PageHeaderProps {
   toggleSidebar: () => void;
@@ -59,7 +70,7 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
 
         <Divider orientation="vertical" className="m-4 bg-gray-100/70 dark:bg-divider transition-colors" />
 
-        <Dropdown>
+        <Dropdown closeOnSelect={false}>
           <DropdownTrigger>
             <Button
               variant="light"
@@ -85,13 +96,73 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
               <AltArrowDown size={16} className="opacity-100 group-hover:opacity-70 transition-opacity duration-300" />
             </Button>
           </DropdownTrigger>
-          <DropdownMenu aria-label="Static Actions">
-            <DropdownItem key="new">New file</DropdownItem>
-            <DropdownItem key="copy">Copy link</DropdownItem>
-            <DropdownItem key="edit">Edit file</DropdownItem>
-            <DropdownItem key="delete" className="text-danger" color="danger">
-              Delete file
-            </DropdownItem>
+          <DropdownMenu aria-label="User Menu">
+            <DropdownSection showDivider>
+              <DropdownItem
+                key="profile"
+                shortcut="⌘+P"
+                startContent={<UserRounded />}
+              >
+                Xem Hồ Sơ
+              </DropdownItem>
+              <DropdownItem
+                key="settings"
+                shortcut="⌘+S"
+                startContent={<Settings />}
+              >
+                Cài Đặt
+              </DropdownItem>
+              <DropdownItem
+                key="theme"
+                startContent={<Pallete2/>}
+                endContent={<ThemeSwitchDropdown className="border-foreground/20 text-foreground/80"/>}
+              >
+                Giao diện
+              </DropdownItem>
+            </DropdownSection>
+            <DropdownSection showDivider>
+              <DropdownItem
+                key="profile"
+                shortcut="⌘+H"
+                startContent={<History />}
+              >
+                Nhật ký thay đổi
+              </DropdownItem>
+              <DropdownItem
+                key="settings"
+                shortcut="⌘+T"
+                startContent={<UsersGroupTwoRounded />}
+              >
+                Thành viên nhóm
+              </DropdownItem>
+            </DropdownSection>
+            <DropdownSection showDivider>
+              <DropdownItem
+                key="help"
+                shortcut="⌘+I"
+                startContent={<QuestionCircle />}
+              >
+                Thông tin & Trợ giúp
+              </DropdownItem>
+              <DropdownItem
+                key="feedback"
+                shortcut="⌘+F"
+                startContent={<InfoSquare />}
+              >
+                Đóng góp ý kiến
+              </DropdownItem>
+            </DropdownSection>
+            <DropdownSection>
+              <DropdownItem
+                key="logout"
+                shortcut="⌘+⇧+Q"
+                startContent={<Logout2 />}
+                className="text-danger"
+                color="danger"
+              >
+                Đăng Xuất
+              </DropdownItem>
+            </DropdownSection>
           </DropdownMenu>
         </Dropdown>
       </div>
