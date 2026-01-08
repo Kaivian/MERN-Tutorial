@@ -27,7 +27,7 @@ interface PageHeaderProps {
 export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
   const { user } = useAuth();
 
-  const { logout, isLoading } = useLogout({ redirectTo: "/login" });
+  const { logout } = useLogout({ redirectTo: "/login" });
   return (
     <header className="rounded-medium border-small border-divider flex items-center justify-between bg-primary dark:bg-background transition-colors duration-200">
       {/* Left Section: Button + Dynamic Title */}
