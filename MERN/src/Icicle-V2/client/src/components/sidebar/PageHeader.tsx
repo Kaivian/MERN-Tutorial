@@ -1,23 +1,40 @@
 // client/src/components/sidebar/PageHeader.tsx
-"use client"
+"use client";
 
+import React from "react";
+import { useRouter } from "next/navigation";
+import { useHotkeys } from "react-hotkeys-hook";
+
+// UI Components
+import {
+  Button,
+  User,
+  Divider,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+  DropdownSection,
+} from "@heroui/react";
+
+// Icons
+import { Bell, Letter, AltArrowDown } from "@solar-icons/react";
+import {
+  UserRounded,
+  Settings,
+  Logout2,
+  InfoSquare,
+  QuestionCircle,
+  UsersGroupTwoRounded,
+  History,
+  Pallete2,
+} from "@solar-icons/react";
+
+// Custom Components & Hooks
 import IconSwitch from "../icons/IconSwitch";
-import ThemeSwitchButton from "../theme-switch/ThemeSwitchButton";
-import { Bell, Letter, AltArrowDown } from '@solar-icons/react'
+import ThemeSwitchDropdown from "../theme-switch/ThemeSwitchDropDown";
 import { useAuth } from "@/providers/auth.provider";
 import { useLogout } from "@/hooks/auth/useLogout";
-import ThemeSwitchDropdown from "../theme-switch/ThemeSwitchDropDown";
-import {
-  Button, User, Divider, Dropdown,
-  DropdownTrigger, DropdownMenu, DropdownItem,
-  DropdownSection
-} from "@heroui/react";
-import {
-  UserRounded, Settings, Logout2,
-  InfoSquare, QuestionCircle,
-  UsersGroupTwoRounded, History,
-  Pallete2
-} from '@solar-icons/react'
 
 interface PageHeaderProps {
   toggleSidebar: () => void;
@@ -25,9 +42,73 @@ interface PageHeaderProps {
 }
 
 export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
+  const router = useRouter();
   const { user } = useAuth();
-
   const { logout } = useLogout({ redirectTo: "/login" });
+
+  // ===========================================================================
+  // 1. ACTION HANDLERS
+  // ===========================================================================
+  
+  const handleProfile = () => {
+    // Navigate to profile page (Update path as needed)
+    router.push("/profile");
+  };
+
+  const handleSettings = () => {
+    router.push("/settings");
+  };
+
+  const handleChangeLog = () => {
+    router.push("/changelog");
+  };
+
+  const handleTeam = () => {
+    router.push("/team");
+  };
+
+  const handleHelp = () => {
+    router.push("/help");
+  };
+
+  const handleFeedback = () => {
+    router.push("/feedback");
+  };
+
+  const handleLogout = () => {
+    logout();
+  };
+
+  // ===========================================================================
+  // 2. HOTKEYS CONFIGURATION
+  // 'mod' equals 'Command' on macOS and 'Control' on Windows
+  // ===========================================================================
+
+  // ⌘+P: Profile (Prevents Browser Print)
+  useHotkeys("mod+p", (e) => { e.preventDefault(); handleProfile(); });
+
+  // ⌘+S: Settings (Prevents Browser Save)
+  useHotkeys("mod+s", (e) => { e.preventDefault(); handleSettings(); });
+
+  // ⌘+H: Changelog (Prevents Browser History/Hide)
+  useHotkeys("mod+h", (e) => { e.preventDefault(); handleChangeLog(); });
+
+  // ⌘+T: Team (Prevents New Tab)
+  useHotkeys("mod+t", (e) => { e.preventDefault(); handleTeam(); });
+
+  // ⌘+I: Help
+  useHotkeys("mod+i", (e) => { e.preventDefault(); handleHelp(); });
+
+  // ⌘+F: Feedback (Prevents Browser Find)
+  useHotkeys("mod+f", (e) => { e.preventDefault(); handleFeedback(); });
+
+  // ⌘+Shift+Q: Logout
+  useHotkeys("mod+shift+q", (e) => { e.preventDefault(); handleLogout(); });
+
+  // ===========================================================================
+  // 3. RENDER
+  // ===========================================================================
+
   return (
     <header className="rounded-medium border-small border-divider flex items-center justify-between bg-primary dark:bg-background transition-colors duration-200">
       {/* Left Section: Button + Dynamic Title */}
@@ -40,9 +121,7 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
           size="sm"
           radius="sm"
         />
-        {/* Render the title passed via props */}
         <h2 className="text-medium text-gray-100 font-medium">{title}</h2>
-        <ThemeSwitchButton />
       </div>
 
       {/* Right Section: User Profile */}
@@ -99,21 +178,23 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
               <AltArrowDown size={16} className="opacity-100 group-hover:opacity-70 transition-opacity duration-300" />
             </Button>
           </DropdownTrigger>
+
           <DropdownMenu aria-label="User Menu">
+            {/* --- SECTION 1 --- */}
             <DropdownSection showDivider>
               <DropdownItem
-                closeOnSelect
                 key="profile"
                 shortcut="⌘+P"
                 startContent={<UserRounded />}
+                onPress={handleProfile}
               >
                 Xem Hồ Sơ
               </DropdownItem>
               <DropdownItem
-                closeOnSelect
                 key="settings"
                 shortcut="⌘+S"
                 startContent={<Settings />}
+                onPress={handleSettings}
               >
                 Cài Đặt
               </DropdownItem>
@@ -121,55 +202,64 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
                 key="theme"
                 startContent={<Pallete2 />}
                 endContent={<ThemeSwitchDropdown className="border-foreground/20 hover:border-foreground/80 text-foreground/80" />}
+                // Note: Theme switching is handled inside ThemeSwitchDropdown, 
+                // so we don't attach an onPress handler here to avoid conflicts.
+                isReadOnly
+                className="cursor-default"
               >
                 Giao diện
               </DropdownItem>
             </DropdownSection>
+
+            {/* --- SECTION 2 --- */}
             <DropdownSection showDivider>
               <DropdownItem
-                closeOnSelect
-                key="profile"
+                key="changelog"
                 shortcut="⌘+H"
                 startContent={<History />}
+                onPress={handleChangeLog}
               >
                 Nhật ký thay đổi
               </DropdownItem>
               <DropdownItem
-                closeOnSelect
-                key="settings"
+                key="team"
                 shortcut="⌘+T"
                 startContent={<UsersGroupTwoRounded />}
+                onPress={handleTeam}
               >
                 Thành viên nhóm
               </DropdownItem>
             </DropdownSection>
+
+            {/* --- SECTION 3 --- */}
             <DropdownSection showDivider>
               <DropdownItem
-                closeOnSelect
                 key="help"
                 shortcut="⌘+I"
                 startContent={<QuestionCircle />}
+                onPress={handleHelp}
               >
                 Thông tin & Trợ giúp
               </DropdownItem>
               <DropdownItem
-                closeOnSelect
                 key="feedback"
                 shortcut="⌘+F"
                 startContent={<InfoSquare />}
+                onPress={handleFeedback}
               >
                 Đóng góp ý kiến
               </DropdownItem>
             </DropdownSection>
+
+            {/* --- SECTION 4 --- */}
             <DropdownSection>
               <DropdownItem
-                closeOnSelect
                 key="logout"
                 shortcut="⌘+⇧+Q"
                 startContent={<Logout2 />}
                 className="text-danger"
                 color="danger"
-                onPress={logout}
+                onPress={handleLogout}
               >
                 Đăng Xuất
               </DropdownItem>
@@ -178,5 +268,5 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
         </Dropdown>
       </div>
     </header>
-  )
+  );
 }

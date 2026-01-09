@@ -121,6 +121,16 @@ interface SidebarCollapsedProps {
 const SidebarCollapsed = ({ menuGroup1, menuGroup2 }: SidebarCollapsedProps) => {
   const pathname = usePathname();
 
+  // Helper: Kiểm tra xem một nhóm section có item nào hiển thị không
+  const hasVisibleItems = (sections: SidebarSection[]) => {
+    return sections.some((section) =>
+      section.items.some((item) => !item.isHidden)
+    );
+  };
+
+  // Kiểm tra trước xem group 2 có item nào không để quyết định render Divider
+  const isGroup2Visible = hasVisibleItems(menuGroup2);
+
   return (
     <div className="flex flex-col items-center gap-3 2xl:gap-4 flex-1 h-full w-full animate-[fadeIn_0.3s_ease-in-out]">
       {/* ... Header Logo giữ nguyên ... */}
@@ -166,7 +176,7 @@ const SidebarCollapsed = ({ menuGroup1, menuGroup2 }: SidebarCollapsedProps) => 
                 </section>
               );
             })}
-            {idx === 0 && <Divider className="bg-divider w-8" />}
+            {idx === 0 && isGroup2Visible && <Divider className="bg-divider w-8" />}
           </React.Fragment>
         ))}
       </ScrollShadow>
