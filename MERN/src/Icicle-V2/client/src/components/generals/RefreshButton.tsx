@@ -3,7 +3,7 @@
 
 import React, { useState } from "react";
 import { Button, ButtonProps, Tooltip, cn } from "@heroui/react";
-import { Restart } from "@solar-icons/react";
+import { RotateCw } from 'lucide-react';
 import { PressEvent } from "@react-types/shared";
 import { useSpin } from "@/hooks/generals/useSpin";
 
@@ -136,7 +136,7 @@ const RefreshButton = React.forwardRef<HTMLButtonElement, RefreshButtonProps>(
             willChange: "transform", // Performance optimization
           }}
         >
-          {icon || <Restart size={20} />}
+          {icon || <RotateCw size={20} />}
         </div>
 
         {!isIconOnly && children}
