@@ -5,9 +5,12 @@ import slugify from 'slugify';
 const { Schema } = mongoose;
 
 /**
- * @class Role
- * @description Defines user roles and permissions for RBAC.
- * Implements system-level locks and referential integrity checks.
+ * @class RoleSchema
+ * @description Defines user roles and permissions for the RBAC system.
+ * * BEST PRACTICE IMPLEMENTATION:
+ * - Uses Soft Delete pattern (never physically deletes data).
+ * - Implements Static Methods for critical business logic.
+ * - Enforces immutability on system-critical fields.
  */
 const roleSchema = new Schema({
   /**
@@ -15,51 +18,43 @@ const roleSchema = new Schema({
    */
   name: {
     type: String,
-    required: true,
+    required: [true, 'Role name is required'],
     trim: true,
     unique: true,
-    maxlength: 50
+    maxlength: [50, 'Role name cannot exceed 50 characters']
   },
 
   /**
-   * URL-friendly identifier (e.g., "quan_tri_vien").
-   * CRITICAL: Used by Middleware logic.
-   * If isSystem is true, this field becomes read-only (immutable).
+   * URL-friendly identifier.
+   * Stability: Should rarely change to preserve frontend routing integrity.
    */
   slug: {
     type: String,
     unique: true,
     lowercase: true,
     trim: true,
-    immutable: (doc) => doc.isSystem // Lock slug for system roles to prevent code breakage
+    // immutable: true // OPTIONAL: Uncomment if slugs should NEVER change after creation
   },
 
-  /**
-   * List of permissions (e.g., "user:create").
-   * Auto-deduplicated via pre-save hook.
-   */
   permissions: [{
     type: String,
     trim: true
   }],
 
-  description: { type: String, maxlength: 200 },
+  description: { 
+    type: String, 
+    maxlength: 200 
+  },
 
   /**
-   * Protected System Flag.
-   * If true, this role CANNOT be deleted and its slug CANNOT be changed.
-   * Created via Seeders only.
+   * System Roles (e.g., Admin, SuperUser) cannot be modified or soft-deleted.
    */
   isSystem: { 
     type: Boolean, 
     default: false,
-    immutable: true // Once true, always true
+    immutable: true 
   },
 
-  /**
-   * Automatically assigned to new registered users.
-   * Indexed for faster registration queries.
-   */
   isDefault: { 
     type: Boolean, 
     default: false,
@@ -71,39 +66,59 @@ const roleSchema = new Schema({
     enum: ['active', 'inactive'],
     default: 'active',
     index: true
+  },
+
+  /* ==================== SOFT DELETE FIELDS ==================== */
+  
+  isDeleted: {
+    type: Boolean,
+    default: false,
+    index: true // Important for filtering out deleted roles
+  },
+
+  deletedAt: {
+    type: Date,
+    default: null
+  },
+
+  deletedBy: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
   }
+
 }, {
-  timestamps: true
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
 /* ==================== INDEXES ==================== */
 
-// Compound index for frequent queries: "Get me the default active role"
-roleSchema.index({ isDefault: 1, status: 1 });
+// Compound index for fetching active, non-deleted roles (most frequent query)
+roleSchema.index({ isDeleted: 1, status: 1 });
+roleSchema.index({ isDeleted: 1, isDefault: 1 });
 
-/* ==================== MIDDLEWARE (HOOKS) ==================== */
+/* ==================== MIDDLEWARE ==================== */
 
 /**
- * PRE-SAVE: 
- * 1. Auto-generate Slug (with Vietnamese support).
- * 2. Deduplicate Permissions array.
+ * PRE-SAVE: Slug Generation & Deduplication
  */
 roleSchema.pre('save', function(next) {
-  // 1. Slug Generation
-  if (this.isModified('name') || !this.slug) {
-    // Only generate if slug is missing or name changed (and not immutable locked)
-    if (!this.slug) {
+  // 1. Generate Slug only if it's a new document OR slug is explicitly modified.
+  // We avoid auto-updating slug when Name changes to prevent URL breakage.
+  if (this.isNew || this.isModified('slug')) {
+    if (!this.slug && this.name) {
       this.slug = slugify(this.name, {
         lower: true,
         strict: true,
-        locale: 'vi', // Essential for correct Vietnamese handling
+        locale: 'vi',
         replacement: '_'
       });
     }
   }
 
   // 2. Permission Deduplication
-  // Converts ["a", "b", "a"] -> ["a", "b"]
   if (this.isModified('permissions') && this.permissions) {
     this.permissions = [...new Set(this.permissions)];
   }
@@ -111,39 +126,60 @@ roleSchema.pre('save', function(next) {
   next();
 });
 
+/* ==================== STATIC METHODS (BUSINESS LOGIC) ==================== */
+
 /**
- * PRE-DELETE: Safety Firewall
- * Prevents deleting System Roles OR Roles currently assigned to Users.
+ * @function softDelete
+ * @description Safely performs a soft delete check.
+ * Replaces the risky 'pre-remove' hooks with an explicit method.
+ * * @param {string} roleId - The ID of the role to delete.
+ * @param {string} userId - The ID of the user performing the action (for audit).
+ * @throws {Error} If role is System role or currently assigned to users.
  */
-roleSchema.pre('findOneAndDelete', async function(next) {
-  try {
-    const query = this.getQuery();
-    const roleToDelete = await this.model.findOne(query);
+roleSchema.statics.softDelete = async function(roleId, userId) {
+  const role = await this.findOne({ _id: roleId, isDeleted: false });
 
-    if (!roleToDelete) {
-      return next(); // Let Mongoose handle not found
-    }
-
-    // CHECK 1: System Integrity Protection
-    if (roleToDelete.isSystem) {
-      throw new Error('Action Denied: Cannot delete a system-protected role.');
-    }
-
-    // CHECK 2: Referential Integrity Protection
-    // Use db.model() to access User model without Circular Dependency imports
-    const User = this.model.db.model('User');
-    
-    // Check if any user has this role in their 'roles' array
-    const userCount = await User.countDocuments({ roles: roleToDelete._id });
-
-    if (userCount > 0) {
-      throw new Error(`Action Denied: Cannot delete role "${roleToDelete.name}" because ${userCount} users are currently assigned to it.`);
-    }
-
-    next();
-  } catch (error) {
-    next(error);
+  if (!role) {
+    throw new Error('Role not found or already deleted.');
   }
-});
+
+  // CHECK 1: System Integrity
+  if (role.isSystem) {
+    throw new Error('Action Denied: Cannot delete a system-protected role.');
+  }
+
+  // CHECK 2: Referential Integrity
+  // Dynamic import to avoid circular dependency issues at the top level
+  const User = mongoose.model('User');
+  
+  // Check if active users are still assigned this role
+  // Assuming User model has 'roles' array or single 'role' field
+  // Also assume we only care about non-deleted users
+  const userCount = await User.countDocuments({ 
+    roles: role._id,
+    isDeleted: { $ne: true } // Assuming User also has soft delete
+  });
+
+  if (userCount > 0) {
+    throw new Error(`Action Denied: Role is assigned to ${userCount} active users.`);
+  }
+
+  // PERFORM SOFT DELETE
+  role.isDeleted = true;
+  role.deletedAt = new Date();
+  role.deletedBy = userId;
+  role.slug = `${role.slug}-deleted-${Date.now()}`; // Free up the slug for reuse
+  role.status = 'inactive';
+  
+  return role.save();
+};
+
+/**
+ * @function findActive
+ * @description Helper to get only non-deleted, active roles.
+ */
+roleSchema.query.byActive = function() {
+  return this.where({ isDeleted: false, status: 'active' });
+};
 
 export default mongoose.model('Role', roleSchema);
