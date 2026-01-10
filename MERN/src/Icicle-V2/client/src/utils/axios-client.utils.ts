@@ -50,7 +50,7 @@ interface FailedQueueItem {
 const EXCLUDED_REFRESH_URLS = ['/auth/login', '/auth/register', '/auth/refresh'];
 
 // API Base URL
-const BASE_URL = ENV.APP_URL;
+const BASE_URL = ENV.API_URL;
 
 // ============================================================================
 // STATE MANAGEMENT (SINGLETON PATTERN)
