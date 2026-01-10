@@ -1,5 +1,5 @@
 // server/src/middlewares/response.middleware.js
-import config from '../config/env.config.js';
+import ENV from '../config/env.config.js';
 
 /**
  * Standardized API Response Structure.
@@ -52,7 +52,7 @@ export const responseMiddleware = (req, res, next) => {
     };
 
     // Include stack trace only in development environment for debugging
-    if (config.app.env === 'development' && error) {
+    if (ENV.app.env === 'development' && error) {
       response.stack = error.stack;
     }
 

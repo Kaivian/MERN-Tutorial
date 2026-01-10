@@ -6,7 +6,7 @@ import compression from 'compression';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 
-import config from './config/env.config.js';
+import ENV from './config/env.config.js';
 import logger from './utils/logger.utils.js';
 import apiRoutes from './routes/index.js';
 import { apiLimiter } from './middlewares/rate-limit.middleware.js';
@@ -31,7 +31,7 @@ app.use(helmet());
 
 /** Enable CORS with options from config. */
 app.use(cors({
-  origin: config.security.allowedOrigins,
+  origin: ENV.security.allowedOrigins,
   credentials: true // Allow cookies to be sent across domains
 }));
 
@@ -46,13 +46,13 @@ app.use(apiLimiter);
 /** Request Body Parsers. */
 app.use(express.json({ limit: '10kb' })); // Limit body size to prevent payload attacks
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
-app.use(cookieParser(config.security.cookieSecret)); // Parse cookies
+app.use(cookieParser(ENV.security.cookieSecret)); // Parse cookies
 
 /** * HTTP Request Logger (Morgan) -> Wired to Custom Logger (Winston).
  * - Format: 'dev' (colored/short) for Development, 'combined' (detailed) for Production.
  * - Logic: Pipes the morgan output directly into 'logger.info'.
  */
-const morganFormat = config.app.env === 'development' ? 'dev' : 'combined';
+const morganFormat = ENV.app.env === 'development' ? 'dev' : 'combined';
 
 app.use(morgan(morganFormat, {
   stream: {

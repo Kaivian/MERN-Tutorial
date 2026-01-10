@@ -2,7 +2,7 @@
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
-import config from '../config/env.config.js';
+import ENV from '../config/env.config.js';
 import userRepository from '../repositories/user.repository.js';
 import loginHistoryRepository from '../repositories/login-history.repository.js';
 import logger from '../utils/logger.utils.js';
@@ -66,8 +66,8 @@ class AuthService {
     };
 
     // Use Access Token specific configuration
-    const accessToken = jwt.sign(accessPayload, config.jwt.accessToken.secret, { 
-      expiresIn: config.jwt.accessToken.expiresIn 
+    const accessToken = jwt.sign(accessPayload, ENV.jwt.accessToken.secret, { 
+      expiresIn: ENV.jwt.accessToken.expiresIn 
     });
 
     const refreshPayload = {
@@ -76,8 +76,8 @@ class AuthService {
     };
 
     // Use Refresh Token specific configuration (Longer lifespan)
-    const refreshToken = jwt.sign(refreshPayload, config.jwt.refreshToken.secret, { 
-      expiresIn: config.jwt.refreshToken.expiresIn 
+    const refreshToken = jwt.sign(refreshPayload, ENV.jwt.refreshToken.secret, { 
+      expiresIn: ENV.jwt.refreshToken.expiresIn 
     });
 
     return { accessToken, refreshToken };
@@ -147,7 +147,7 @@ class AuthService {
       // 6. Update Session
       const tokenHash = this.hashToken(refreshToken);
       // Use config for maxAge calculation to ensure consistency
-      const sessionExpiresAt = new Date(Date.now() + config.jwt.refreshToken.maxAge);
+      const sessionExpiresAt = new Date(Date.now() + ENV.jwt.refreshToken.maxAge);
 
       await userRepository.updateSession(user._id, {
         tokenHash,
@@ -210,7 +210,7 @@ class AuthService {
     // 1. Verify JWT Signature
     let decoded;
     try {
-      decoded = jwt.verify(incomingRefreshToken, config.jwt.refreshToken.secret);
+      decoded = jwt.verify(incomingRefreshToken, ENV.jwt.refreshToken.secret);
       if (decoded.type !== 'refresh') throw new Error();
     } catch {
       throw new Error('Invalid refresh token');
@@ -256,7 +256,7 @@ class AuthService {
     await userRepository.updateSession(user._id, {
       ...user.activeSession, 
       tokenHash: newHash,    
-      expiresAt: new Date(Date.now() + config.jwt.refreshToken.maxAge), // Extend session
+      expiresAt: new Date(Date.now() + ENV.jwt.refreshToken.maxAge), // Extend session
       lastRefreshedAt: new Date()
     });
 
@@ -339,7 +339,7 @@ class AuthService {
       tokenHash,
       ipAddress,
       deviceInfo: { userAgent, type: 'unknown' },
-      expiresAt: new Date(Date.now() + config.jwt.refreshToken.maxAge), // Reset expiration
+      expiresAt: new Date(Date.now() + ENV.jwt.refreshToken.maxAge), // Reset expiration
       lastRefreshedAt: new Date() 
     });
 

@@ -1,6 +1,6 @@
 // server/src/routes/index.js
 import { Router } from 'express';
-import config from '../config/env.config.js';
+import ENV from '../config/env.config.js';
 import authRoutes from './auth.routes.js';
 
 const router = Router();
@@ -11,10 +11,10 @@ const router = Router();
  */
 router.get('/status', (req, res) => {
   res.success({
-    environment: config.app.env,
-    database: config.app.env === 'development' ? 'development_db' : 'production_db',
+    environment: ENV.app.env,
+    database: ENV.app.env === 'development' ? 'development_db' : 'production_db',
     uptime: process.uptime()
-  }, 'Icicle Backend API is running smoothly');
+  }, 'Backend API is running smoothly');
 });
 
 /* ==========================================================================

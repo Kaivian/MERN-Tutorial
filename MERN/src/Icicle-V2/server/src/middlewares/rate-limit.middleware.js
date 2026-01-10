@@ -1,7 +1,7 @@
 // server/src/middlewares/rate-limit.middleware.js
 import rateLimit from 'express-rate-limit';
 import logger from '../utils/logger.utils.js';
-import config from '../config/env.config.js';
+import ENV from '../config/env.config.js';
 
 /**
  * Helper function to determine the limit based on the environment.
@@ -11,7 +11,7 @@ import config from '../config/env.config.js';
  * @returns {number} The appropriate limit for the current environment.
  */
 const getLimit = (productionLimit, devLimit = 10000) => {
-  return config.app.env === 'development' ? devLimit : productionLimit;
+  return ENV.app.env === 'development' ? devLimit : productionLimit;
 };
 
 /**

@@ -6,7 +6,7 @@
  */
 
 import { cookies } from 'next/headers';
-import { env } from '@/config/env.config';
+import { ENV } from '@/config/env.config';
 import type { AuthMeResponse } from '@/types/auth.types';
 
 /**
@@ -21,7 +21,7 @@ export async function getCurrentUser(): Promise<AuthMeResponse | null> {
 
   try {
     // Note: We must use the full URL including domain for server-side fetch
-    const res = await fetch(`${env.API_URL}/auth/me`, {
+    const res = await fetch(`${ENV.API_URL}/auth/me`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${accessToken}`,

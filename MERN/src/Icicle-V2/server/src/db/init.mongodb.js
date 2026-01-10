@@ -1,7 +1,7 @@
 // server/src/db/init.mongodb.js
 import mongoose from 'mongoose';
 import mongoConfig from '../config/mongo.config.js';
-import config from '../config/env.config.js';
+import ENV from '../config/env.config.js';
 import { checkAndSeedData } from './seed/seed.mongodb.js';
 import logger from '../utils/logger.utils.js';
 
@@ -49,7 +49,7 @@ const connectDB = async () => {
     logger.info(`Target Database: ${mongoConfig.name}`);
 
     // --- 3. AUTO-SEEDING WORKFLOW ---
-    if (config.app.env === 'development') {
+    if (ENV.app.env === 'development') {
       await checkAndSeedData();
     }
 

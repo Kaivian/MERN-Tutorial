@@ -1,6 +1,6 @@
 // server/src/middlewares/auth.middleware.js
 import jwt from 'jsonwebtoken';
-import config from '../config/env.config.js';
+import ENV from '../config/env.config.js';
 import logger from '../utils/logger.utils.js';
 import userRepository from '../repositories/user.repository.js';
 
@@ -39,7 +39,7 @@ export const verifyAccessToken = (req, res, next) => {
     }
 
     // 3. Verify Token Signature & Expiration
-    const decoded = jwt.verify(token, config.jwt.accessToken.secret);
+    const decoded = jwt.verify(token, ENV.jwt.accessToken.secret);
 
     // 4. Attach minimal user info to request
     // We map 'sub' to 'id' to ensure consistency across the application.

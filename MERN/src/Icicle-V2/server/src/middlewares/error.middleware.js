@@ -1,6 +1,6 @@
 // server/src/middlewares/error.middleware.js
 import logger from '../utils/logger.utils.js';
-import config from '../config/env.config.js';
+import ENV from '../config/env.config.js';
 
 /**
  * Global Error Handling Middleware.
@@ -25,7 +25,7 @@ export const errorHandler = (err, req, res) => {
   };
 
   // Attach stack trace in development
-  if (config.app.env === 'development') {
+  if (ENV.app.env === 'development') {
     response.stack = err.stack;
   }
 

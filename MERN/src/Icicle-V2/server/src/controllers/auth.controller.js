@@ -1,7 +1,7 @@
 // server/src/controllers/auth.controller.js
 import authService from '../services/auth.service.js';
 import logger from '../utils/logger.utils.js';
-import config from '../config/env.config.js';
+import ENV from '../config/env.config.js';
 
 // ============================================================================
 // CONFIGURATION & CONSTANTS
@@ -13,7 +13,7 @@ import config from '../config/env.config.js';
  */
 const COOKIE_OPTS = {
   httpOnly: true,
-  secure: config.app.env === 'production', // HTTPS only in production
+  secure: ENV.app.env === 'production', // HTTPS only in production
   sameSite: 'lax',                         // 'lax' allows navigation from external sites
   path: '/',
 };
@@ -38,14 +38,14 @@ class AuthController {
     if (refreshToken) {
       res.cookie(COOKIE_NAMES.REFRESH, refreshToken, {
         ...COOKIE_OPTS,
-        maxAge: config.jwt.refreshToken.maxAge, // e.g., 7 days
+        maxAge: ENV.jwt.refreshToken.maxAge, // e.g., 7 days
       });
     }
 
     if (accessToken) {
       res.cookie(COOKIE_NAMES.ACCESS, accessToken, {
         ...COOKIE_OPTS,
-        maxAge: config.jwt.accessToken.maxAge, // e.g., 15 mins
+        maxAge: ENV.jwt.accessToken.maxAge, // e.g., 15 mins
       });
     }
   }

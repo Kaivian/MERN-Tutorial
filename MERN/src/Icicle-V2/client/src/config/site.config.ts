@@ -5,7 +5,7 @@
  * This file serves as the primary configuration source for both UI Navigation and Middleware Routing.
  */
 
-import { env } from "@/config/env.config";
+import { ENV } from "@/config/env.config";
 import { RouteConfig } from '@/types/auth.types';
 
 // --- Type Definitions ---
@@ -31,7 +31,7 @@ export type SiteConfig = typeof siteConfig;
 // --- Main Configuration (Single Source of Truth) ---
 
 export const siteConfig = {
-  name: env.APP_NAME,
+  name: ENV.APP_NAME,
   description: "Comprehensive management system for Ice Factories.",
 
   /**

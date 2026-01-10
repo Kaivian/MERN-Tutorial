@@ -93,7 +93,7 @@ const getEnv = (key, defaultValue) => {
  * @constant
  * @namespace config
  */
-const config = {
+const ENV = {
   /**
    * General application settings.
    * @property {string} env - The runtime environment (development/production).
@@ -179,4 +179,4 @@ const config = {
   },
 };
 
-export default config;
+export default ENV;

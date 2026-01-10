@@ -1,5 +1,5 @@
 // server/src/config/mongo.config.js
-import config from './env.config.js';
+import ENV from './env.config.js';
 
 /**
  * Determines the target database name based on the environment.
@@ -9,7 +9,7 @@ import config from './env.config.js';
  * @constant
  * @type {string}
  */
-const targetDbName = config.app.env === 'development' 
+const targetDbName = ENV.app.env === 'development' 
   ? 'development' 
   : 'icicle_app';
 
@@ -22,7 +22,7 @@ const targetDbName = config.app.env === 'development'
  */
 const mongoConfig = {
   /** The connection URI from environment variables. */
-  uri: config.db.url,
+  uri: ENV.db.url,
 
   /**
    * Mongoose connection options.
