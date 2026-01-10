@@ -5,7 +5,8 @@ import axios, {
   InternalAxiosRequestConfig, 
   AxiosResponse 
 } from 'axios';
-import { ApiResponse } from '../types/api.types'; // Ensure this type exists in your project
+import { ApiResponse } from '../types/api.types';
+import { ENV } from '@/config/env.config';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -49,7 +50,7 @@ interface FailedQueueItem {
 const EXCLUDED_REFRESH_URLS = ['/auth/login', '/auth/register', '/auth/refresh'];
 
 // API Base URL
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const BASE_URL = ENV.APP_URL;
 
 // ============================================================================
 // STATE MANAGEMENT (SINGLETON PATTERN)

@@ -13,7 +13,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { ROUTES_CONFIG, siteConfig } from '@/config/site.config';
 import { RouteConfig } from '@/types/auth.types';
-import { env } from '@/config/env.config';
+import { ENV } from '@/config/env.config';
 
 // ============================================================================
 // CONSTANTS & CONFIG
@@ -84,7 +84,7 @@ async function refreshAccessToken(request: NextRequest): Promise<string | null> 
       headers.set('Cookie', request.headers.get('cookie')!);
     }
 
-    const res = await fetch(`${env.API_URL}/auth/refresh`, { method: 'POST', headers });
+    const res = await fetch(`${ENV.API_URL}/auth/refresh`, { method: 'POST', headers });
     if (!res.ok) return null;
     const responseData = await res.json();
     return (responseData.data?.accessToken as string) || (responseData.accessToken as string) || null;
@@ -188,7 +188,7 @@ export async function proxy(request: NextRequest) {
       httpOnly: false,
       path: '/',
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      secure: ENV.NODE_ENV === 'production',
       maxAge: 15 * 60,
     });
   }
