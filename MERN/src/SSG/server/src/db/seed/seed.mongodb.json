@@ -1,0 +1,42 @@
+{
+  "roles": [
+    {
+      "name": "Quản Trị Viên",
+      "slug": "super_admin",
+      "permissions": ["*"],
+      "description": "System Administrator - Full Access",
+      "isSystem": true, 
+      "isDefault": false,
+      "status": "active"
+    },
+    {
+      "name": "Thành Viên",
+      "slug": "user",
+      "permissions": ["profile:read", "profile:update"],
+      "description": "Standard User Role",
+      "isSystem": true,
+      "isDefault": true, 
+      "status": "active"
+    }
+  ],
+  "users": [
+    {
+      "username": "admin",
+      "email": "admin@localhost.com",
+      "password": "admin123@",
+      "roleSlug": "super_admin", 
+      "mustChangePassword": false,
+      "isVerified": true,
+      "profile": { "fullName": "System Admin" }
+    },
+    {
+      "username": "tester",
+      "email": "tester@localhost.com",
+      "password": "user123@",
+      "roleSlug": "user",
+      "mustChangePassword": true,
+      "isVerified": true,
+      "profile": { "fullName": "Test User" }
+    }
+  ]
+}
