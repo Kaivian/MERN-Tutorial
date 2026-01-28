@@ -18,7 +18,7 @@
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
-    "express": "^4.22.1",
+    "express": "^5.2.1",
     "express-async-errors": "^3.1.1",
     "express-rate-limit": "^8.2.1",
     "google-auth-library": "^10.5.0",
@@ -27,17 +27,17 @@
     "joi": "^18.0.2",
     "jsonwebtoken": "^9.0.3",
     "lru-cache": "^11.2.4",
-    "mongoose": "^9.0.2",
+    "mongoose": "^9.1.4",
     "morgan": "^1.10.1",
     "slugify": "^1.6.6",
     "uuid": "^13.0.0",
-    "zod": "^4.2.1"
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "cross-env": "^10.1.0",
     "eslint": "^9.39.2",
     "eslint-plugin-check-file": "^3.3.1",
-    "globals": "^16.5.0",
+    "globals": "^17.0.0",
     "nodemon": "^3.1.11"
   }
 }

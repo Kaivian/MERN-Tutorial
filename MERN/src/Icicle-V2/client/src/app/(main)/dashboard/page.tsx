@@ -139,7 +139,7 @@ export default function DashboardPage() {
           {/* Detailed Content Placeholder */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="lg:col-span-2">
-              <CardBody className="h-[400px] flex items-center justify-center border-2 border-dashed border-divider rounded-xl">
+              <CardBody className="h-100 flex items-center justify-center border-2 border-dashed border-divider rounded-xl">
                 <div className="text-center">
                   <p className="text-default-500">Main Analytics Chart Area</p>
                   <Chip variant="flat" color="primary" className="mt-2">Coming Soon</Chip>
