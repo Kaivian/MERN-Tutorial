@@ -32,7 +32,7 @@ export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
   name: ENV.APP_NAME,
-  description: "Comprehensive management system for Ice Factories.",
+  description: "Personal management solution for FPT students.",
 
   /**
    * Central dictionary of all application routes.
@@ -77,6 +77,10 @@ export const siteConfig = {
     profile: { 
       label: "Profile", 
       path: "/profile" 
+    },
+    grade: {
+      label: "Grade",
+      path: "/grade"
     },
 
     // ========================================================================

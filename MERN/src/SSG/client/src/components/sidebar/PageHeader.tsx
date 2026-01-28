@@ -16,9 +16,6 @@ import {
   DropdownItem,
   DropdownSection,
 } from "@heroui/react";
-
-// Icons
-import { Bell, Letter, AltArrowDown } from "@solar-icons/react";
 import {
   UserRounded,
   Settings,
@@ -124,7 +121,7 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
             disableRipple
             className="bg-transparent data-[hover=true]:bg-transparent text-white hover:text-gray-100/80 transition-colors duration-300"
           >
-            <Bell size={22} />
+            <i className="hn hn-bell" style={{ fontSize: '22px' }}></i>
           </Button>
 
           {/* Letter Button */}
@@ -135,13 +132,13 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
             disableRipple
             className="bg-transparent data-[hover=true]:bg-transparent text-white hover:text-gray-100/80 transition-colors duration-300"
           >
-            <Letter size={22} />
+            <i className="hn hn-envelope" style={{ fontSize: '22px' }}></i>
           </Button>
         </div>
 
         <Divider orientation="vertical" className="m-4 bg-gray-100/70 dark:bg-divider transition-colors" />
 
-        <Dropdown closeOnSelect={false}>
+        <Dropdown closeOnSelect={false} className="bg-background">
           <DropdownTrigger>
             <Button
               variant="light"
@@ -164,7 +161,7 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
                   description: "text-gray-200 group-hover:text-gray-300 transition-all duration-300 text-tiny",
                 }}
               />
-              <AltArrowDown size={16} className="opacity-100 group-hover:opacity-70 transition-opacity duration-300" />
+              <i className="hn hn-angle-down-solid opacity-100 group-hover:opacity-70 transition-opacity duration-300" style={{ fontSize: '15px' }}></i>
             </Button>
           </DropdownTrigger>
 

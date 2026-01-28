@@ -10,9 +10,9 @@ type ButtonProps = React.ComponentProps<typeof Button>;
 type ThemeMode = "light" | "dark" | "system";
 
 const LABELS: Record<ThemeMode, string> = {
-  light: "Sáng",
-  dark: "Tối",
-  system: "Hệ thống",
+  light: "Light",
+  dark: "Dark",
+  system: "System",
 };
 
 const ICONS: Record<ThemeMode, React.ElementType> = {

@@ -15,7 +15,7 @@ const fontPixel = Pixelify_Sans({
 });
 
 export const metadata: Metadata = {
-  title: { default: "Gia Lực", template: `Kaivian Template` },
+  title: { default: "FPT Unimate", template: `Kaivian Template` },
   icons: { icon: "/favicon.png" },
 };
 

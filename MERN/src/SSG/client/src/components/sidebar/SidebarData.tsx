@@ -2,9 +2,7 @@
 import React from "react";
 import { InternalIconName } from "../icons/IconSwitch";
 import {
-  PieChart2, UsersGroupTwoRounded,
-  Box, Bus, BillList, Delivery,
-  Chart, User, ShieldUser,
+  User, ShieldUser,
 } from '@solar-icons/react';
 import { siteConfig } from "@/config/site.config";
 
@@ -26,50 +24,20 @@ export interface SidebarSection {
 
 export const sidebarSections: SidebarSection[] = [
   {
-    title: "Quản lý",
+    title: "Mamnagement",
     items: [
       {
         key: "dashboard",
         label: siteConfig.links.dashboard.label,
-        icon: (props) => <PieChart2 {...props}/>,
+        icon: () => <i className="hn hn-clipboard-solid text-retro-orange" style={{ fontSize: '25px'}}></i>,
         iconSize: 31,
       },
       {
-        key: "customers",
-        label: siteConfig.links.customer.label,
-        icon: (props) => <UsersGroupTwoRounded {...props}/>,
-        iconSize: 32,
-      },
-      {
-        key: "products",
-        label: siteConfig.links.product.label,
-        icon: (props) => <Box {...props}/>,
-        iconSize: 36,
-      },
-      {
-        key: "trucks",
-        label: siteConfig.links.truck.label,
-        icon: (props) => <Bus {...props}/>,
-        iconSize: 32,
-      },
-      {
-        key: "orders",
-        label: siteConfig.links.order.label,
-        icon: (props) => <BillList {...props}/>,
+        key: "grade",
+        label: siteConfig.links.grade.label,
+        icon: () => <i className="hn hn-clipboard-solid text-retro-orange" style={{ fontSize: '25px'}}></i>,
         iconSize: 31,
-      },
-      {
-        key: "deliveries",
-        label: siteConfig.links.delivery.label,
-        icon: (props) => <Delivery {...props}/>,
-        iconSize: 31,
-      },
-      {
-        key: "analytics",
-        label: siteConfig.links.report.label,
-        icon: (props) => <Chart {...props}/>,
-        iconSize: 31,
-      },
+      }
     ],
   },
 ];
