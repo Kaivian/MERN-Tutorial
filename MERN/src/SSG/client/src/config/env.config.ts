@@ -18,7 +18,7 @@ export const ENV = {
   /** * The base URL of the Backend API server. 
    * Maps to NEXT_PUBLIC_API_URL in .env 
    */
-  API_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000",
+  API_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
 
   /** * The public URL of this Frontend application.
    * Maps to NEXT_PUBLIC_APP_URL in .env

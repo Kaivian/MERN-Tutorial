@@ -1,14 +1,19 @@
 {
-  "name": "my_backend",
+  "name": "my-backend",
   "version": "1.0.0",
+  "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "main": "src/server.js",
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon src/server.js",
     "start": "cross-env NODE_ENV=production node src/server.js",
     "seed": "cross-env NODE_ENV=development node src/scripts/seed.js",
-    "build": "echo \"no build step for nodejs backend\"",
-    "lint": "eslint src/**/*.js",
+    "build": "echo \"No build step for Node.js backend\"",
+    "lint": "eslint .",
+    "format": "prettier --write .",
     "test": "node --test",
     "test:watch": "node --test --watch"
   },
@@ -35,9 +40,13 @@
   },
   "devDependencies": {
     "cross-env": "^10.1.0",
-    "eslint": "^9.39.2",
+    "eslint": "^10.0.1",
     "eslint-plugin-check-file": "^3.3.1",
     "globals": "^17.0.0",
-    "nodemon": "^3.1.11"
+    "nodemon": "^3.1.11",
+    "prettier": "^3.5.0"
+  },
+  "overrides": {
+    "minimatch": "^10.2.1"
   }
 }

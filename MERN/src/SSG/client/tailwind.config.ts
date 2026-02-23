@@ -11,9 +11,11 @@ const config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-pixelify)", "var(--font-sans)", "sans-serif"],
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "monospace"],
         display: ['var(--font-pixelify)', 'cursive'],
+        roboto: ['var(--font-roboto)', 'sans-serif'],
+        pixelify: ['var(--font-pixelify)', 'cursive'],
       },
       colors: {
         "retro-orange": "#ee9d2b", // FPT Orange

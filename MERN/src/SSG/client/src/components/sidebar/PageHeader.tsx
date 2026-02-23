@@ -3,18 +3,17 @@
 
 import { useRouter } from "next/navigation";
 import { useHotkeys } from "react-hotkeys-hook";
-import { SidebarMinimalistic } from '@solar-icons/react'
+import { SidebarMinimalistic } from '@solar-icons/react';
 
-// UI Components
 import {
   Button,
   User,
-  Divider,
   Dropdown,
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
   DropdownSection,
+  cn,
 } from "@heroui/react";
 import {
   UserRounded,
@@ -34,6 +33,10 @@ interface PageHeaderProps {
   title: string;
 }
 
+// --- RETRO STYLES ---
+const pixelBtnStyle = "rounded-none border-2 border-black bg-white hover:bg-[#e6b689] text-black transition-all active:translate-y-[2px] active:shadow-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]";
+const iconBtnStyle = "bg-transparent border-2 border-transparent hover:border-black hover:bg-[#e6b689] text-black rounded-none transition-all duration-200";
+
 export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
   const router = useRouter();
   const { user } = useAuth();
@@ -44,7 +47,6 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
   // ===========================================================================
   
   const handleProfile = () => {
-    // Navigate to profile page (Update path as needed)
     router.push("/profile");
   };
 
@@ -70,25 +72,13 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
 
   // ===========================================================================
   // 2. HOTKEYS CONFIGURATION
-  // 'mod' equals 'Command' on macOS and 'Control' on Windows
   // ===========================================================================
 
-  // ⌘+P: Profile (Prevents Browser Print)
   useHotkeys("mod+p", (e) => { e.preventDefault(); handleProfile(); });
-
-  // ⌘+S: Settings (Prevents Browser Save)
   useHotkeys("mod+s", (e) => { e.preventDefault(); handleSettings(); });
-
-  // ⌘+H: Changelog (Prevents Browser History/Hide)
   useHotkeys("mod+h", (e) => { e.preventDefault(); handleChangeLog(); });
-
-  // ⌘+I: Help
   useHotkeys("mod+i", (e) => { e.preventDefault(); handleHelp(); });
-
-  // ⌘+F: Feedback (Prevents Browser Find)
   useHotkeys("mod+f", (e) => { e.preventDefault(); handleFeedback(); });
-
-  // ⌘+Shift+Q: Logout
   useHotkeys("mod+shift+q", (e) => { e.preventDefault(); handleLogout(); });
 
   // ===========================================================================
@@ -96,113 +86,142 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
   // ===========================================================================
 
   return (
-    <header className="rounded-medium border-small border-divider flex items-center justify-between bg-primary dark:bg-background transition-colors duration-200">
+    <header className="rounded-none border-b-4 border-black flex items-center justify-between bg-white dark:bg-zinc-900 transition-colors duration-200 h-20 px-6">
       {/* Left Section: Button + Dynamic Title */}
-      <div className="flex items-center gap-2 m-4">
+      <div className="flex items-center gap-4">
         <Button
           onPress={toggleSidebar}
-          startContent={<SidebarMinimalistic size={25} className="text-gray-100"/>}
           isIconOnly
-          variant="light"
-          size="sm"
-          radius="sm"
-        />
-        <h2 className="text-medium text-gray-100 font-medium">{title}</h2>
+          radius="none"
+          className={cn("w-10 h-10 min-w-10", pixelBtnStyle)}
+        >
+          <SidebarMinimalistic size={24} />
+        </Button>
+        <div className="flex flex-col">
+            <h2 className="text-xl font-black uppercase tracking-tighter text-black dark:text-white leading-none">
+                {title}
+            </h2>
+            <div className="h-1 w-full bg-[#e6b689] mt-1"></div>
+        </div>
       </div>
 
       {/* Right Section: User Profile */}
-      <div className="flex items-center h-full m-4">
-        <div className="flex items-center gap-1">
+      <div className="flex items-center h-full gap-2">
+        <div className="flex items-center gap-2">
           {/* Bell Button */}
           <Button
             isIconOnly
-            variant="light"
+            radius="none"
             size="sm"
-            disableRipple
-            className="bg-transparent data-[hover=true]:bg-transparent text-white hover:text-gray-100/80 transition-colors duration-300"
+            className={cn("w-9 h-9", iconBtnStyle, "dark:text-white dark:hover:text-black")}
           >
-            <i className="hn hn-bell" style={{ fontSize: '22px' }}></i>
+            <i className="hn hn-bell" style={{ fontSize: '20px' }}></i>
           </Button>
 
           {/* Letter Button */}
           <Button
             isIconOnly
-            variant="light"
+            radius="none"
             size="sm"
-            disableRipple
-            className="bg-transparent data-[hover=true]:bg-transparent text-white hover:text-gray-100/80 transition-colors duration-300"
+            className={cn("w-9 h-9", iconBtnStyle, "dark:text-white dark:hover:text-black")}
           >
-            <i className="hn hn-envelope" style={{ fontSize: '22px' }}></i>
+            <i className="hn hn-envelope" style={{ fontSize: '20px' }}></i>
           </Button>
         </div>
 
-        <Divider orientation="vertical" className="m-4 bg-gray-100/70 dark:bg-divider transition-colors" />
+        {/* Retro Divider */}
+        <div className="h-8 w-0.5 bg-black dark:bg-zinc-700 mx-2"></div>
 
-        <Dropdown closeOnSelect={false} className="bg-background">
+        <Dropdown 
+            closeOnSelect={false} 
+            className="bg-white dark:bg-zinc-900 rounded-none border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+            radius="none"
+            classNames={{
+                content: "p-0 rounded-none border-2 border-black min-w-[240px]"
+            }}
+        >
           <DropdownTrigger>
             <Button
-              variant="light"
               disableRipple
-              className="group h-auto px-2 gap-3 bg-transparent data-[hover=true]:bg-transparent text-white hover:text-gray-100/90 transition-all duration-300"
+              radius="none"
+              className="group h-auto px-3 py-1.5 gap-3 bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 border-2 border-transparent hover:border-black transition-all duration-200"
             >
               <User
                 as="div"
                 avatarProps={{
                   src: user?.avatarUrl || undefined,
                   alt: "User Avatar",
-                  className: "transition-transform duration-300 group-hover:scale-97",
+                  radius: "none", // Square Avatar
+                  className: "border-2 border-black transition-transform duration-300 group-hover:scale-105",
                   showFallback: true,
                 }}
                 description={user?.email || user?.username || "..."}
                 name={user?.fullName || "User"}
                 classNames={{
                   wrapper: "hidden md:flex text-start",
-                  name: "font-medium text-inherit text-small",
-                  description: "text-gray-200 group-hover:text-gray-300 transition-all duration-300 text-tiny",
+                  name: "font-mono font-bold text-black dark:text-white text-sm uppercase",
+                  description: "font-mono text-zinc-500 text-[10px]",
                 }}
               />
-              <i className="hn hn-angle-down-solid opacity-100 group-hover:opacity-70 transition-opacity duration-300" style={{ fontSize: '15px' }}></i>
+              <i className="hn hn-caret-down text-black dark:text-white group-hover:translate-y-0.5 transition-transform duration-200"></i>
             </Button>
           </DropdownTrigger>
 
-          <DropdownMenu aria-label="User Menu">
+          <DropdownMenu 
+            aria-label="User Menu" 
+            itemClasses={{
+                base: [
+                    "rounded-none",
+                    "font-mono",
+                    "text-zinc-700 dark:text-zinc-300",
+                    "data-[hover=true]:bg-[#e6b689]",
+                    "data-[hover=true]:text-black",
+                    "data-[hover=true]:font-bold",
+                    "border-b-2 border-transparent",
+                    "data-[hover=true]:border-black", // Fake border effect inside
+                    "transition-none" // Retro feels snappy, not smooth
+                ].join(" "),
+                shortcut: "font-mono text-[10px] border border-black px-1 rounded-none bg-white text-black",
+                description: "font-mono",
+                title: "uppercase tracking-wide text-xs"
+            }}
+          >
             {/* --- SECTION 1 --- */}
-            <DropdownSection showDivider>
+            <DropdownSection showDivider classNames={{ divider: "bg-black h-0.5 my-0" }}>
               <DropdownItem
                 key="profile"
-                shortcut="⌘+P"
-                startContent={<UserRounded />}
+                shortcut="⌘P"
+                startContent={<UserRounded size={18}/>}
                 onPress={handleProfile}
               >
                 Profile
               </DropdownItem>
               <DropdownItem
                 key="settings"
-                shortcut="⌘+S"
-                startContent={<Settings />}
+                shortcut="⌘S"
+                startContent={<Settings size={18}/>}
                 onPress={handleSettings}
               >
                 Settings
               </DropdownItem>
               <DropdownItem
                 key="theme"
-                startContent={<Pallete2 />}
-                endContent={<ThemeSwitchDropdown className="border-foreground/20 hover:border-foreground/80 text-foreground/80" />}
-                // Note: Theme switching is handled inside ThemeSwitchDropdown, 
-                // so we don't attach an onPress handler here to avoid conflicts.
+                startContent={<Pallete2 size={18}/>}
+                // Custom style for theme switcher container inside dropdown
+                endContent={<div className="scale-90 origin-right"><ThemeSwitchDropdown /></div>}
                 isReadOnly
-                className="cursor-default"
+                className="cursor-default hover:bg-transparent! hover:border-transparent!"
               >
-                Themes
+                THEMES
               </DropdownItem>
             </DropdownSection>
 
             {/* --- SECTION 2 --- */}
-            <DropdownSection showDivider>
+            <DropdownSection showDivider classNames={{ divider: "bg-black h-0.5 my-0" }}>
               <DropdownItem
                 key="changelog"
-                shortcut="⌘+H"
-                startContent={<History />}
+                shortcut="⌘H"
+                startContent={<History size={18}/>}
                 onPress={handleChangeLog}
               >
                 Change log
@@ -210,19 +229,19 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
             </DropdownSection>
 
             {/* --- SECTION 3 --- */}
-            <DropdownSection showDivider>
+            <DropdownSection showDivider classNames={{ divider: "bg-black h-0.5 my-0" }}>
               <DropdownItem
                 key="help"
-                shortcut="⌘+I"
-                startContent={<QuestionCircle />}
+                shortcut="⌘I"
+                startContent={<QuestionCircle size={18}/>}
                 onPress={handleHelp}
               >
                 Info & Help
               </DropdownItem>
               <DropdownItem
                 key="feedback"
-                shortcut="⌘+F"
-                startContent={<InfoSquare />}
+                shortcut="⌘F"
+                startContent={<InfoSquare size={18}/>}
                 onPress={handleFeedback}
               >
                 Feedback
@@ -233,13 +252,12 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
             <DropdownSection>
               <DropdownItem
                 key="logout"
-                shortcut="⌘+⇧+Q"
-                startContent={<Logout2 />}
-                className="text-danger"
-                color="danger"
+                shortcut="⌘⇧Q"
+                startContent={<Logout2 size={18}/>}
+                className="text-red-600 data-[hover=true]:bg-red-500 data-[hover=true]:text-white font-bold"
                 onPress={handleLogout}
               >
-                Logout
+                LOGOUT
               </DropdownItem>
             </DropdownSection>
           </DropdownMenu>

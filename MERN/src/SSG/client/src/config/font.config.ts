@@ -11,7 +11,7 @@ import {
 } from "next/font/google";
 
 export const fontSans = FontSans({
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   variable: "--font-sans",
 });
 

@@ -28,7 +28,7 @@ export default function LoginPage() {
       "border-black",
       "rounded-none",         // Bỏ bo góc -> Vuông
       "shadow-none",
-      "h-14",                 // Cao hơn chút cho dễ bấm
+      "h-12",                 // Cao hơn chút cho dễ bấm
       // Trạng thái hover/focus
       "data-[hover=true]:border-black",
       "group-data-[focus=true]:border-black",
@@ -52,7 +52,7 @@ export default function LoginPage() {
 
       {/* Form Section */}
       <section>
-        <Form className="space-y-6" onSubmit={onSubmit}>
+        <Form className="space-y-2" onSubmit={onSubmit}>
           <Input
             isRequired
             errorMessage={VALIDATION_MESSAGES.REQUIRED}
@@ -100,7 +100,7 @@ export default function LoginPage() {
             fullWidth
             type="submit"
             isLoading={isLoading}
-            className="h-14 rounded-none border-4 border-black bg-retro-orange text-black text-xl font-bold uppercase tracking-widest shadow-pixel hover:translate-y-1 hover:shadow-pixel-hover active:translate-y-1 active:shadow-none transition-all duration-150 font-display"
+            className="h-12 rounded-none border-4 border-black bg-retro-orange text-black text-xl font-bold uppercase tracking-widest shadow-pixel hover:translate-y-1 hover:shadow-pixel-hover active:translate-y-1 active:shadow-none transition-all duration-150 font-display"
           >
             Login
           </Button>

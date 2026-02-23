@@ -109,7 +109,7 @@ export default function RegisterPage() {
       "border-black",
       "rounded-none",         
       "shadow-none",
-      "h-14",                 
+      "h-10",                 
       "data-[hover=true]:border-black",
       "group-data-[focus=true]:border-black",
       "group-data-[focus=true]:shadow-pixel", 
@@ -125,7 +125,7 @@ export default function RegisterPage() {
   return (
     <>
       {/* HEADER SECTION */}
-      <div className="relative mb-8">
+      <div className="relative mb-4">
         <div className="absolute -top-4 -right-2 opacity-20 text-retro-orange hidden sm:block">
             <Box size={48} strokeWidth={1} />
         </div>
@@ -143,7 +143,7 @@ export default function RegisterPage() {
 
       {/* FORM SECTION */}
       <section>
-        <Form className="flex flex-col gap-5" onSubmit={onSubmit}>
+        <Form className="flex flex-col gap-3" onSubmit={onSubmit}>
             
           {/* 1. Player Name (Username) */}
           <Input
@@ -244,7 +244,7 @@ export default function RegisterPage() {
             type="submit"
             isLoading={isLoading}
             isDisabled={isSubmitDisabled || isLoading}
-            className="h-14 mt-2 rounded-none border-4 border-black bg-retro-orange text-white text-xl font-bold uppercase tracking-widest shadow-pixel hover:translate-y-1 hover:shadow-pixel-hover active:translate-y-1 active:shadow-none transition-all duration-150 font-display disabled:opacity-50 disabled:shadow-none disabled:translate-y-1"
+            className="h-10 mt-2 rounded-none border-4 border-black bg-retro-orange text-white text-xl font-bold uppercase tracking-widest shadow-pixel hover:translate-y-1 hover:shadow-pixel-hover active:translate-y-1 active:shadow-none transition-all duration-150 font-display disabled:opacity-50 disabled:shadow-none disabled:translate-y-1"
           >
             {isLoading ? "LOADING..." : "CREATE ACCOUNT"}
           </Button>
@@ -264,14 +264,14 @@ export default function RegisterPage() {
         <div className="grid grid-cols-1">
           <Button
             isDisabled={isLoading}
-            className="h-12 rounded-none border-4 border-black bg-white text-black font-bold hover:bg-gray-50 shadow-pixel hover:translate-y-1 hover:shadow-pixel-hover active:translate-y-1 active:shadow-none transition-all duration-150 group font-display"
+            className="h-10 rounded-none border-4 border-black bg-white text-black font-bold hover:bg-gray-50 shadow-pixel hover:translate-y-1 hover:shadow-pixel-hover active:translate-y-1 active:shadow-none transition-all duration-150 group font-display"
           >
             <FcGoogle size={22} className="group-hover:scale-110 transition-transform" />
             <span className="uppercase text-xs sm:text-sm ml-2">Google</span>
           </Button>
         </div>
         
-        <div className="text-center mt-8 pb-2">
+        <div className="text-center mt-8 -mb-3">
              <p className="text-sm text-gray-600 font-mono">
                 Already have an account?{" "}
                 <Link href="/login" className="font-bold text-retro-orange hover:text-retro-dark hover:underline decoration-4 underline-offset-4 uppercase transition-colors">

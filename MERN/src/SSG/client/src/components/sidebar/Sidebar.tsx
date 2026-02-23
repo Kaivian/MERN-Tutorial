@@ -6,15 +6,19 @@ import {
   Button,
   Tooltip,
   ScrollShadow,
-  Divider,
   Drawer,
   DrawerContent,
   DrawerBody,
   Link,
+  cn,
 } from "@heroui/react";
 import IconSwitch from "../icons/IconSwitch";
 import { useSidebarMenu } from "@/hooks/generals/useSidebarMenu";
 import { SidebarItem, SidebarSection } from "./SidebarData";
+
+// --- RETRO STYLES ---
+const activeItemStyle = "bg-[#e6b689] border-2 border-black text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] translate-x-[-2px] translate-y-[-2px]";
+const normalItemStyle = "bg-transparent border-2 border-transparent hover:border-black hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white";
 
 // ============================================================================
 // SHARED: SIDEBAR MENU CONTENT
@@ -33,33 +37,35 @@ const SidebarContent = ({ menuGroup1, menuGroup2 }: SidebarContentProps) => {
     <div className="flex flex-col gap-3 2xl:gap-4 flex-1 overflow-hidden h-full w-full">
       <div className="flex flex-col gap-4 pt-1 mx-2">
         <section className="flex items-center gap-3 h-15 w-full">
-          <div className="h-10 w-full flex items-center">
-            <h1 className="text-[34px] font-bold text-retro-orange [text-shadow:2px_2px_0_#c47c16] whitespace-nowrap">
+          <div className="h-10 w-full flex items-center justify-center">
+            {/* Logo Text Retro */}
+            <h1 className="text-[34px] font-black text-[#e6b689] tracking-tighter uppercase [text-shadow:2px_2px_0_#000] whitespace-nowrap">
               FPT UNIMATE
             </h1>
           </div>
         </section>
       </div>
 
-      <Divider className="bg-divider w-full" />
+      {/* Retro Divider */}
+      <div className="w-full px-2">
+         <div className="h-1 w-full bg-black dark:bg-zinc-700" />
+      </div>
 
       <ScrollShadow className="flex flex-col gap-4 2xl:gap-6 shrink min-h-0 -mx-2 px-2" hideScrollBar>
-        <div className="flex flex-col gap-4 2xl:gap-6 pb-2">
+        <div className="flex flex-col gap-4 2xl:gap-6 pb-2 pt-2">
 
           {[menuGroup1, menuGroup2].map((sections, groupIndex) => (
             <div key={groupIndex} className="flex flex-col gap-4">
               {sections.map((section) => {
-                // --- LOGIC MỚI: Lọc item trước ---
                 const visibleItems = section.items.filter(item => !item.isHidden);
-
-                // Nếu không có item nào hiển thị, ẩn luôn cả Section (bao gồm Title)
                 if (visibleItems.length === 0) return null;
 
                 return (
-                  <section key={section.title} className="flex flex-col gap-1 2xl:gap-2">
-                    <h2 className="text-tiny text-foreground-500 mb-1 px-2">{section.title}</h2>
+                  <section key={section.title} className="flex flex-col gap-1 2xl:gap-2 px-2">
+                    <h2 className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1 px-2">
+                        {section.title}
+                    </h2>
 
-                    {/* Map qua danh sách đã lọc (visibleItems) */}
                     {visibleItems.map((item: SidebarItem) => {
                       const isSelected = pathname?.includes(item.key);
 
@@ -69,26 +75,30 @@ const SidebarContent = ({ menuGroup1, menuGroup2 }: SidebarContentProps) => {
                           isDisabled={item.isDisabled}
                           as={Link}
                           href={item.key}
-                          className={`relative overflow-hidden h-9 xl:h-10 2xl:h-12 text-left px-3 gap-3 justify-start ${isSelected ? "bg-primary/15 dark:bg-gray-100/15" : ""
-                            }`}
+                          // RETRO STYLING APPLIED HERE
+                          radius="none"
+                          className={cn(
+                            "relative overflow-visible h-10 xl:h-11 text-left px-3 gap-3 justify-start transition-all duration-200",
+                            isSelected ? activeItemStyle : normalItemStyle
+                          )}
                           fullWidth
-                          radius="md"
                           size="lg"
-                          variant="light"
                           startContent={
                             <IconSwitch
                               name={item.icon}
                               size={20}
-                              className={`w-5 h-5 xl:w-7 xl:h-7 2xl:w-10 2xl:h-10 ${isSelected ? "text-primary dark:text-default-900" : ""
-                                }`}
+                              className={cn(
+                                "w-5 h-5 xl:w-6 xl:h-6",
+                                isSelected ? "text-black" : "currentColor"
+                              )}
                             />
                           }
                           endContent={item.endContent}
                         >
-                          {isSelected && (
-                            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-1/2 w-1 bg-primary dark:bg-default-500 rounded-r-small" />
-                          )}
-                          <span className={`text-small 2xl:text-medium font-medium flex-1 text-left ${isSelected ? "text-primary dark:text-default-900" : ""}`}>
+                          <span className={cn(
+                              "text-sm font-bold flex-1 text-left uppercase tracking-tight",
+                              isSelected ? "text-black" : "currentColor"
+                          )}>
                             {item.label}
                           </span>
                         </Button>
@@ -118,30 +128,30 @@ interface SidebarCollapsedProps {
 const SidebarCollapsed = ({ menuGroup1, menuGroup2 }: SidebarCollapsedProps) => {
   const pathname = usePathname();
 
-  // Helper: Kiểm tra xem một nhóm section có item nào hiển thị không
   const hasVisibleItems = (sections: SidebarSection[]) => {
     return sections.some((section) =>
       section.items.some((item) => !item.isHidden)
     );
   };
 
-  // Kiểm tra trước xem group 2 có item nào không để quyết định render Divider
   const isGroup2Visible = hasVisibleItems(menuGroup2);
 
   return (
     <div className="flex flex-col items-center gap-3 2xl:gap-4 flex-1 h-full w-full animate-[fadeIn_0.3s_ease-in-out]">
-      {/* ... Header Logo giữ nguyên ... */}
       <div className="flex flex-col items-center gap-4 w-full pt-1">
-        <div className="flex justify-center w-10 h-10">
-          <h1 className="text-2xl font-bold text-retro-orange [text-shadow:2px_2px_0_#c47c16]">
+        <div className="flex justify-center w-10 h-10 items-center">
+           {/* Collapsed Logo */}
+          <h1 className="text-xl font-black text-[#e6b689] [text-shadow:1.5px_1.5px_0_#000]">
             FPT
           </h1>
         </div>
       </div>
 
-      <Divider className="bg-divider w-full" />
+      <div className="w-full px-2">
+         <div className="h-1 w-full bg-black dark:bg-zinc-700" />
+      </div>
 
-      <ScrollShadow className="flex flex-col gap-2 2xl:gap-4 w-full items-center shrink min-h-0" hideScrollBar>
+      <ScrollShadow className="flex flex-col gap-2 2xl:gap-4 w-full items-center shrink min-h-0 pt-2" hideScrollBar>
         {[menuGroup1, menuGroup2].map((sections, idx) => (
           <React.Fragment key={idx}>
             {sections.map(section => {
@@ -149,24 +159,38 @@ const SidebarCollapsed = ({ menuGroup1, menuGroup2 }: SidebarCollapsedProps) => 
               if (visibleItems.length === 0) return null;
 
               return (
-                <section key={section.title} className="flex flex-col gap-1 w-full items-center">
+                <section key={section.title} className="flex flex-col gap-2 w-full items-center px-1">
                   {visibleItems.map((item) => {
                     const isSelected = pathname?.includes(item.key);
                     return (
-                      <Tooltip key={item.key} content={item.label} placement="right">
+                      <Tooltip 
+                        key={item.key} 
+                        content={<span className="font-bold uppercase text-xs">{item.label}</span>} 
+                        placement="right"
+                        classNames={{
+                            base: "before:bg-black",
+                            content: "bg-black text-white border-2 border-[#e6b689] rounded-none shadow-[2px_2px_0px_0px_#e6b689]"
+                        }}
+                      >
                         <Button
                           as={Link}
                           href={item.key}
                           isIconOnly
                           isDisabled={item.isDisabled}
                           size="md"
-                          className={`w-11 h-11 2xl:w-12 2xl:h-12 ${isSelected ? "bg-primary/15 dark:bg-gray-100/15" : ""}`}
-                          variant="light"
+                          radius="none" // Square buttons
+                          className={cn(
+                             "w-10 h-10 transition-all duration-200",
+                             isSelected ? activeItemStyle : normalItemStyle
+                          )}
                         >
                           <IconSwitch
                             name={item.icon}
                             size={22}
-                            className={`w-6 h-6 ${isSelected ? "text-primary dark:text-default-900" : ""}`}
+                            className={cn(
+                                "w-5 h-5",
+                                isSelected ? "text-black" : "currentColor"
+                            )}
                           />
                         </Button>
                       </Tooltip>
@@ -175,7 +199,9 @@ const SidebarCollapsed = ({ menuGroup1, menuGroup2 }: SidebarCollapsedProps) => 
                 </section>
               );
             })}
-            {idx === 0 && isGroup2Visible && <Divider className="bg-divider w-8" />}
+            {idx === 0 && isGroup2Visible && (
+                <div className="w-1/2 h-1 bg-black/20 dark:bg-white/20 my-1" />
+            )}
           </React.Fragment>
         ))}
       </ScrollShadow>
@@ -199,10 +225,10 @@ export default function SideBar({ isCollapsed, isMobileOpen, onMobileChange }: S
 
   const desktopClasses = `
     hidden md:flex 
-    border-r-small border-divider relative h-full flex-col
+    border-r-4 border-black relative h-full flex-col
     transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1.0)] 
-    ${isCollapsed ? "w-16 2xl:w-20 px-2" : "w-64 2xl:w-72 px-4 2xl:px-6"} 
-    py-4 2xl:py-6 overflow-hidden bg-background shrink-0
+    ${isCollapsed ? "w-20 px-0" : "w-72 px-0"} 
+    py-4 overflow-hidden bg-white dark:bg-zinc-900 shrink-0
   `;
 
   return (
@@ -214,8 +240,9 @@ export default function SideBar({ isCollapsed, isMobileOpen, onMobileChange }: S
         placement="left"
         size="xs"
         classNames={{
-          base: "bg-background",
+          base: "bg-white dark:bg-zinc-900 border-r-4 border-black rounded-none", // Retro Drawer
           body: "p-4",
+          closeButton: "hover:bg-red-500 hover:text-white rounded-none border border-transparent hover:border-black transition-colors"
         }}
         backdrop="blur"
       >
