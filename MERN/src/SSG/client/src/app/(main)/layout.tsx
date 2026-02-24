@@ -19,19 +19,19 @@ export default function AppTemplateLayout({
 }) {
   const [isMounted, setIsMounted] = useState(false);
   const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
-  const { 
-    isOpen: isMobileOpen, 
-    onOpenChange: setMobileOpen, 
+  const {
+    isOpen: isMobileOpen,
+    onOpenChange: setMobileOpen,
     onOpen: openMobile,
-    onClose: closeMobile 
+    onClose: closeMobile
   } = useDisclosure();
   const [isMobile, setIsMobile] = useState(false);
-  
+
   const pathname = usePathname();
   const { checkAllPermissions, isAuthenticated } = useAuth();
 
   const activeRoute = useMemo(() => {
-    return ROUTES_CONFIG.find(route => 
+    return ROUTES_CONFIG.find(route =>
       pathname === route.path || pathname.startsWith(`${route.path}/`)
     );
   }, [pathname]);
@@ -69,11 +69,11 @@ export default function AppTemplateLayout({
     const handleResize = () => {
       const width = window.innerWidth;
       const isNowMobile = width < MOBILE_BREAKPOINT;
-      
+
       setIsMobile(isNowMobile);
 
       if (!isNowMobile) {
-        closeMobile(); 
+        closeMobile();
       }
     };
 
@@ -102,21 +102,21 @@ export default function AppTemplateLayout({
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background transition-colors duration-300">
-      <Sidebar 
-        isCollapsed={isDesktopCollapsed} 
+      <Sidebar
+        isCollapsed={isDesktopCollapsed}
         isMobileOpen={isMobileOpen}
         onMobileChange={setMobileOpen}
       />
 
       <div className="flex flex-col flex-1 min-w-0 m-2 xl:m-3 2xl:m-4 gap-2 xl:gap-3 2xl:gap-4">
         <PageHeader toggleSidebar={handleToggle} title={pageTitle} />
-        
-        <main className="flex w-full flex-col h-full overflow-auto relative">
+
+        <main className="flex w-full flex-col h-full overflow-hidden relative">
           {hasAccess ? (
             children
           ) : (
             <div className="absolute inset-0 z-50 bg-background/50 backdrop-blur-md">
-               <AccessDenied />
+              <AccessDenied />
             </div>
           )}
         </main>

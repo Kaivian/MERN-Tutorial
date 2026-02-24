@@ -47,6 +47,23 @@ export const sidebarSections: SidebarSection[] = [
       }
     ],
   },
+  {
+    title: "Todo",
+    items: [
+      {
+        key: "calendar",
+        label: siteConfig.links.calendar.label,
+        icon: () => <i className="hn hn-calendar-01 text-retro-orange" style={{ fontSize: '25px' }}></i>,
+        iconSize: 31,
+      },
+      {
+        key: "deadline-manager",
+        label: siteConfig.links.deadlineManager.label,
+        icon: () => <i className="hn hn-view-list text-retro-orange" style={{ fontSize: '25px' }}></i>,
+        iconSize: 31,
+      },
+    ],
+  },
 ];
 
 export const sidebarSections2: SidebarSection[] = [

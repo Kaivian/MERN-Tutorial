@@ -90,6 +90,8 @@ export const siteConfig = {
     // ========================================================================
     // 4. BUSINESS ROUTES (Login Required)
     // ========================================================================
+    calendar: { label: "Calendar", path: "/calendar" },
+    deadlineManager: { label: "Deadline Manager", path: "/deadline-manager" },
     customer: { label: "Customers", path: "/customers" },
     product: { label: "Products", path: "/products" },
     truck: { label: "Trucks", path: "/trucks" },

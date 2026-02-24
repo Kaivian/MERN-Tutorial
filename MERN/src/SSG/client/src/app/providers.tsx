@@ -8,6 +8,7 @@ import { HeroUIProvider } from "@heroui/system";
 import { ToastProvider } from "@heroui/toast";
 import { useRouter } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 export interface ProvidersProps {
   children: React.ReactNode;
@@ -24,12 +25,15 @@ declare module "@react-types/shared" {
 
 export function Providers({ children, themeProps }: ProvidersProps) {
   const router = useRouter();
+  const [queryClient] = React.useState(() => new QueryClient());
 
   return (
-    <HeroUIProvider navigate={router.push}>
-      <NextThemesProvider {...themeProps}>
-        <ToastProvider placement="top-right" toastOffset={8}/>{children}
-      </NextThemesProvider>
-    </HeroUIProvider>
+    <QueryClientProvider client={queryClient}>
+      <HeroUIProvider navigate={router.push}>
+        <NextThemesProvider {...themeProps}>
+          <ToastProvider placement="top-right" toastOffset={8} />{children}
+        </NextThemesProvider>
+      </HeroUIProvider>
+    </QueryClientProvider>
   );
 }

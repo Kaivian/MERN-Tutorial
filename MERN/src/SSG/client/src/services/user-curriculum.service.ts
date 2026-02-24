@@ -14,8 +14,9 @@ export const userCurriculumService = {
     /**
      * Fetches the user's saved context, subjects, and calculated Term GPA.
      */
-    getContext: async (): Promise<ApiResponse<UserCurriculumData>> => {
-        return axiosClient.get(ENDPOINTS.CONTEXT) as Promise<ApiResponse<UserCurriculumData>>;
+    getContext: async (term?: string): Promise<ApiResponse<UserCurriculumData>> => {
+        const url = term ? `${ENDPOINTS.CONTEXT}?term=${term}` : ENDPOINTS.CONTEXT;
+        return axiosClient.get(url) as Promise<ApiResponse<UserCurriculumData>>;
     },
 
     /**

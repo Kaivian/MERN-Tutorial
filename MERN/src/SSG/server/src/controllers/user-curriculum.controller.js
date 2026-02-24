@@ -13,7 +13,9 @@ class UserCurriculumController {
             const userId = req.user?.id || req.user?._id;
             if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
 
-            const data = await userCurriculumService.getContextAndGrades(userId);
+            const { term } = req.query;
+
+            const data = await userCurriculumService.getContextAndGrades(userId, term);
             res.success(data, 'User context fetched successfully');
         } catch (error) {
             next(error);

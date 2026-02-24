@@ -8,10 +8,10 @@ export function useUserCurriculum() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
 
-    const fetchContext = useCallback(async () => {
+    const fetchContext = useCallback(async (term?: string) => {
         setIsLoading(true);
         try {
-            const response = await userCurriculumService.getContext();
+            const response = await userCurriculumService.getContext(term);
             const payload = (response as any).data || response;
             setData(payload);
         } catch (err: any) {
@@ -49,7 +49,7 @@ export function useUserCurriculum() {
             await userCurriculumService.saveGrades(subjectId, payload);
             // Instead of just relying on the direct response payload mapping,
             // force a complete refetch to ensure all sibling components get the freshest derived data.
-            await fetchContext();
+            await fetchContext(data?.current_view_term);
             return true;
         } catch (err) {
             console.error('Failed to save grades', err);

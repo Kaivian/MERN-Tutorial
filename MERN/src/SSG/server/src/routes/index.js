@@ -4,6 +4,7 @@ import ENV from '../config/env.config.js';
 import authRoutes from './auth.routes.js';
 import curriculumRoutes from './curriculum.routes.js';
 import userCurriculumRoutes from './user-curriculum.routes.js';
+import taskRoutes from './todo/task.routes.js';
 
 const router = Router();
 
@@ -43,5 +44,12 @@ router.use('/curriculums', curriculumRoutes);
  * @desc  Handles user context, saved grades, and GPA
  */
 router.use('/user/curriculum', userCurriculumRoutes);
+
+/**
+ * Task & Deadline Routes
+ * @route /api/tasks
+ * @desc  Handles user tasks, subjects constraints and subtask management
+ */
+router.use('/tasks', taskRoutes);
 
 export default router;

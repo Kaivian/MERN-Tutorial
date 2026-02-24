@@ -74,7 +74,7 @@ const SidebarContent = ({ menuGroup1, menuGroup2 }: SidebarContentProps) => {
                           key={item.key}
                           isDisabled={item.isDisabled}
                           as={Link}
-                          href={item.key}
+                          href={item.key.startsWith('/') ? item.key : '/' + item.key}
                           // RETRO STYLING APPLIED HERE
                           radius="none"
                           className={cn(
@@ -178,7 +178,7 @@ const SidebarCollapsed = ({ menuGroup1, menuGroup2 }: SidebarCollapsedProps) => 
                       >
                         <Button
                           as={Link}
-                          href={item.key}
+                          href={item.key.startsWith('/') ? item.key : '/' + item.key}
                           isIconOnly
                           isDisabled={item.isDisabled}
                           size="md"

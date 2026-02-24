@@ -50,13 +50,13 @@ export default function GradePage() {
 
   // --- API DATA FETCHING ---
   const { data: programsData, isLoading: isProgramsLoading } = useCurriculumPrograms();
-  const { data: userCurriculum, isLoading: isUserCurriculumLoading, updateContext, saveGrades } = useUserCurriculum();
+  const { data: userCurriculum, isLoading: isUserCurriculumLoading, updateContext, saveGrades, refetch } = useUserCurriculum();
 
   // Extract selected keys from saved context, defaulting to empty sets if not loaded yet
   const selectedBlockKeys = React.useMemo(() => new Set(userCurriculum?.active_context?.block ? [userCurriculum.active_context.block] : []), [userCurriculum]);
   const selectedProgramKeys = React.useMemo(() => new Set(userCurriculum?.active_context?.program ? [userCurriculum.active_context.program] : []), [userCurriculum]);
   const selectedClassKeys = React.useMemo(() => new Set(userCurriculum?.active_context?.cohort_class ? [userCurriculum.active_context.cohort_class] : []), [userCurriculum]);
-  const selectedCurrentTermKeys = React.useMemo(() => new Set(userCurriculum?.active_context?.term ? [userCurriculum.active_context.term] : []), [userCurriculum]);
+  const selectedCurrentTermKeys = React.useMemo(() => new Set(userCurriculum?.current_view_term ? [userCurriculum.current_view_term] : (userCurriculum?.active_context?.term ? [userCurriculum.active_context.term] : [])), [userCurriculum]);
 
   // --- MEMOIZED VALUES ---
   const getSingleKey = (selection: Selection): string | null => {
@@ -94,35 +94,20 @@ export default function GradePage() {
     return term ? term.shortLabel : "---";
   }, [currentTermKey, generatedTerms]);
 
-  // --- HANDLERS ---
-  const handleBlockChange = (keys: Selection) => {
-    updateContext({
-      block: getSingleKey(keys),
-      program: null,
-      cohort_class: null,
-      term: null
-    });
-  };
-
-  const handleProgramChange = (keys: Selection) => {
-    updateContext({
-      program: getSingleKey(keys),
-      cohort_class: null,
-      term: null
-    });
-  };
-
-  const handleClassChange = (keys: Selection) => {
-    updateContext({
-      cohort_class: getSingleKey(keys),
-      term: "sem_1" // Auto-select sem 1 when class changes
-    });
-  };
-
   const handleTermChange = (keys: Selection) => {
-    updateContext({
-      term: getSingleKey(keys)
-    });
+    const selectedTerm = getSingleKey(keys);
+    if (selectedTerm) {
+      refetch(selectedTerm);
+    }
+  };
+
+  const getProgramLabel = (progKey: string | null) => {
+    if (!progKey) return "Not Set";
+    for (const group of majorGroups) {
+      const prog = group.items.find(i => i.key === progKey);
+      if (prog) return prog.label;
+    }
+    return progKey;
   };
 
   // --- STYLES ---
@@ -219,64 +204,29 @@ export default function GradePage() {
                   <i className={cn("hn text-xl transition-transform duration-300", isMobileFilterOpen ? "hn-caret-up" : "hn-caret-down")} />
                 </div>
 
-                {/* FILTER GRID - Hidden on mobile unless open, visible on desktop */}
+                {/* FILTER GRID - Show read-only context and term selector */}
                 <div className={cn(
-                  "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full md:-mt-2 transition-all duration-300",
+                  "grid grid-cols-1 md:grid-cols-4 gap-4 w-full md:-mt-2 transition-all duration-300",
                   isMobileFilterOpen ? "block opacity-100" : "hidden md:grid opacity-100"
                 )}>
-                  <Select
-                    isDisabled={!isEditing}
-                    labelPlacement="outside"
-                    label="1. Major Block"
-                    placeholder="Select block"
-                    variant="bordered"
-                    size="md"
-                    radius="none"
-                    selectedKeys={selectedBlockKeys}
-                    onSelectionChange={handleBlockChange}
-                    classNames={getSelectStyles(!isEditing)}
-                    listboxProps={commonListboxProps}
-                  >
-                    {majorGroups.map((group) => (
-                      <SelectItem key={group.key}>{group.label}</SelectItem>
-                    ))}
-                  </Select>
-
-                  <Select
-                    isDisabled={!isEditing || !currentBlockKey}
-                    labelPlacement="outside"
-                    label="2. Program"
-                    placeholder={currentBlockKey ? "Select program" : "Select block first"}
-                    variant="bordered"
-                    size="md"
-                    radius="none"
-                    selectedKeys={selectedProgramKeys}
-                    onSelectionChange={handleProgramChange}
-                    classNames={getSelectStyles(!isEditing || !currentBlockKey)}
-                    listboxProps={commonListboxProps}
-                  >
-                    {availablePrograms.map((major) => (
-                      <SelectItem key={major.key}>{major.label}</SelectItem>
-                    ))}
-                  </Select>
-
-                  <Select
-                    isDisabled={!isEditing || !currentProgramKey}
-                    labelPlacement="outside"
-                    label="3. Cohort / Class"
-                    placeholder={!currentProgramKey ? "Select program first" : "Select class"}
-                    variant="bordered"
-                    size="md"
-                    radius="none"
-                    selectedKeys={selectedClassKeys}
-                    onSelectionChange={handleClassChange}
-                    classNames={getSelectStyles(!isEditing || !currentProgramKey)}
-                    listboxProps={commonListboxProps}
-                  >
-                    {availableClasses.map((cls) => (
-                      <SelectItem key={cls.key}>{cls.label}</SelectItem>
-                    ))}
-                  </Select>
+                  {/* READ ONLY CONTEXT */}
+                  <div className="md:col-span-3 flex flex-wrap gap-2 items-center text-xs font-bold uppercase tracking-widest text-zinc-500">
+                    {currentBlockKey || currentProgramKey || currentClassKey ? (
+                      <>
+                        <span>{majorGroups.find(g => g.key === currentBlockKey)?.label || "No Block"}</span>
+                        <i className="hn hn-caret-right" />
+                        <span className="text-white">{getProgramLabel(currentProgramKey)}</span>
+                        <i className="hn hn-caret-right" />
+                        <span className="text-[#e6b689] bg-black px-2 py-1 border-2 border-[#e6b689]">{currentClassKey || "No Class"}</span>
+                      </>
+                    ) : (
+                      <div className="flex items-center gap-2 text-red-400">
+                        <i className="hn hn-error-warning-line text-lg" />
+                        <span>Profile Academic Context not configured.</span>
+                        <Button as={Link} href="/profile" size="sm" radius="none" className="bg-[#e6b689] text-black font-black uppercase shadow-[2px_2px_0_#000] border-2 border-black ml-2 h-7">Set Profile</Button>
+                      </div>
+                    )}
+                  </div>
 
                   <Select
                     isDisabled={!currentClassKey}

@@ -23,6 +23,7 @@ export interface UserSubjectGrade extends Omit<SubjectData, 'score'> {
 
 export interface UserCurriculumData {
     active_context: UserCurriculumContext;
+    current_view_term?: string;
     term_gpa: number | null;
     subjects: UserSubjectGrade[];
 }

@@ -9,7 +9,7 @@ class UserCurriculumService {
         return await userCurriculumRepository.updateActiveContext(userId, contextUpdates);
     }
 
-    async getContextAndGrades(userId) {
+    async getContextAndGrades(userId, termOverride = null) {
         // Fetch raw curriculum from DB
         const userCurr = await userCurriculumRepository.findByUserId(userId);
         const activeContext = userCurr.active_context || {};
@@ -17,9 +17,11 @@ class UserCurriculumService {
         let termGpa = null;
         let formattedSubjects = [];
 
+        const termToUse = termOverride || activeContext.term;
+
         // If they have a selected class and term, fetch subjects and compute 
-        if (activeContext.cohort_class && activeContext.term) {
-            const termIndexMatch = activeContext.term.match(/\d+/);
+        if (activeContext.cohort_class && termToUse) {
+            const termIndexMatch = termToUse.match(/\d+/);
             const semIndex = termIndexMatch ? parseInt(termIndexMatch[0], 10) : null;
 
             const subjects = await curriculumRepository.findSubjectsByCurriculumCode(
@@ -66,6 +68,7 @@ class UserCurriculumService {
 
         return {
             active_context: activeContext,
+            current_view_term: termToUse,
             term_gpa: termGpa,
             subjects: formattedSubjects
         };
