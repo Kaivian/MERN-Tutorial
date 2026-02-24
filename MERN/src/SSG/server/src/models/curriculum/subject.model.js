@@ -1,7 +1,88 @@
-// src/models/grade/subject.model.js
-const mongoose = require('mongoose');
-const AssessmentComponentSchema = require('./common/Assessment.schema');
+import mongoose from 'mongoose';
+
 const { Schema } = mongoose;
+
+const AssessmentDetailsSchema = new Schema({
+    question_type: {
+        type: String,
+        trim: true,
+        description: 'Type of questions (e.g., Multiple Choice, Essay, Project)'
+    },
+    question_count: {
+        type: Schema.Types.Mixed,
+        description: 'Number of questions involved'
+    },
+    description: {
+        type: String,
+        trim: true,
+        description: 'Detailed description of the assessment content'
+    },
+    knowledge_and_skill: {
+        type: String,
+        trim: true,
+        description: 'Specific knowledge and skills covered'
+    }
+}, { _id: false });
+
+const AssessmentComponentSchema = new Schema({
+    category: {
+        type: String,
+        required: true,
+        trim: true,
+        index: true,
+        description: 'Category of assessment (e.g., Assignment, Progress Test, Final exam)'
+    },
+    type: {
+        type: String,
+        trim: true,
+        description: 'Execution type (e.g., On-going, Final exam)'
+    },
+    part_count: {
+        type: Number,
+        default: 1,
+        min: 0,
+        description: 'Number of parts or occurrences'
+    },
+    weight_percent: {
+        type: Number,
+        required: true,
+        min: 0,
+        max: 100,
+        description: 'Weight of this component in the final grade (%)'
+    },
+    completion_criteria: {
+        type: String,
+        trim: true,
+        description: 'Condition to pass (e.g., "> 0", ">= 4")'
+    },
+    duration: {
+        type: String,
+        trim: true,
+        description: 'Duration of the assessment (e.g., "60 minutes")'
+    },
+    clos_covered: {
+        type: String,
+        trim: true,
+        description: 'Course Learning Outcomes covered (e.g., "CLO1, CLO2")'
+    },
+    details: {
+        type: AssessmentDetailsSchema,
+        default: () => ({})
+    },
+    grading_guide: {
+        type: String,
+        trim: true,
+        description: 'Guidelines for grading'
+    },
+    note: {
+        type: String,
+        trim: true,
+        description: 'Additional notes or requirements'
+    }
+}, {
+    _id: true,
+    timestamps: false
+});
 
 // Enum for subject structure types
 const STRUCTURE_TYPES = {
@@ -30,7 +111,7 @@ const EmbeddedSubjectInfoSchema = new Schema({
 const ComboOptionSchema = new Schema({
     combo_name: { type: String, trim: true, description: 'Name of the specialization topic' },
     combo_code: [{ type: String, trim: true }], // Array of codes e.g., ["SE_COM7.1"]
-    
+
     // The actual subject details for this option
     subject_info: { type: EmbeddedSubjectInfoSchema }
 }, { _id: true });
@@ -49,12 +130,12 @@ const SimpleElectiveOptionSchema = new Schema({
  * Main Subject Schema
  */
 const SubjectSchema = new Schema({
-    code: { 
-        type: String, 
-        required: true, 
-        unique: true, 
-        trim: true, 
-        index: true 
+    code: {
+        type: String,
+        required: true,
+        unique: true,
+        trim: true,
+        index: true
     },
     name_en: { type: String, required: true, trim: true },
     name_vi: { type: String, required: true, trim: true },
@@ -77,7 +158,7 @@ const SubjectSchema = new Schema({
     },
 
     // 2. For ELECTIVE_GROUP (e.g., TMI_ELE): List of selectable instruments
-    elective_simple_options: {
+    elective_options: {
         type: [SimpleElectiveOptionSchema],
         default: undefined
     },
@@ -93,7 +174,7 @@ const SubjectSchema = new Schema({
 });
 
 // Middleware to ensure data consistency based on structure_type (Optional)
-SubjectSchema.pre('save', function(next) {
+SubjectSchema.pre('save', function (next) {
     if (this.structure_type === STRUCTURE_TYPES.COMBO_CONTAINER && !this.combo_options) {
         return next(new Error('COMBO_CONTAINER must have combo_options'));
     }
@@ -102,4 +183,4 @@ SubjectSchema.pre('save', function(next) {
 
 const Subject = mongoose.model('Subject', SubjectSchema);
 
-module.exports = { Subject, STRUCTURE_TYPES };
+export { Subject, STRUCTURE_TYPES };

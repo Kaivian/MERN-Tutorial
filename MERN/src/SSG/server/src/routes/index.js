@@ -2,6 +2,8 @@
 import { Router } from 'express';
 import ENV from '../config/env.config.js';
 import authRoutes from './auth.routes.js';
+import curriculumRoutes from './curriculum.routes.js';
+import userCurriculumRoutes from './user-curriculum.routes.js';
 
 const router = Router();
 
@@ -27,5 +29,19 @@ router.get('/status', (req, res) => {
  * @desc  Handles login, register, logout, refresh token, etc.
  */
 router.use('/auth', authRoutes);
+
+/**
+ * Curriculum Routes
+ * @route /api/curriculums/*
+ * @desc  Handles curriculum and subject fetching
+ */
+router.use('/curriculums', curriculumRoutes);
+
+/**
+ * User Curriculum Routes
+ * @route /api/user/curriculum
+ * @desc  Handles user context, saved grades, and GPA
+ */
+router.use('/user/curriculum', userCurriculumRoutes);
 
 export default router;

@@ -1,5 +1,5 @@
 // src/models/Curriculum.model.js
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
 /**
@@ -23,21 +23,21 @@ const JobPositionSchema = new Schema({
  * Curriculum Schema
  */
 const CurriculumSchema = new Schema({
-    curriculum_code: { 
-        type: String, 
-        required: true, 
-        unique: true, 
-        trim: true, 
-        uppercase: true 
-    }, // e.g., "BIT_SE_K19D_K20A"
-    
-    name_vi: { type: String, required: true, trim: true },
-    name_en: { type: String, required: true, trim: true },
-    total_credits: { type: Number, required: true },
-
-    decision_info: {
-        number: { type: String, trim: true },
-        date: { type: Date }
+    curriculum_info: {
+        code: {
+            type: String,
+            required: true,
+            unique: true,
+            trim: true,
+            uppercase: true
+        }, // e.g., "BIT_SE_K19D_K20A"
+        name_vi: { type: String, required: true, trim: true },
+        name_en: { type: String, required: true, trim: true },
+        total_credits: { type: Number, required: true },
+        decision_info: {
+            number: { type: String, trim: true },
+            date: { type: Date }
+        }
     },
 
     training_objectives: {
@@ -62,8 +62,8 @@ const CurriculumSchema = new Schema({
 });
 
 // Index for faster searches
-CurriculumSchema.index({ curriculum_code: 1 });
+CurriculumSchema.index({ 'curriculum_info.code': 1 });
 
 const Curriculum = mongoose.model('Curriculum', CurriculumSchema);
 
-module.exports = Curriculum;
+export default Curriculum;

@@ -9,12 +9,13 @@ import { siteConfig } from "@/config/site.config";
 export interface SidebarItem {
   key: string;
   label: string;
-  icon: InternalIconName | React.ElementType;
-  iconSize: number;
+  icon?: InternalIconName | React.ElementType;
+  iconSize?: number;
   isDisabled?: boolean;
   isHidden?: boolean;
+  isSubItem?: boolean;
   endContent?: React.ReactNode;
-  requiredPerms?: readonly string[]; 
+  requiredPerms?: readonly string[];
 }
 
 export interface SidebarSection {
@@ -29,14 +30,20 @@ export const sidebarSections: SidebarSection[] = [
       {
         key: "dashboard",
         label: siteConfig.links.dashboard.label,
-        icon: () => <i className="hn hn-clipboard-solid text-retro-orange" style={{ fontSize: '25px'}}></i>,
+        icon: () => <i className="hn hn-clipboard-solid text-retro-orange" style={{ fontSize: '25px' }}></i>,
         iconSize: 31,
       },
       {
         key: "grade",
         label: siteConfig.links.grade.label,
-        icon: () => <i className="hn hn-clipboard-solid text-retro-orange" style={{ fontSize: '25px'}}></i>,
+        icon: () => <i className="hn hn-clipboard-solid text-retro-orange" style={{ fontSize: '25px' }}></i>,
         iconSize: 31,
+      },
+      {
+        key: "grade/chart",
+        label: siteConfig.links.gradeChart.label,
+        icon: () => <i className="hn hn-pie-chart text-retro-orange" style={{ fontSize: '18px' }}></i>,
+        isSubItem: true,
       }
     ],
   },
@@ -49,14 +56,14 @@ export const sidebarSections2: SidebarSection[] = [
       {
         key: "user-accounts",
         label: siteConfig.links.userAccount.label,
-        icon: (props) => <User {...props}/>,
+        icon: (props) => <User {...props} />,
         iconSize: 31,
         requiredPerms: siteConfig.links.userAccount.requiredPerms,
       },
       {
         key: "roles",
         label: siteConfig.links.role.label,
-        icon: (props) => <ShieldUser {...props}/>,
+        icon: (props) => <ShieldUser {...props} />,
         iconSize: 31,
         requiredPerms: siteConfig.links.role.requiredPerms,
       },

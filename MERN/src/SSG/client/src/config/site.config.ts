@@ -42,80 +42,84 @@ export const siteConfig = {
     // ========================================================================
     // 1. PUBLIC ROUTES (Accessible by everyone)
     // ========================================================================
-    landing: { 
-      label: "Home", 
-      path: "/", 
-      isPublic: true 
+    landing: {
+      label: "Home",
+      path: "/",
+      isPublic: true
     },
-    about: { 
-      label: "About", 
-      path: "/about", 
-      isPublic: true 
+    about: {
+      label: "About",
+      path: "/about",
+      isPublic: true
     },
 
     // ========================================================================
     // 2. GUEST ONLY ROUTES (Accessible only when NOT logged in)
     // ========================================================================
-    login: { 
-      label: "Login", 
-      path: "/login", 
-      guestOnly: true 
+    login: {
+      label: "Login",
+      path: "/login",
+      guestOnly: true
     },
 
     // ========================================================================
     // 3. SYSTEM PRIVATE ROUTES (Login Required)
     // ========================================================================
     // No flags = Implicitly PRIVATE
-    changeDefaultPassword: { 
-      label: "Change Default Password", 
-      path: "/login/change-default-password" 
+    changeDefaultPassword: {
+      label: "Change Default Password",
+      path: "/login/change-default-password"
     },
-    dashboard: { 
-      label: "Dashboard", 
-      path: "/dashboard" 
+    dashboard: {
+      label: "Dashboard",
+      path: "/dashboard"
     },
-    profile: { 
-      label: "Profile", 
-      path: "/profile" 
+    profile: {
+      label: "Profile",
+      path: "/profile"
     },
     grade: {
       label: "Grade",
       path: "/grade"
     },
+    gradeChart: {
+      label: "Grade Analytics",
+      path: "/grade/chart"
+    },
 
     // ========================================================================
     // 4. BUSINESS ROUTES (Login Required)
     // ========================================================================
-    customer: { label: "Customers",  path: "/customers" },
-    product:  { label: "Products",    path: "/products" },
-    truck:    { label: "Trucks", path: "/trucks" },
-    order:    { label: "Orders",    path: "/orders" },
-    delivery: { label: "Deliveries",   path: "/deliveries" },
-    report:   { label: "Reports",     path: "/reports" },
+    customer: { label: "Customers", path: "/customers" },
+    product: { label: "Products", path: "/products" },
+    truck: { label: "Trucks", path: "/trucks" },
+    order: { label: "Orders", path: "/orders" },
+    delivery: { label: "Deliveries", path: "/deliveries" },
+    report: { label: "Reports", path: "/reports" },
 
     // ========================================================================
     // 5. ADMIN ROUTES (Login + Permissions Required)
     // ========================================================================
     // Note: These have requiredPerms, so logic will force them to PRIVATE
-    userAccount: { 
-      label: "User Accounts", 
-      path: "/user-accounts", 
-      requiredPerms: ["user-accounts:view"] as const 
+    userAccount: {
+      label: "User Accounts",
+      path: "/user-accounts",
+      requiredPerms: ["user-accounts:view"] as const
     },
-    createAccount: { 
-      label: "Create Account", 
-      path: "/user-accounts/create", 
-      requiredPerms: ["user-accounts:create"] as const 
+    createAccount: {
+      label: "Create Account",
+      path: "/user-accounts/create",
+      requiredPerms: ["user-accounts:create"] as const
     },
-    role: { 
-      label: "Roles", 
-      path: "/roles", 
-      requiredPerms: ["roles:view"] as const 
+    role: {
+      label: "Roles",
+      path: "/roles",
+      requiredPerms: ["roles:view"] as const
     },
-    createRole: { 
-      label: "Create Role", 
-      path: "/roles/create", 
-      requiredPerms: ["roles:create"] as const 
+    createRole: {
+      label: "Create Role",
+      path: "/roles/create",
+      requiredPerms: ["roles:create"] as const
     },
 
   } satisfies Record<string, RouteLinkEntry>,
@@ -142,13 +146,13 @@ export const ROUTES_CONFIG: RouteConfig[] = (Object.values(siteConfig.links) as 
 
     // 2. Determine Type with Priority
     if (hasPermissions) {
-        // SAFETY: If permissions are required, it MUST be PRIVATE.
-        // This prevents accidental exposure even if isPublic is wrongly set to true.
-        type = 'PRIVATE'; 
+      // SAFETY: If permissions are required, it MUST be PRIVATE.
+      // This prevents accidental exposure even if isPublic is wrongly set to true.
+      type = 'PRIVATE';
     } else if (link.isPublic) {
-        type = 'PUBLIC';
+      type = 'PUBLIC';
     } else if (link.guestOnly) {
-        type = 'GUEST_ONLY';
+      type = 'GUEST_ONLY';
     }
     // else: remains 'PRIVATE'
 

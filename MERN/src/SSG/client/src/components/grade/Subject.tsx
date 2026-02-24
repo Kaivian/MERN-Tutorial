@@ -17,10 +17,10 @@ import {
   Tabs,
   Tab,
 } from "@heroui/react";
-import { Subject } from "@/data/mock-curriculum";
+import { UserSubjectGrade, UpdateGradePayload } from "@/types/user-curriculum.types";
 
 // --- TYPE DEFINITIONS ---
-type AssessmentPlanItem = Subject["assessment_plan"][number];
+type AssessmentPlanItem = UserSubjectGrade["assessment_plan"][number];
 
 // --- STYLE CONSTANTS ---
 const rowCardStyles = "bg-white border-2 border-divider shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] transition-all duration-200";
@@ -72,7 +72,7 @@ const checkCondition = (grades: (string | undefined)[], criteriaString?: string)
 
 // --- SUB-COMPONENT: SYLLABUS CONTENT ---
 const SyllabusColumn = ({ subject, sortedPlans }: {
-  subject: Subject,
+  subject: UserSubjectGrade,
   sortedPlans: AssessmentPlanItem[],
   grades: Record<string, (string | undefined)[]>
 }) => (
@@ -130,15 +130,33 @@ const SyllabusColumn = ({ subject, sortedPlans }: {
 );
 
 // --- MAIN COMPONENT ---
-export const SubjectRow = ({ subject }: { subject: Subject }) => {
+export const SubjectRow = ({ subject, onSave }: { subject: UserSubjectGrade, onSave: (subjectId: string, payload: UpdateGradePayload) => Promise<any> }) => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [showSyllabus, setShowSyllabus] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState<"grades" | "syllabus">("grades");
+  const [isSaving, setIsSaving] = useState(false);
 
-  const [grades, setGrades] = useState<Record<string, (string | undefined)[]>>({});
+  // Initialize local grades from mapped backend UserSubjectGrade parts
+  const initialGrades = useMemo(() => {
+    const map: Record<string, (string | undefined)[]> = {};
+    if (subject.grades) {
+      subject.grades.forEach((g: any) => {
+        if (!map[g.category]) map[g.category] = [];
+        map[g.category][g.part_index] = g.score.toString();
+      });
+    }
+    return map;
+  }, [subject.grades]);
 
-  const sortedPlans = useMemo(() => sortAssessments(subject.assessment_plan), [subject]);
+  const [grades, setGrades] = useState<Record<string, (string | undefined)[]>>(initialGrades);
+
+  // Sync state if server data changes (e.g. from a Save response)
+  React.useEffect(() => {
+    setGrades(initialGrades);
+  }, [initialGrades]);
+
+  const sortedPlans = useMemo(() => sortAssessments(subject.assessment_plan || []), [subject]);
 
   const { totalScore, currentWeight, statusColor } = useMemo(() => {
     let weightedScoreSum = 0;
@@ -180,7 +198,7 @@ export const SubjectRow = ({ subject }: { subject: Subject }) => {
 
   const handleInputChange = (category: string, partIdx: number, val: string) => {
     setGrades((prev) => {
-      const plan = subject.assessment_plan.find(p => p.category === category);
+      const plan = subject.assessment_plan?.find((p: AssessmentPlanItem) => p.category === category);
       const limit = plan ? plan.part_count : 1;
       const currentParts = [...(prev[category] || Array(limit).fill(undefined))];
 
@@ -197,10 +215,47 @@ export const SubjectRow = ({ subject }: { subject: Subject }) => {
     });
   };
 
+  const handleSave = async () => {
+    if (isEditing) {
+      // Attempt to Save
+      setIsSaving(true);
+
+      // Re-flatten the nested map
+      const flattenedGrades: { category: string, part_index: number, score: number }[] = [];
+      Object.entries(grades).forEach(([category, parts]) => {
+        parts.forEach((scoreStr, part_index) => {
+          if (scoreStr !== undefined && scoreStr !== "") {
+            flattenedGrades.push({
+              category,
+              part_index,
+              score: parseFloat(scoreStr)
+            });
+          }
+        });
+      });
+
+      try {
+        // Note: subject.id is the ObjectId populated from backend
+        await onSave(subject.id as string, {
+          semester: subject.semester,
+          grades: flattenedGrades
+        });
+      } catch (err) {
+        console.error("Failed to save", err);
+      } finally {
+        setIsSaving(false);
+        setIsEditing(false); // Only close if saved successfuly
+      }
+    } else {
+      setIsEditing(true);
+    }
+  };
+
   const handleClose = () => {
     setShowSyllabus(false);
     setIsEditing(false);
     setActiveTab("grades");
+    setGrades(initialGrades); // Revert drafts
   };
 
   return (
@@ -295,7 +350,7 @@ export const SubjectRow = ({ subject }: { subject: Subject }) => {
               {/* SỬA LỖI Ở ĐÂY: Tăng padding phải (md:pr-12) để tránh nút Close */}
               <ModalHeader className="flex flex-col gap-1 p-4 pb-0">
                 <div className="flex flex-col md:flex-row md:justify-between md:items-start pr-8 md:pr-12">
-                  
+
                   {/* Title Section */}
                   <div className="mb-4 md:mb-0">
                     <h3 className="text-xl md:text-2xl font-black text-zinc-900 uppercase tracking-tight leading-tight">
@@ -494,8 +549,9 @@ export const SubjectRow = ({ subject }: { subject: Subject }) => {
                       isEditing ? "bg-emerald-400 text-black hover:bg-emerald-300 border-emerald-900" : "bg-[#e6b689] text-black hover:bg-[#ffcf9e]"
                     )}
                     radius="none"
-                    startContent={isEditing ? <i className="hn hn-check-circle-fill text-lg" /> : <i className="hn hn-edit text-lg" />}
-                    onPress={() => setIsEditing(!isEditing)}
+                    isLoading={isSaving}
+                    startContent={!isSaving && (isEditing ? <i className="hn hn-check-circle-fill text-lg" /> : <i className="hn hn-edit text-lg" />)}
+                    onPress={handleSave}
                   >
                     {isEditing ? "SAVE GRADES" : "EDIT GRADES"}
                   </Button>
