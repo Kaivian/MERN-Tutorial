@@ -6,11 +6,13 @@ import { Task, Subject } from "@/types/deadline.types";
 import DeadlineForm from "@/components/todo/DeadlineForm";
 import DeadlineList from "@/components/todo/DeadlineList";
 import { useTasks } from "@/hooks/useTasks";
+import { Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from "@heroui/react";
 
 export default function DeadlineManagerPage() {
     const { tasks: backendTasks, isLoading: isTasksLoading, createTask, updateTask, deleteTask } = useTasks();
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingTask, setEditingTask] = useState<Task | null>(null);
+    const { isOpen: isGuideOpen, onOpen: onGuideOpen, onOpenChange: onGuideOpenChange } = useDisclosure();
 
     const deadlines = backendTasks?.filter(t => t.endDate && !t.isCompleted) || [];
     const todos = backendTasks?.filter(t => !t.endDate && !t.isCompleted) || [];
@@ -42,15 +44,23 @@ export default function DeadlineManagerPage() {
                     </h1>
                     <p className="text-zinc-500 font-bold text-xs mt-1 uppercase tracking-wider">Manage and calculate task urgency.</p>
                 </div>
-                <button
-                    onClick={() => {
-                        setEditingTask(null);
-                        setIsFormOpen(true);
-                    }}
-                    className="bg-[#e6b689] hover:bg-[#d4a373] text-black font-pixelify uppercase tracking-widest px-4 py-2 border-2 border-black shadow-pixel hover:shadow-pixel-hover active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all text-sm"
-                >
-                    + Add New Task
-                </button>
+                <div className="flex gap-2 items-center">
+                    <Button onPress={onGuideOpen} size="sm" radius="none" className="font-bold tracking-widest uppercase !bg-emerald-500 !text-white !font-sans shadow-[2px_2px_0_1px_rgba(0,0,0,1)] border-2 border-black hover:translate-y-[2px] h-[36px] hidden sm:flex">
+                        Hướng dẫn
+                    </Button>
+                    <Button onPress={onGuideOpen} isIconOnly size="sm" radius="none" className="font-bold tracking-widest uppercase !bg-emerald-500 !text-white !font-sans shadow-[2px_2px_0_1px_rgba(0,0,0,1)] border-2 border-black hover:translate-y-[2px] h-[36px] flex sm:hidden">
+                        HD
+                    </Button>
+                    <button
+                        onClick={() => {
+                            setEditingTask(null);
+                            setIsFormOpen(true);
+                        }}
+                        className="bg-[#e6b689] hover:bg-[#d4a373] text-black font-pixelify uppercase tracking-widest px-4 py-2 border-2 border-black shadow-pixel hover:shadow-pixel-hover active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all text-sm"
+                    >
+                        + Add New Task
+                    </button>
+                </div>
             </div>
 
             <div className="flex-1 grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -152,6 +162,30 @@ export default function DeadlineManagerPage() {
                     }}
                 />
             )}
+
+            {/* USER GUIDE MODAL */}
+            <Modal isOpen={isGuideOpen} onOpenChange={onGuideOpenChange} classNames={{ base: "border-4 border-black rounded-none shadow-[8px_8px_0_rgba(0,0,0,1)] bg-white dark:bg-zinc-900 p-2 font-sans", closeButton: "hover:bg-red-500 border-2 border-transparent hover:border-black rounded-none" }}>
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader className="flex flex-col gap-1 border-b-4 border-black text-xl font-bold font-sans text-black dark:text-white uppercase shrink-0">
+                                Hướng Dẫn: Quản Lý Deadline
+                            </ModalHeader>
+                            <ModalBody className="py-4 flex flex-col gap-3 font-sans text-sm md:text-base leading-relaxed text-black dark:text-white">
+                                <p><strong>Thêm Công Việc Mới:</strong> Nhấn "+ Add New Task" để thiết lập một công việc. Nếu có ngày hết hạn nhất định thì hệ thống sẽ nhận diện là Sự kiện (Deadlines). Nếu chỉ điền việc cần làm thì nó là Vồn đọng/Sắp xếp (Ongoing / To-Do).</p>
+                                <p><strong>Phân Bổ Xử Lý:</strong> Bảng Deadlines dành cho những hạn chót cứng nhắc cần ưu tiên xử lý. Bảng To-Do dành cho những trách nhiệm dài hạn chạy nền thời gian tuỳ ý.</p>
+                                <p><strong>Hoàn Thành Ngay:</strong> Đánh dấu tích vào ô báo hiệu (Checkbox) để ngay lập tức chuyển tác vụ đó xuống rổ đã "Completed" ở góc dưới màn hình, ghi nhận năng suất của bạn.</p>
+                                <p><strong>Chỉnh Sửa (Edit) / Xoá (Delete):</strong> Nút bút màu vàng dùng để cập nhật lại tên, thời hạn, đánh dấu môn học... Còn biểu tượng thùng rác màu đỏ có thể dùng để xóa sự kiện đi mất vĩnh viễn.</p>
+                            </ModalBody>
+                            <ModalFooter className="border-t-4 border-black shrink-0">
+                                <Button color="primary" onPress={onClose} className="border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] font-bold font-sans uppercase">
+                                    Đã hiểu
+                                </Button>
+                            </ModalFooter>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
         </div>
     );
 }

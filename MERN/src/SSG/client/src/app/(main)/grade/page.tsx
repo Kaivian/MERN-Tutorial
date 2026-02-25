@@ -13,7 +13,8 @@ import {
   Button,
   Selection,
   ScrollShadow,
-  cn
+  cn,
+  Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure
 } from "@heroui/react";
 
 import { SubjectRow } from "@/components/grade/Subject";
@@ -47,6 +48,7 @@ export default function GradePage() {
   // --- LOGIC: State Management ---
   const [isEditing, setIsEditing] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const { isOpen: isGuideOpen, onOpen: onGuideOpen, onOpenChange: onGuideOpenChange } = useDisclosure();
 
   // --- API DATA FETCHING ---
   const { data: programsData, isLoading: isProgramsLoading } = useCurriculumPrograms();
@@ -278,6 +280,12 @@ export default function GradePage() {
                   <Button as={Link} href="/grade/chart" isIconOnly radius="none" className={cn(buttonStyles, "flex sm:hidden")}>
                     <i className="hn hn-pie-chart text-lg" />
                   </Button>
+                  <Button onPress={onGuideOpen} radius="none" className={cn(buttonStyles, "px-4 font-bold tracking-widest uppercase hidden sm:flex !bg-emerald-500 !text-white !font-sans")}>
+                    Hướng dẫn
+                  </Button>
+                  <Button onPress={onGuideOpen} isIconOnly radius="none" className={cn(buttonStyles, "flex sm:hidden !bg-emerald-500 !text-white font-sans font-bold text-xs uppercase")}>
+                    HD
+                  </Button>
                   {/* Ẩn nút filter trên mobile vì đã có toggle ở trên, hoặc giữ lại tùy ý */}
                   <Button isIconOnly radius="none" className={cn(buttonStyles, "hidden md:flex")}>
                     <i className="hn hn-filter" />
@@ -351,6 +359,31 @@ export default function GradePage() {
           </CardBody>
         </Card>
       </section>
+
+      {/* USER GUIDE MODAL */}
+      <Modal isOpen={isGuideOpen} onOpenChange={onGuideOpenChange} classNames={{ base: "border-4 border-black rounded-none shadow-[8px_8px_0_rgba(0,0,0,1)] bg-white dark:bg-zinc-900 p-2 font-sans", closeButton: "hover:bg-red-500 border-2 border-transparent hover:border-black rounded-none" }}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1 border-b-4 border-black text-xl font-bold font-sans text-black dark:text-white uppercase">
+                Hướng Dẫn: Theo Dõi Điểm Số
+              </ModalHeader>
+              <ModalBody className="py-4 flex flex-col gap-3 font-sans text-sm md:text-base leading-relaxed text-black dark:text-white">
+                <p><strong>Chọn Kỳ Học:</strong> Sử dụng bộ lọc "Current Term" để xem danh sách môn học và điểm số của từng học kỳ cụ thể.</p>
+                <p><strong>Cập Nhật Điểm:</strong> Nhấn vào biểu tượng bút chì (hoặc nút Save) để bật chế độ lưu/chỉnh sửa. Bạn có thể nhập điểm mới cho các bài kiểm tra chuyên cần (Attendance), thi giữa kỳ, cuối kỳ... cho từng môn.</p>
+                <p><strong>Tính Điểm Trung Bình (GPA):</strong> Hệ thống tự động tính toán điểm trung bình tích lũy của học kỳ hiện tại (Term GPA) dựa trên số tín chỉ và điểm số của môn học đó.</p>
+                <p><strong>Phân Tích (Analytics):</strong> Chuyển sang nút Analytics để xem các biểu đồ thống kê chi tiết toàn bộ quá trình học tập của bạn.</p>
+              </ModalBody>
+              <ModalFooter className="border-t-4 border-black">
+                <Button color="primary" onPress={onClose} className="border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] font-bold font-sans uppercase">
+                  Đã hiểu
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+
     </div>
   );
 }

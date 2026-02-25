@@ -52,4 +52,12 @@ router.use('/user/curriculum', userCurriculumRoutes);
  */
 router.use('/tasks', taskRoutes);
 
+/**
+ * Expense Management Routes
+ * @route /api/expense
+ * @desc  Handles transaction, recurring expenses, budgets, and dashboard
+ */
+import expenseRoutes from './expense.routes.js';
+router.use('/expense', expenseRoutes);
+
 export default router;

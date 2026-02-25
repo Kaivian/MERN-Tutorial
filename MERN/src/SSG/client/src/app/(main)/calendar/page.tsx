@@ -5,11 +5,15 @@ import { useUserCurriculum } from "@/hooks/useUserCurriculum";
 import { Subject, Task } from "@/types/deadline.types";
 import CalendarViews from "@/components/todo/calendar/CalendarViews";
 import { useTasks } from "@/hooks/useTasks";
+import { Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from "@heroui/react";
 
 export default function CalendarPage() {
     const [currentView, setCurrentView] = useState<"Day" | "Week" | "Month" | "Year">("Week");
     const [currentAnchorDate, setCurrentAnchorDate] = useState<Date>(new Date());
     const { data: userCurriculum } = useUserCurriculum();
+
+    // Guide Modal
+    const { isOpen: isGuideOpen, onOpen: onGuideOpen, onOpenChange: onGuideOpenChange } = useDisclosure();
 
     // Map backend curriculum subjects to Deadline Manager Subject interface
     const currentSubjects: Subject[] = React.useMemo(() => {
@@ -38,6 +42,9 @@ export default function CalendarPage() {
                 </div>
 
                 <div className="flex flex-col md:flex-row items-end md:items-center gap-2">
+                    <Button onPress={onGuideOpen} size="sm" radius="none" className="font-bold tracking-widest uppercase !bg-emerald-500 !text-white !font-sans shadow-[2px_2px_0_1px_rgba(0,0,0,1)] border-2 border-black hover:translate-y-[2px] mb-2 md:mb-0 mr-0 md:mr-4">
+                        Hướng dẫn
+                    </Button>
                     {/* View Switcher & Date Navigation Row */}
                     <div className="flex flex-wrap items-stretch gap-2">
                         {/* View Switcher */}
@@ -159,6 +166,30 @@ export default function CalendarPage() {
                     <CalendarViews currentView={currentView} subjects={currentSubjects as any} tasks={backendTasks} anchorDate={currentAnchorDate} />
                 )}
             </div>
+
+            {/* USER GUIDE MODAL */}
+            <Modal isOpen={isGuideOpen} onOpenChange={onGuideOpenChange} classNames={{ base: "border-4 border-black rounded-none shadow-[8px_8px_0_rgba(0,0,0,1)] bg-white dark:bg-zinc-900 p-2 font-sans", closeButton: "hover:bg-red-500 border-2 border-transparent hover:border-black rounded-none" }}>
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader className="flex flex-col gap-1 border-b-4 border-black text-xl font-bold font-sans text-black dark:text-white uppercase shrink-0">
+                                Hướng Dẫn: Lịch Sự Kiện
+                            </ModalHeader>
+                            <ModalBody className="py-4 flex flex-col gap-3 font-sans text-sm md:text-base leading-relaxed text-black dark:text-white">
+                                <p><strong>Chế độ xem:</strong> Sử dụng các nút (Day/Week/Month/Year) để linh hoạt chuyển đổi lưới hiển thị thời gian, tùy thuộc vào tầm nhìn phân bổ của bạn đối với công việc.</p>
+                                <p><strong>Điều hướng vị trí:</strong> Sử dụng mũi tên Trái/Phải để chuyển tới hoặc lùi lại khoảng thời gian tương ứng. Nút "Today" lập tức đưa bạn về ngày hiện tại.</p>
+                                <p><strong>Chọn ngày nhanh:</strong> Nhấn vào biểu tượng lịch nhỏ cạnh mục ngày tháng để truy cập một ngày bất kỳ mà không cần click mũi tên nhiều lần.</p>
+                                <p><strong>Hiển thị Sự Kiện:</strong> Các bài tập, hạn chót (Deadline) và thẻ nhiệm vụ (To-Do) ở Manager sẽ tự động đồng bộ hóa màu sắc trên lịch để bạn có cái nhìn tổng quan nhất.</p>
+                            </ModalBody>
+                            <ModalFooter className="border-t-4 border-black shrink-0">
+                                <Button color="primary" onPress={onClose} className="border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] font-bold font-sans uppercase">
+                                    Đã hiểu
+                                </Button>
+                            </ModalFooter>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
         </div>
     );
 }

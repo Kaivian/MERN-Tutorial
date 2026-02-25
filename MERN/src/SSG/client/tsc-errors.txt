@@ -1,0 +1,5 @@
+
+> my-app@0.1.0 type-check
+> tsc --noEmit
+
+src/app/(main)/expense/page.tsx(196,69): error TS18048: 'percent' is possibly 'undefined'.

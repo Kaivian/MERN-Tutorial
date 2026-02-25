@@ -41,7 +41,7 @@ export const useLogin = (): UseLoginReturn => {
       // 2. Execute API
       // The API should set the HttpOnly cookie upon success.
       const res = await execute(payload, { showToast: false });
-      
+
       // Safety check in case useApi doesn't throw but returns null/undefined on error
       if (!res?.data?.user) return;
 
@@ -51,7 +51,7 @@ export const useLogin = (): UseLoginReturn => {
       // Priority 1: Force Password Change (Security requirement overrides user intent)
       // Priority 2: Callback URL (User intent)
       // Priority 3: Default Dashboard
-      
+
       const isForceChange = user.mustChangePassword === true;
       const callbackUrl = searchParams.get("callbackUrl");
 

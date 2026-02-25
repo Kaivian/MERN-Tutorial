@@ -92,6 +92,7 @@ export const siteConfig = {
     // ========================================================================
     calendar: { label: "Calendar", path: "/calendar" },
     deadlineManager: { label: "Deadline Manager", path: "/deadline-manager" },
+    expense: { label: "Expense Management", path: "/expense" },
     customer: { label: "Customers", path: "/customers" },
     product: { label: "Products", path: "/products" },
     truck: { label: "Trucks", path: "/trucks" },

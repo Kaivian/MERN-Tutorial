@@ -14,7 +14,8 @@ import {
     Button,
     cn,
     Tabs,
-    Tab
+    Tab,
+    Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure
 } from "@heroui/react";
 import {
     LineChart,
@@ -55,6 +56,9 @@ export default function GradeChartPage() {
     const [filterSingleTerm, setFilterSingleTerm] = useState<Selection>(new Set([]));
     const [filterRangeStart, setFilterRangeStart] = useState<Selection>(new Set([]));
     const [filterRangeEnd, setFilterRangeEnd] = useState<Selection>(new Set([]));
+
+    // Guide Modal
+    const { isOpen: isGuideOpen, onOpen: onGuideOpen, onOpenChange: onGuideOpenChange } = useDisclosure();
 
     // Initialize selections when terms load
     useEffect(() => {
@@ -185,17 +189,30 @@ export default function GradeChartPage() {
                     <Card className="h-full bg-white dark:bg-[#18181b] border-t-0 border-x-0 border-b-2 border-b-[#e6b689] dark:border-b-[#9d744d] rounded-xl overflow-hidden relative shadow-none dark:border-x dark:border-y dark:border-divider">
                         <div className="absolute inset-0 z-0 opacity-20 pointer-events-none bg-[radial-gradient(#71717a_1px,transparent_1px)] bg-size-[16px_16px]" />
                         <CardHeader className="relative z-10 flex flex-col items-start px-5 py-4 md:px-6 md:py-5 h-full justify-between">
-                            <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-0">
-                                <Button as={Link} href="/grade" isIconOnly radius="none" className="bg-transparent text-zinc-500 hover:text-white mr-1 md:mr-2" size="sm">
-                                    <i className="hn hn-arrow-left text-2xl" />
+                            <div className="flex items-center justify-between w-full mb-2 md:mb-0">
+                                <div className="flex items-center gap-2 md:gap-3">
+                                    <Button as={Link} href="/grade" isIconOnly radius="none" className="bg-transparent text-zinc-500 hover:text-white mr-1 md:mr-2" size="sm">
+                                        <i className="hn hn-arrow-left text-2xl" />
+                                    </Button>
+                                    <i className="hn hn-pie-chart text-retro-orange text-[28px] md:text-[32px]" />
+                                    <h1 className="text-3xl md:text-4xl font-black text-retro-orange dark:text-white uppercase tracking-wide [text-shadow:2px_2px_0_#c47c16] md:[text-shadow:3px_3px_0_#c47c16] whitespace-nowrap">
+                                        Grade Analytics
+                                    </h1>
+                                </div>
+                                <Button
+                                    onPress={onGuideOpen}
+                                    variant="flat"
+                                    color="primary"
+                                    radius="none"
+                                    size="sm"
+                                    className="font-bold border-2 border-black dark:border-white shadow-[2px_2px_0_rgba(0,0,0,1)] uppercase bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100"
+                                >
+                                    <i className="hn hn-book text-base" />
+                                    <span className="hidden md:inline">Hướng Dẫn</span>
                                 </Button>
-                                <i className="hn hn-pie-chart text-retro-orange text-[28px] md:text-[32px]" />
-                                <h1 className="text-3xl md:text-4xl font-black text-retro-orange dark:text-white uppercase tracking-wide [text-shadow:2px_2px_0_#c47c16] md:[text-shadow:3px_3px_0_#c47c16] whitespace-nowrap">
-                                    Grade Analytics
-                                </h1>
                             </div>
 
-                            <div className="flex flex-row justify-between items-end w-full md:w-auto gap-4 md:gap-8 mt-2">
+                            <div className="flex flex-row justify-between items-end w-full gap-4 md:gap-8 mt-2">
                                 <div className="flex flex-col gap-1 text-[11px] md:text-xs font-bold tracking-widest uppercase font-mono">
                                     <div className="flex items-center gap-1">
                                         <span className="text-zinc-500"><i className="hn hn-user mr-1" />Player:</span>
@@ -475,6 +492,36 @@ export default function GradeChartPage() {
                     </div>
                 </div>
             )}
+
+            {/* USER GUIDE MODAL */}
+            <Modal isOpen={isGuideOpen} onOpenChange={onGuideOpenChange} classNames={{ base: "border-4 border-black rounded-none shadow-[8px_8px_0_rgba(0,0,0,1)] bg-white dark:bg-zinc-900 p-2 font-sans overflow-auto max-h-[90vh]", closeButton: "hover:bg-red-500 border-2 border-transparent hover:border-black rounded-none" }}>
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader className="flex flex-col gap-1 border-b-4 border-black text-xl font-bold font-sans text-black dark:text-white uppercase shrink-0">
+                                Hướng Dẫn: Phân Tích Điểm Số
+                            </ModalHeader>
+                            <ModalBody className="py-4 flex flex-col gap-3 font-sans text-sm md:text-base leading-relaxed text-black dark:text-white">
+                                <p><strong>Bộ Lọc Thời Gian:</strong> Chọn xem dữ liệu của &quot;Tất cả kỳ học&quot;, &quot;Chỉ một kỳ&quot;, hoặc &quot;Từ kỳ A đến kỳ B&quot; qua thanh công cụ phía trên.</p>
+                                <p><strong>Grade Frequency (Phân Bố Tần Suất Điểm):</strong> Thể hiện số lượng các môn học rớt vào từng mốc điểm cụ thể, giúp bạn biết mình thường đạt điểm ở khoảng nào nhất.</p>
+                                <p><strong>Grade Box Plot (Biểu Đồ Hộp):</strong> Giúp bạn nắm bắt biên độ dao động, điểm trung bình và mức độ phân tán điểm số của từng học kỳ hoặc môn học.</p>
+                                <p><strong>Grade Heatmap (Biểu Đồ Nhiệt):</strong> Trực quan hóa điểm số theo từng môn và học kỳ bằng màu sắc. Màu càng đậm thể hiện điểm số càng cao.</p>
+                                <p><strong>Subject Progression (Tiến Độ Môn Học):</strong> Theo dõi sự thay đổi điểm số qua các bài kiểm tra/đánh giá trong cùng một môn học theo thời gian.</p>
+                                <p><strong>Weight Stacked (Trọng Số Điểm):</strong> Hiển thị tỉ trọng của từng điểm thành phần cấu thành nên điểm tổng kết của môn học.</p>
+                                <p><strong>Overall GPA Trend (Xu Hướng GPA Tổng Thể):</strong> Biểu đồ đường so sánh giữa GPA của từng học kỳ riêng biệt (Term GPA) và GPA tích lũy tổng cộng (Cumulative GPA).</p>
+                                <p><strong>Subject Statuses (Trạng Thái Môn Học):</strong> Biểu đồ tròn cho thấy tỷ lệ hoàn thành môn học (Qua môn / Trượt / Học lại).</p>
+                                <p><strong>GPA Area Chart (Biểu Đồ Diện Tích Tích Lũy):</strong> Quan sát độ lớn và sự biến động của điểm GPA qua các kỳ học.</p>
+                                <p><strong>Term Comparer (So Sánh Học Kỳ):</strong> Lựa chọn 2 học kỳ khác nhau để phân tích, đối chiếu trực tiếp điểm trung bình giữa chúng bằng biểu đồ cột.</p>
+                            </ModalBody>
+                            <ModalFooter className="border-t-4 border-black shrink-0">
+                                <Button color="primary" onPress={onClose} className="border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] font-bold font-sans uppercase">
+                                    Đã hiểu
+                                </Button>
+                            </ModalFooter>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
         </div>
     );
 }

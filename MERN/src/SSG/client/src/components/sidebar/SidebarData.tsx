@@ -44,6 +44,12 @@ export const sidebarSections: SidebarSection[] = [
         label: siteConfig.links.gradeChart.label,
         icon: () => <i className="hn hn-chart-line-solid" style={{ fontSize: '18px' }}></i>,
         isSubItem: true,
+      },
+      {
+        key: "expense",
+        label: siteConfig.links.expense.label,
+        icon: () => <i className="hn hn-wallet" style={{ fontSize: '25px' }}></i>,
+        iconSize: 31,
       }
     ],
   },
