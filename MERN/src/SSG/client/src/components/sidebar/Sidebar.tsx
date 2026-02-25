@@ -17,7 +17,7 @@ import { useSidebarMenu } from "@/hooks/generals/useSidebarMenu";
 import { SidebarItem, SidebarSection } from "./SidebarData";
 
 // --- RETRO STYLES ---
-const activeItemStyle = "bg-[#e6b689] border-2 border-black text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] translate-x-[-2px] translate-y-[-2px]";
+const activeItemStyle = "bg-[#e6b689] border-2 border-black text-black shadow-pixel dark:shadow-pixel-dark translate-x-[-2px] translate-y-[-2px]";
 const normalItemStyle = "bg-transparent border-2 border-transparent hover:border-black hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white";
 
 // ============================================================================
@@ -30,7 +30,7 @@ interface SidebarContentProps {
   menuGroup2: SidebarSection[];
 }
 
-const SidebarContent = ({ menuGroup1, menuGroup2 }: SidebarContentProps) => {
+const SidebarContent = ({ onItemClick, menuGroup1, menuGroup2 }: SidebarContentProps) => {
   const pathname = usePathname();
 
   return (
@@ -39,7 +39,7 @@ const SidebarContent = ({ menuGroup1, menuGroup2 }: SidebarContentProps) => {
         <section className="flex items-center gap-3 h-15 w-full">
           <div className="h-10 w-full flex items-center justify-center">
             {/* Logo Text Retro */}
-            <h1 className="text-[34px] font-black text-[#e6b689] tracking-tighter uppercase [text-shadow:2px_2px_0_#000] whitespace-nowrap">
+            <h1 className="text-[34px] font-pixelify text-[#e6b689] tracking-widest uppercase drop-shadow-[2px_2px_0_rgba(0,0,0,1)] whitespace-nowrap">
               FPT UNIMATE
             </h1>
           </div>
@@ -62,7 +62,7 @@ const SidebarContent = ({ menuGroup1, menuGroup2 }: SidebarContentProps) => {
 
                 return (
                   <section key={section.title} className="flex flex-col gap-1 2xl:gap-2 px-2">
-                    <h2 className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1 px-2">
+                    <h2 className="text-[11px] font-sans font-bold uppercase tracking-wider text-zinc-400 mb-1 px-2 border-b-2 border-transparent pb-1">
                       {section.title}
                     </h2>
 
@@ -80,7 +80,7 @@ const SidebarContent = ({ menuGroup1, menuGroup2 }: SidebarContentProps) => {
                           className={cn(
                             "relative overflow-visible h-10 xl:h-11 text-left px-3 gap-3 justify-start transition-all duration-200",
                             isSelected ? activeItemStyle : normalItemStyle,
-                            item.isSubItem ? "ml-8 pr-3 h-8 xl:h-9 text-xs border-l-2 !border-l-zinc-300 dark:!border-l-zinc-700 bg-transparent hover:!bg-zinc-200 " + (isSelected ? "!border-l-[#e6b689]" : "") : ""
+                            item.isSubItem ? "ml-8 pr-3 h-8 xl:h-9 text-[11px] border-l-2 !border-l-zinc-300 dark:!border-l-zinc-700 bg-transparent hover:!bg-zinc-200 " + (isSelected ? "!border-l-[#e6b689]" : "") : ""
                           )}
                           fullWidth
                           size="lg"
@@ -97,10 +97,11 @@ const SidebarContent = ({ menuGroup1, menuGroup2 }: SidebarContentProps) => {
                             ) : null
                           }
                           endContent={item.endContent}
+                          onPress={onItemClick}
                         >
                           <span className={cn(
                             "font-bold flex-1 text-left tracking-tight",
-                            item.isSubItem ? "text-xs" : "text-sm uppercase",
+                            item.isSubItem ? "text-[11px]" : "text-sm uppercase font-bold",
                             isSelected ? "text-black" : "currentColor"
                           )}>
                             {item.label}
@@ -145,7 +146,7 @@ const SidebarCollapsed = ({ menuGroup1, menuGroup2 }: SidebarCollapsedProps) => 
       <div className="flex flex-col items-center gap-4 w-full pt-1">
         <div className="flex justify-center w-10 h-10 items-center">
           {/* Collapsed Logo */}
-          <h1 className="text-xl font-black text-[#e6b689] [text-shadow:1.5px_1.5px_0_#000]">
+          <h1 className="text-xl font-pixelify text-[#e6b689] drop-shadow-[1.5px_1.5px_0_rgba(0,0,0,1)] uppercase">
             FPT
           </h1>
         </div>
@@ -169,11 +170,11 @@ const SidebarCollapsed = ({ menuGroup1, menuGroup2 }: SidebarCollapsedProps) => 
                     return (
                       <Tooltip
                         key={item.key}
-                        content={<span className="font-bold uppercase text-xs">{item.label}</span>}
+                        content={<span className="font-bold uppercase tracking-tight text-xs">{item.label}</span>}
                         placement="right"
                         classNames={{
                           base: "before:bg-black",
-                          content: "bg-black text-white border-2 border-[#e6b689] rounded-none shadow-[2px_2px_0px_0px_#e6b689]"
+                          content: "bg-black text-white border-2 border-black rounded-none shadow-pixel"
                         }}
                       >
                         <Button
@@ -183,6 +184,7 @@ const SidebarCollapsed = ({ menuGroup1, menuGroup2 }: SidebarCollapsedProps) => 
                           isDisabled={item.isDisabled}
                           size="md"
                           radius="none" // Square buttons
+                          aria-label={item.label}
                           className={cn(
                             "w-10 h-10 transition-all duration-200",
                             isSelected ? activeItemStyle : normalItemStyle
@@ -231,10 +233,11 @@ export default function SideBar({ isCollapsed, isMobileOpen, onMobileChange }: S
 
   const desktopClasses = `
     hidden md:flex 
-    border-r-4 border-black relative h-full flex-col
+    border-4 border-l-0 border-black relative h-full flex-col
     transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1.0)] 
-    ${isCollapsed ? "w-20 px-0" : "w-72 px-0"} 
+    ${isCollapsed ? "w-20 px-0" : "w-72 px-0 shadow-pixel"} 
     py-4 overflow-hidden bg-white dark:bg-zinc-900 shrink-0
+    z-10
   `;
 
   return (
@@ -246,7 +249,7 @@ export default function SideBar({ isCollapsed, isMobileOpen, onMobileChange }: S
         placement="left"
         size="xs"
         classNames={{
-          base: "bg-white dark:bg-zinc-900 border-r-4 border-black rounded-none", // Retro Drawer
+          base: "bg-white dark:bg-zinc-900 border-r-4 border-black rounded-none shadow-pixel z-50", // Retro Drawer
           body: "p-4",
           closeButton: "hover:bg-red-500 hover:text-white rounded-none border border-transparent hover:border-black transition-colors"
         }}

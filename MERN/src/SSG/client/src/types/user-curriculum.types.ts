@@ -51,6 +51,8 @@ export interface UserAnalyticsTermDetail {
     credit: number;
     status: string;
     score: number | null;
+    grades?: UserGradeComponent[];
+    assessment_plan?: AssessmentPlanItem[];
 }
 
 export interface UserAnalyticsData {

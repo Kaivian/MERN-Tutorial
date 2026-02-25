@@ -31,11 +31,11 @@ export default function TaskDetailModal({ task, subject, onClose }: TaskDetailMo
                         <h2 className="text-2xl font-black uppercase text-black dark:text-white pr-8">{task.name}</h2>
                         <div className="flex gap-2 mt-2">
                             {isPersonal ? (
-                                <span className="px-2 py-1 text-xs font-bold uppercase tracking-wider border-2 border-black bg-emerald-500 text-white shadow-[2px_2px_0_#000]">
+                                <span className="px-2 py-1 text-xs font-bold uppercase tracking-wider border-2 border-black text-white shadow-[2px_2px_0_#000]" style={{ backgroundColor: task.color || '#10b981' }}>
                                     Personal
                                 </span>
                             ) : subject ? (
-                                <span className="px-2 py-1 text-xs font-bold uppercase tracking-wider border-2 border-black text-white shadow-[2px_2px_0_#000]" style={{ backgroundColor: subject.color }}>
+                                <span className="px-2 py-1 text-xs font-bold uppercase tracking-wider border-2 border-black text-white shadow-[2px_2px_0_#000]" style={{ backgroundColor: task.color || subject.color }}>
                                     {subject.name}
                                 </span>
                             ) : null}

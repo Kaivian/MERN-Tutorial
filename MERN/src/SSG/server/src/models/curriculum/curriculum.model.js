@@ -61,8 +61,6 @@ const CurriculumSchema = new Schema({
     collection: 'curriculums'
 });
 
-// Index for faster searches
-CurriculumSchema.index({ 'curriculum_info.code': 1 });
 
 const Curriculum = mongoose.model('Curriculum', CurriculumSchema);
 

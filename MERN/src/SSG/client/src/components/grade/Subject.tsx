@@ -23,8 +23,8 @@ import { UserSubjectGrade, UpdateGradePayload } from "@/types/user-curriculum.ty
 type AssessmentPlanItem = UserSubjectGrade["assessment_plan"][number];
 
 // --- STYLE CONSTANTS ---
-const rowCardStyles = "bg-white border-2 border-divider shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] transition-all duration-200";
-const rowInteractiveStyles = "hover:border-[#e6b689] hover:shadow-[#e6b689]";
+const rowCardStyles = "bg-white dark:bg-zinc-800 border-2 border-black shadow-pixel dark:shadow-pixel-dark transition-all duration-200";
+const rowInteractiveStyles = "hover:shadow-pixel-hover active:translate-y-[2px] active:translate-x-[2px] active:shadow-none";
 
 // --- HELPER: SORT ASSESSMENTS ---
 const sortAssessments = (plans: AssessmentPlanItem[]): AssessmentPlanItem[] => {
@@ -278,11 +278,11 @@ export const SubjectRow = ({ subject, onSave }: { subject: UserSubjectGrade, onS
           )} />
 
           <div className="w-20 shrink-0 pl-2">
-            <span className="font-black text-zinc-900 text-lg tracking-tight">{subject.code}</span>
+            <span className="font-pixelify text-black dark:text-white text-lg tracking-widest">{subject.code}</span>
           </div>
 
           <div className="flex flex-col">
-            <span className="text-sm font-bold text-zinc-700 group-hover:text-[#d97706] uppercase tracking-wide transition-colors line-clamp-1">
+            <span className="text-sm font-bold text-zinc-700 dark:text-zinc-300 group-hover:text-black dark:group-hover:text-white uppercase tracking-wide transition-colors line-clamp-1">
               {subject.name_en}
             </span>
             <span className="text-[10px] text-zinc-500 font-mono font-bold mt-0.5">
@@ -334,14 +334,14 @@ export const SubjectRow = ({ subject, onSave }: { subject: UserSubjectGrade, onS
         classNames={{
           wrapper: "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] overflow-hidden",
           base: cn(
-            "bg-white border-2 border-zinc-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.3)] h-[90vh] max-h-[90vh] rounded-none",
+            "bg-white dark:bg-zinc-800 border-2 border-black shadow-pixel dark:shadow-pixel-dark h-[90vh] max-h-[90vh] rounded-none",
             "w-full transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
             showSyllabus ? "md:max-w-5xl" : "md:max-w-2xl"
           ),
-          header: "border-b-2 border-zinc-100 pb-0 shrink-0 bg-white",
-          body: "p-0 overflow-hidden bg-white flex flex-col",
-          footer: "border-t-2 border-zinc-100 pt-4 shrink-0 bg-white",
-          closeButton: "hover:bg-red-500 hover:text-white active:bg-red-700 rounded-none border border-transparent hover:border-black text-zinc-800 transition-colors duration-200 z-50",
+          header: "border-b-2 border-black pb-0 shrink-0 bg-white dark:bg-zinc-800",
+          body: "p-0 overflow-hidden bg-white dark:bg-zinc-800 flex flex-col",
+          footer: "border-t-2 border-black pt-4 shrink-0 bg-zinc-50 dark:bg-zinc-900",
+          closeButton: "hover:bg-red-500 hover:text-white active:bg-red-700 rounded-none border border-transparent hover:border-black text-zinc-800 dark:text-white transition-colors duration-200 z-50",
         }}
       >
         <ModalContent>
@@ -353,7 +353,7 @@ export const SubjectRow = ({ subject, onSave }: { subject: UserSubjectGrade, onS
 
                   {/* Title Section */}
                   <div className="mb-4 md:mb-0">
-                    <h3 className="text-xl md:text-2xl font-black text-zinc-900 uppercase tracking-tight leading-tight">
+                    <h3 className="text-xl md:text-2xl font-pixelify text-[#e6b689] uppercase tracking-widest drop-shadow-[2px_2px_0_rgba(0,0,0,1)] leading-tight">
                       {subject.name_en}
                     </h3>
                     <div className="flex flex-wrap gap-2 md:gap-3 mt-2 items-center">
@@ -372,7 +372,7 @@ export const SubjectRow = ({ subject, onSave }: { subject: UserSubjectGrade, onS
                       Current Average
                     </span>
                     <div className={cn(
-                      "text-3xl md:text-5xl font-black tracking-tighter md:order-1",
+                      "text-3xl md:text-5xl font-pixelify tracking-widest md:order-1",
                       statusColor === 'danger' ? "text-red-500" :
                         statusColor === 'success' ? "text-emerald-500" : "text-[#e6b689]"
                     )}>
@@ -533,9 +533,9 @@ export const SubjectRow = ({ subject, onSave }: { subject: UserSubjectGrade, onS
                 <div className="flex gap-3">
                   <Button
                     className={cn(
-                      "font-bold border-2 border-divider hover:bg-zinc-100 text-zinc-800",
+                      "font-pixelify uppercase tracking-widest border-2 border-black shadow-pixel hover:shadow-pixel-hover active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all",
                       "hidden md:flex",
-                      showSyllabus && "bg-zinc-100 text-zinc-500"
+                      showSyllabus ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-500" : "bg-white dark:bg-zinc-800 text-black dark:text-white"
                     )}
                     radius="none"
                     onPress={() => setShowSyllabus(!showSyllabus)}
@@ -545,8 +545,8 @@ export const SubjectRow = ({ subject, onSave }: { subject: UserSubjectGrade, onS
 
                   <Button
                     className={cn(
-                      "font-bold border-2 border-black transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] active:translate-y-px active:translate-x-px active:shadow-none min-w-35",
-                      isEditing ? "bg-emerald-400 text-black hover:bg-emerald-300 border-emerald-900" : "bg-[#e6b689] text-black hover:bg-[#ffcf9e]"
+                      "font-pixelify uppercase tracking-widest border-2 border-black transition-all shadow-pixel hover:shadow-pixel-hover active:translate-y-[2px] active:translate-x-[2px] active:shadow-none min-w-35",
+                      isEditing ? "bg-emerald-400 text-black hover:bg-emerald-300" : "bg-[#e6b689] text-black hover:bg-[#d4a373]"
                     )}
                     radius="none"
                     isLoading={isSaving}

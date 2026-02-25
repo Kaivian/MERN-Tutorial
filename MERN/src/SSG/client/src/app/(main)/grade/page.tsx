@@ -112,10 +112,10 @@ export default function GradePage() {
 
   // --- STYLES ---
   const commonSelectStyles = {
-    trigger: "border-zinc-600 data-[hover=true]:border-[#e6b689] dark:data-[hover=true]:border-[#9d744d] shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] transition-all duration-150 data-[open=true]:translate-x-[2px] data-[open=true]:translate-y-[2px] data-[open=true]:shadow-none data-[open=true]:border-[#e6b689]",
-    label: "text-zinc-500 uppercase tracking-wider text-[12px]",
-    value: "font-bold text-zinc-300",
-    popoverContent: "rounded-none border-2 border-[#e6b689] mx-[2px] data-[selected=true]:bg-zinc-800 data-[selected=true]:text-[#e6b689] data-[selected=true]:font-bold",
+    trigger: "border-2 border-black shadow-pixel transition-all duration-150 data-[open=true]:translate-x-[2px] data-[open=true]:translate-y-[2px] data-[open=true]:shadow-none",
+    label: "text-zinc-500 uppercase tracking-widest font-sans font-bold text-[12px]",
+    value: "font-pixelify tracking-widest uppercase text-black dark:text-zinc-300",
+    popoverContent: "rounded-none border-2 border-black shadow-pixel mx-[2px] data-[selected=true]:bg-zinc-800 data-[selected=true]:text-[#e6b689]",
   };
 
   const getSelectStyles = (disabled: boolean) => ({
@@ -129,14 +129,14 @@ export default function GradePage() {
       base: [
         "rounded-none", "text-zinc-500", "transition-colors", "outline-none",
         "data-[focus-visible=true]:ring-0", "data-[focus-visible=true]:ring-offset-0",
-        "data-[hover=true]:!bg-[#e6b689]", "data-[hover=true]:!text-zinc-900",
-        "data-[selected=true]:!bg-[#e6b689]", "data-[selected=true]:!text-zinc-900", "data-[selected=true]:font-bold",
-        "data-[focus=true]:!bg-[#e6b689]", "data-[focus=true]:!text-zinc-900",
+        "data-[hover=true]:!bg-[#e6b689]", "data-[hover=true]:!text-black",
+        "data-[selected=true]:!bg-[#e6b689]", "data-[selected=true]:!text-black", "data-[selected=true]:font-pixelify",
+        "data-[focus=true]:!bg-[#e6b689]", "data-[focus=true]:!text-black",
       ].join(" "),
     },
   };
 
-  const buttonStyles = "bg-[#e6b689] dark:bg-[#9d744d] text-white border-2 border-transparent font-black min-w-10 h-10 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all";
+  const buttonStyles = "bg-[#e6b689] hover:bg-[#d4a373] text-black border-2 border-black font-pixelify min-w-10 h-10 shadow-pixel hover:shadow-pixel-hover active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all";
 
   return (
     // CHANGE 1: h-auto cho mobile, md:h-screen cho desktop
@@ -148,13 +148,13 @@ export default function GradePage() {
 
         {/* SECTION 1: HEADER */}
         <section className="w-full md:w-auto">
-          <Card className="h-full dark:bg-[#18181b] border-t-0 border-x-0 border-b-2 border-b-[#e6b689] dark:border-b-[#9d744d] rounded-xl overflow-hidden relative shadow-none dark:border-x dark:border-y dark:border-divider">
-            <div className="absolute inset-0 z-0 opacity-20 pointer-events-none bg-[radial-gradient(#71717a_1px,transparent_1px)] bg-size-[16px_16px]" />
+          <Card className="h-full bg-white dark:bg-zinc-800 border-2 border-black rounded-none overflow-hidden relative shadow-pixel dark:shadow-pixel-dark min-w-[320px]">
+            <div className="absolute inset-0 z-0 opacity-10 pointer-events-none bg-[radial-gradient(#000000_1px,transparent_1px)] dark:bg-[radial-gradient(#ffffff_1px,transparent_1px)] bg-size-[16px_16px]" />
             <CardHeader className="relative z-10 flex flex-col items-start px-5 py-4 md:px-6 md:py-5 h-full justify-between">
 
               <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-0">
-                <i className="hn hn-chart-line text-retro-orange text-[28px] md:text-[32px]" />
-                <h1 className="text-3xl md:text-4xl font-black text-retro-orange dark:text-white uppercase tracking-wide [text-shadow:2px_2px_0_#c47c16] md:[text-shadow:3px_3px_0_#c47c16] whitespace-nowrap">
+                <i className="hn hn-chart-line text-[#e6b689] text-[28px] md:text-[32px] drop-shadow-[2px_2px_0_rgba(0,0,0,1)]" />
+                <h1 className="text-3xl md:text-3xl font-pixelify text-[#e6b689] uppercase tracking-widest drop-shadow-[2px_2px_0_rgba(0,0,0,1)] whitespace-nowrap">
                   Grade Tracker
                 </h1>
               </div>
@@ -167,16 +167,16 @@ export default function GradePage() {
                   </div>
                   <div className="flex items-center gap-1">
                     <span className="text-zinc-500"><i className="hn hn-calendar mr-1" />Term:</span>
-                    <span className="text-retro-orange">{currentTermLabel}</span>
+                    <span className="text-black dark:text-[#e6b689] font-bold">{currentTermLabel}</span>
                   </div>
                 </div>
                 <div className="flex flex-col items-end">
-                  <p className="text-[9px] md:text-[10px] font-bold text-zinc-500 tracking-widest uppercase mb-0">TERM GPA</p>
+                  <p className="text-[10px] md:text-[11px] font-sans font-bold text-zinc-500 tracking-widest uppercase mb-0">TERM GPA</p>
                   <div className="flex items-baseline">
-                    <span className="text-3xl md:text-4xl font-black text-retro-orange leading-none">
+                    <span className="text-3xl md:text-4xl font-pixelify text-[#e6b689] leading-none drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">
                       {termGpa !== undefined && termGpa !== null ? termGpa.toFixed(1) : "-"}
                     </span>
-                    <span className="text-sm md:text-xl font-bold text-zinc-600 ml-1">/10.0</span>
+                    <span className="text-sm md:text-xl font-pixelify text-zinc-400 ml-1">/10.0</span>
                   </div>
                 </div>
               </div>
@@ -186,8 +186,8 @@ export default function GradePage() {
 
         {/* SECTION 2: FILTERS */}
         <section className="w-full md:flex-1">
-          <Card className="h-full dark:bg-[#18181b] border-t-0 border-x-0 border-b-2 border-b-[#e6b689] dark:border-b-[#9d744d] rounded-xl overflow-hidden relative shadow-none dark:border-x dark:border-y dark:border-divider">
-            <div className="absolute inset-0 z-0 opacity-10 pointer-events-none bg-[radial-gradient(#71717a_1px,transparent_1px)] bg-size-[10px_10px]" />
+          <Card className="h-full bg-white dark:bg-zinc-800 border-2 border-black rounded-none overflow-hidden relative shadow-pixel dark:shadow-pixel-dark">
+            <div className="absolute inset-0 z-0 opacity-5 pointer-events-none bg-[radial-gradient(#000000_1px,transparent_1px)] dark:bg-[radial-gradient(#ffffff_1px,transparent_1px)] bg-size-[10px_10px]" />
             <CardBody className="relative z-10 px-4 py-4 md:px-6 md:py-6 h-full justify-center">
 
               <div className="flex flex-col gap-4 justify-between items-center w-full">
@@ -197,7 +197,7 @@ export default function GradePage() {
                   className="flex md:hidden w-full justify-between items-center cursor-pointer select-none"
                   onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
                 >
-                  <div className="flex items-center gap-2 text-[#e6b689] font-black uppercase tracking-widest">
+                  <div className="flex items-center gap-2 text-[#e6b689] font-pixelify uppercase tracking-widest text-lg drop-shadow-[1px_1px_0_rgba(0,0,0,1)]">
                     <i className="hn hn-filter" />
                     <span>Filter Configuration</span>
                   </div>
@@ -215,7 +215,7 @@ export default function GradePage() {
                       <>
                         <span>{majorGroups.find(g => g.key === currentBlockKey)?.label || "No Block"}</span>
                         <i className="hn hn-caret-right" />
-                        <span className="text-white">{getProgramLabel(currentProgramKey)}</span>
+                        <span className="text-black dark:text-white">{getProgramLabel(currentProgramKey)}</span>
                         <i className="hn hn-caret-right" />
                         <span className="text-[#e6b689] bg-black px-2 py-1 border-2 border-[#e6b689]">{currentClassKey || "No Class"}</span>
                       </>
@@ -245,7 +245,7 @@ export default function GradePage() {
                     {generatedTerms.map((term) => (
                       <SelectItem key={term.key} textValue={term.label}>
                         <div className="flex flex-col">
-                          <span className="font-bold">{term.label}</span>
+                          <span className="font-pixelify uppercase tracking-widest">{term.label}</span>
                         </div>
                       </SelectItem>
                     ))}
@@ -256,14 +256,14 @@ export default function GradePage() {
                   <Input
                     classNames={{
                       inputWrapper: [
-                        "bg-transparent", "border-zinc-600", "rounded-none",
-                        "shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)]", "h-[40px]",
+                        "bg-white dark:bg-zinc-900", "border-2 border-black", "rounded-none",
+                        "shadow-pixel dark:shadow-pixel-dark", "h-[40px]",
                         "transition-all duration-150",
-                        "data-[hover=true]:border-[#e6b689]", "data-[focus=true]:!border-[#e6b689]",
+                        "data-[hover=true]:border-black", "data-[focus=true]:!border-black",
                         "data-[focus=true]:translate-x-[2px]", "data-[focus=true]:translate-y-[2px]",
-                        "data-[focus=true]:shadow-none", "group-data-[focus=true]:bg-transparent",
+                        "data-[focus=true]:shadow-none",
                       ].join(" "),
-                      input: "font-bold font-mono text-zinc-700 placeholder:text-zinc-400",
+                      input: "font-pixelify tracking-widest uppercase text-black dark:text-white placeholder:text-zinc-400 placeholder:font-pixelify placeholder:tracking-widest",
                     }}
                     isClearable
                     placeholder="SEARCH..."
@@ -272,7 +272,7 @@ export default function GradePage() {
                     variant="bordered"
                     startContent={<i className="hn hn-search" />}
                   />
-                  <Button as={Link} href="/grade/chart" radius="none" className={cn(buttonStyles, "px-4 font-bold text-xs uppercase hidden sm:flex")}>
+                  <Button as={Link} href="/grade/chart" radius="none" className={cn(buttonStyles, "px-4 font-pixelify tracking-widest uppercase hidden sm:flex")}>
                     <i className="hn hn-pie-chart text-lg mr-2" /> Analytics
                   </Button>
                   <Button as={Link} href="/grade/chart" isIconOnly radius="none" className={cn(buttonStyles, "flex sm:hidden")}>
@@ -295,9 +295,9 @@ export default function GradePage() {
       {/* SECTION 3: CONTENT LIST */}
       {/* CHANGE 3: h-auto cho mobile để scroll trang, min-h-0 cho desktop để scroll internal */}
       <section className="flex-1 flex flex-col h-auto md:min-h-0">
-        <Card className="flex-1 h-full dark:bg-[#18181b] border-t-0 border-x-0 border-b-2 border-b-[#e6b689] dark:border-b-[#9d744d] rounded-xl overflow-hidden relative shadow-none dark:border-x dark:border-y dark:border-divider">
-          <div className="absolute inset-0 z-0 opacity-10 pointer-events-none bg-[radial-gradient(#71717a_1px,transparent_1px)] bg-size-[10px_10px]" />
-          <div className="z-20 flex justify-between px-4 py-3 border-b border-divider text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+        <Card className="flex-1 h-full bg-white dark:bg-zinc-800 border-2 border-black rounded-none overflow-hidden relative shadow-pixel dark:shadow-pixel-dark">
+          <div className="absolute inset-0 z-0 opacity-5 pointer-events-none bg-[radial-gradient(#000000_1px,transparent_1px)] dark:bg-[radial-gradient(#ffffff_1px,transparent_1px)] bg-size-[10px_10px]" />
+          <div className="z-20 flex justify-between px-4 py-3 border-b-2 border-black text-xs font-pixelify text-zinc-500 uppercase tracking-widest bg-zinc-50 dark:bg-zinc-900">
             <div>Subject Info</div>
             <div className="pr-4">Status / Score</div>
           </div>

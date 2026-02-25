@@ -25,24 +25,24 @@ export interface SidebarSection {
 
 export const sidebarSections: SidebarSection[] = [
   {
-    title: "Mamnagement",
+    title: "Management",
     items: [
       {
         key: "dashboard",
         label: siteConfig.links.dashboard.label,
-        icon: () => <i className="hn hn-clipboard-solid text-retro-orange" style={{ fontSize: '25px' }}></i>,
+        icon: () => <i className="hn hn-home-solid" style={{ fontSize: '25px' }}></i>,
         iconSize: 31,
       },
       {
         key: "grade",
         label: siteConfig.links.grade.label,
-        icon: () => <i className="hn hn-clipboard-solid text-retro-orange" style={{ fontSize: '25px' }}></i>,
+        icon: () => <i className="hn hn-clipboard-solid" style={{ fontSize: '25px' }}></i>,
         iconSize: 31,
       },
       {
         key: "grade/chart",
         label: siteConfig.links.gradeChart.label,
-        icon: () => <i className="hn hn-pie-chart text-retro-orange" style={{ fontSize: '18px' }}></i>,
+        icon: () => <i className="hn hn-chart-line-solid" style={{ fontSize: '18px' }}></i>,
         isSubItem: true,
       }
     ],
@@ -53,13 +53,13 @@ export const sidebarSections: SidebarSection[] = [
       {
         key: "calendar",
         label: siteConfig.links.calendar.label,
-        icon: () => <i className="hn hn-calendar-01 text-retro-orange" style={{ fontSize: '25px' }}></i>,
+        icon: () => <i className="hn hn-calender-solid" style={{ fontSize: '25px' }}></i>,
         iconSize: 31,
       },
       {
         key: "deadline-manager",
         label: siteConfig.links.deadlineManager.label,
-        icon: () => <i className="hn hn-view-list text-retro-orange" style={{ fontSize: '25px' }}></i>,
+        icon: () => <i className="hn hn-clock-solid" style={{ fontSize: '25px' }}></i>,
         iconSize: 31,
       },
     ],

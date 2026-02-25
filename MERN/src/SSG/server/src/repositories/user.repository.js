@@ -6,7 +6,7 @@ import User from '../models/user.model.js';
  * Abstracts Mongoose operations to provide clean data access methods.
  */
 class UserRepository {
-  
+
   /* ==================== CREATE ==================== */
 
   /**
@@ -81,7 +81,7 @@ class UserRepository {
    * @param {Object} updateData 
    */
   async update(userId, updateData) {
-    return await User.findByIdAndUpdate(userId, updateData, { new: true });
+    return await User.findByIdAndUpdate(userId, updateData, { returnDocument: 'after' });
   }
 
   /**
@@ -99,7 +99,7 @@ class UserRepository {
           lastLoginAt: new Date()
         }
       },
-      { new: true }
+      { returnDocument: 'after' }
     );
   }
 

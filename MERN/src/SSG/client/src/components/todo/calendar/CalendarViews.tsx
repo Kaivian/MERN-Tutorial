@@ -12,8 +12,39 @@ interface CalendarViewsProps {
     anchorDate?: Date;
 }
 
-export default function CalendarViews({ currentView, subjects, tasks, anchorDate }: CalendarViewsProps) {
+export default function CalendarViews({ currentView, subjects, tasks: rawTasks, anchorDate }: CalendarViewsProps) {
+    const tasks = React.useMemo(() => rawTasks.filter(t => !t.isCompleted), [rawTasks]);
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+    const [moreTasksGroup, setMoreTasksGroup] = useState<Task[] | null>(null);
+    const [hoveredTask, setHoveredTask] = useState<{ taskOrTasks: Task | Task[]; x: number; y: number } | null>(null);
+
+    const handleMouseEnter = (e: React.MouseEvent, taskOrTasks: Task | Task[]) => {
+        setHoveredTask({ taskOrTasks, x: e.clientX + 15, y: e.clientY + 15 });
+    };
+
+    const handleMouseLeave = () => {
+        setHoveredTask(null);
+    };
+
+    // Helper to sort tasks strictly mimicking calendarStacking logic
+    const sortTasks = (tasksToSort: Task[]) => {
+        return [...tasksToSort].sort((a, b) => {
+            const getStart = (t: Task) => (t.startDate ? new Date(t.startDate).getTime() : new Date(t.endDate!).getTime());
+            const getEnd = (t: Task) => (t.endDate ? new Date(t.endDate).getTime() : new Date(t.startDate!).getTime());
+
+            const startA = getStart(a);
+            const startB = getStart(b);
+
+            if (startA !== startB) return startA - startB;
+
+            const durationA = getEnd(a) - startA;
+            const durationB = getEnd(b) - startB;
+
+            if (durationA !== durationB) return durationB - durationA;
+
+            return (b.urgencyScore || 0) - (a.urgencyScore || 0);
+        });
+    };
 
     // Current anchor date for layout generation
     const baseDate = anchorDate || new Date();
@@ -43,23 +74,25 @@ export default function CalendarViews({ currentView, subjects, tasks, anchorDate
         return n;
     };
 
-    const getSubjectColor = (subjectId?: string | null) => {
-        if (!subjectId) return '#ccc';
-        if (subjectId === 'personal') return '#10b981'; // Default personal color
-        return subjects.find(s => s.id === subjectId)?.color || '#ccc';
+    const getTaskColor = (task: Task) => {
+        if (task.color) return task.color;
+        if (!task.subjectId) return '#ccc';
+        if (task.subjectId === 'personal') return '#10b981'; // Default personal color
+        return subjects.find(s => s.id === task.subjectId)?.color || '#ccc';
     };
 
     // --- DAY VIEW ---
     const renderDayView = () => {
-        // Filter tasks that belong to baseDate
-        const todaysTasks = tasks.filter(t => t.endDate && isSameDay(new Date(t.endDate), baseDate));
+        // Filter tasks that belong to baseDate (overlap)
+        const todaysTasks = tasks.filter(t => t.endDate && isDateInRange(baseDate, new Date(t.startDate || t.endDate), new Date(t.endDate)));
 
-        // Sort by urgency, then chronological
+        // Sort: highest urgency first. If same, sort by start time.
         const sortedTasks = [...todaysTasks].sort((a, b) => {
             if ((b.urgencyScore || 0) !== (a.urgencyScore || 0)) {
                 return (b.urgencyScore || 0) - (a.urgencyScore || 0);
             }
-            return new Date(a.endDate!).getTime() - new Date(b.endDate!).getTime();
+            const getStart = (t: Task) => (t.startDate ? new Date(t.startDate).getTime() : new Date(t.endDate!).getTime());
+            return getStart(a) - getStart(b);
         });
 
         if (sortedTasks.length === 0) {
@@ -91,7 +124,7 @@ export default function CalendarViews({ currentView, subjects, tasks, anchorDate
                             ) : (
                                 <>
                                     <span className="font-pixelify text-black border-2 border-black px-2 py-0.5 bg-white text-xs">Slot {focusTask.slot}</span>
-                                    <span className="font-pixelify text-black border-2 border-black px-2 py-0.5 bg-white text-xs" style={{ borderBottomColor: getSubjectColor(focusTask.subjectId), borderBottomWidth: '4px' }}>
+                                    <span className="font-pixelify text-black border-2 border-black px-2 py-0.5 bg-white text-xs" style={{ borderBottomColor: getTaskColor(focusTask), borderBottomWidth: '4px' }}>
                                         {subjects.find(s => s.id === focusTask.subjectId)?.name || 'Subject'}
                                     </span>
                                 </>
@@ -122,6 +155,8 @@ export default function CalendarViews({ currentView, subjects, tasks, anchorDate
                         <div
                             key={task._id || `task-${task.name}`}
                             onClick={() => setSelectedTask(task)}
+                            onMouseEnter={(e) => handleMouseEnter(e, task)}
+                            onMouseLeave={handleMouseLeave}
                             className="bg-zinc-100 dark:bg-zinc-800 border-2 border-black p-3 shadow-pixel flex justify-between items-center transition-colors hover:bg-zinc-200 dark:hover:bg-zinc-700 cursor-pointer"
                         >
                             <div>
@@ -198,44 +233,135 @@ export default function CalendarViews({ currentView, subjects, tasks, anchorDate
 
                             {/* Vertical day columns */}
                             {weekDays.map((date, dayIdx) => {
-                                // For Week view demo, we consider tasks spanning multiple days as All-Day tasks
-                                // if startDate exists and is before endDate
-                                const dayTasksAll = tasks.filter(t => t.endDate && isDateInRange(date, new Date(t.startDate || t.endDate), new Date(t.endDate)));
+                                const dayStart = new Date(date).setHours(0, 0, 0, 0);
+                                const dayEnd = new Date(date).setHours(23, 59, 59, 999);
 
-                                // Separate timed vs all-day (multi-day)
-                                const timedTasks = dayTasksAll.filter(t => !t.startDate || isSameDay(new Date(t.startDate), new Date(t.endDate!)));
-                                const allDayTasks = dayTasksAll.filter(t => t.startDate && !isSameDay(new Date(t.startDate), new Date(t.endDate!)));
+                                const dayTasksAll = sortTasks(tasks.filter(t => t.endDate && isDateInRange(date, new Date(t.startDate || t.endDate), new Date(t.endDate))));
+
+                                type LayoutTask = { task: Task; startHour: number; endHour: number; column?: number; maxColumns?: number };
+                                const timedTasks: LayoutTask[] = [];
+                                const allDayTasks: Task[] = [];
+
+                                dayTasksAll.forEach(t => {
+                                    // Default 1 hour duration if no start date is defined
+                                    const taskStart = t.startDate ? new Date(t.startDate) : new Date(new Date(t.endDate!).getTime() - 60 * 60 * 1000);
+                                    const taskEnd = new Date(t.endDate!);
+
+                                    const actualStart = Math.max(taskStart.getTime(), dayStart);
+                                    const actualEnd = Math.min(taskEnd.getTime(), dayEnd);
+
+                                    const coversWholeDay = (actualEnd - actualStart) >= 23.5 * 60 * 60 * 1000;
+
+                                    if (coversWholeDay) {
+                                        allDayTasks.push(t);
+                                    } else {
+                                        const startHour = (actualStart - dayStart) / (60 * 60 * 1000);
+                                        const endHour = Math.max(startHour + 0.5, (actualEnd - dayStart) / (60 * 60 * 1000));
+                                        timedTasks.push({ task: t, startHour, endHour });
+                                    }
+                                });
+
+                                const sortedTimed = timedTasks.sort((a, b) => a.startHour - b.startHour || b.endHour - a.endHour);
+                                const layoutTasks: LayoutTask[] = [];
+
+                                let currentGroup: LayoutTask[] = [];
+                                let groupEnd = 0;
+
+                                const processGroup = (group: LayoutTask[]) => {
+                                    const columns: LayoutTask[][] = [];
+                                    for (const item of group) {
+                                        let placed = false;
+                                        for (let i = 0; i < columns.length; i++) {
+                                            const col = columns[i];
+                                            const lastItem = col[col.length - 1];
+                                            if (lastItem.endHour <= item.startHour) {
+                                                col.push(item);
+                                                item.column = i;
+                                                placed = true;
+                                                break;
+                                            }
+                                        }
+                                        if (!placed) {
+                                            item.column = columns.length;
+                                            columns.push([item]);
+                                        }
+                                    }
+                                    const maxCols = columns.length;
+
+                                    if (maxCols > 5) {
+                                        const actualMaxCols = 6;
+                                        const groupStart = Math.min(...group.map(t => t.startHour));
+                                        const groupEnd = Math.max(...group.map(t => t.endHour));
+                                        const hiddenTasks = group.filter(t => (t.column || 0) >= 5).map(t => t.task);
+
+                                        for (const item of group) {
+                                            if ((item.column || 0) < 5) {
+                                                item.maxColumns = actualMaxCols;
+                                                layoutTasks.push(item);
+                                            }
+                                        }
+                                        layoutTasks.push({
+                                            task: { _id: `more-${groupStart}-${groupEnd}`, name: `+${hiddenTasks.length} MORE`, isMoreBlock: true, hiddenTasks } as unknown as Task,
+                                            startHour: groupStart,
+                                            endHour: groupEnd,
+                                            column: 5,
+                                            maxColumns: actualMaxCols
+                                        });
+                                    } else {
+                                        for (const item of group) {
+                                            item.maxColumns = maxCols;
+                                            layoutTasks.push(item);
+                                        }
+                                    }
+                                };
+
+                                for (const item of sortedTimed) {
+                                    if (item.startHour >= groupEnd) {
+                                        if (currentGroup.length > 0) processGroup(currentGroup);
+                                        currentGroup = [item];
+                                        groupEnd = item.endHour;
+                                    } else {
+                                        currentGroup.push(item);
+                                        groupEnd = Math.max(groupEnd, item.endHour);
+                                    }
+                                }
+                                if (currentGroup.length > 0) processGroup(currentGroup);
 
                                 return (
                                     <div key={dayIdx} className="flex-1 border-r border-zinc-200 dark:border-zinc-700 last:border-r-0 relative z-10 w-0 flex flex-col">
                                         {/* All Day Wrapper */}
                                         <div className="relative w-full h-[80px] border-b border-zinc-200 dark:border-zinc-700 p-1 flex flex-col gap-1 overflow-y-auto overflow-x-visible">
                                             {allDayTasks.slice(0, 3).map((t, idx) => {
-                                                // Create contiguous visual effect by expanding margins if it's not the start/end
-                                                const isStart = isSameDay(date, new Date(t.startDate!));
+                                                const isStart = !t.startDate || isSameDay(date, new Date(t.startDate));
                                                 const isEnd = isSameDay(date, new Date(t.endDate!));
 
                                                 return (
                                                     <div
                                                         key={t._id || t.name + idx}
                                                         onClick={() => setSelectedTask(t)}
-                                                        className={`text-[9px] font-bold text-white px-1 truncate shadow-[1px_1px_0_#000] z-20 cursor-pointer hover:brightness-110 transition-all ${isStart ? 'rounded-l border-l border-y border-black' : 'border-y border-black'} ${isEnd ? 'rounded-r border-r border-y border-black' : ''}`}
+                                                        onMouseEnter={(e) => handleMouseEnter(e, t)}
+                                                        onMouseLeave={handleMouseLeave}
+                                                        className={`relative text-[9px] font-bold text-white px-1 truncate shadow-[1px_1px_0_#000] z-20 cursor-pointer hover:brightness-110 transition-all ${isStart ? 'rounded-l border-l border-y border-black' : 'border-y border-black'} ${isEnd ? 'rounded-r border-r border-y border-black' : ''}`}
                                                         style={{
-                                                            backgroundColor: getSubjectColor(t.subjectId),
-                                                            marginLeft: isStart ? '2px' : '-2px', // Pull out to connect visually across borders
-                                                            marginRight: isEnd ? '2px' : '-2px'
+                                                            backgroundColor: getTaskColor(t),
+                                                            marginLeft: isStart ? '2px' : '-2px',
+                                                            marginRight: isEnd ? '2px' : '-2px',
                                                         }}
-                                                        title={`${t.name} (All Day)`}
                                                     >
-                                                        {isStart ? t.name : '\u00A0'}
+                                                        <span className="truncate block">{isStart ? t.name : '\u00A0'}</span>
                                                     </div>
                                                 );
                                             })}
                                             {allDayTasks.length > 3 && (
                                                 <div
-                                                    className="text-[9px] font-pixelify uppercase tracking-wider text-black bg-zinc-200 dark:bg-zinc-700 border-2 border-black flex items-center justify-center pointer-events-auto z-20"
+                                                    className="text-[9px] font-pixelify uppercase tracking-wider text-black bg-zinc-200 dark:bg-zinc-700 border-2 border-black flex items-center justify-center pointer-events-auto z-20 hover:brightness-110 cursor-pointer transition-all shrink-0"
                                                     style={{ height: '18px' }}
-                                                    title={`${allDayTasks.length - 3} more task(s)`}
+                                                    onMouseEnter={(e) => handleMouseEnter(e, allDayTasks.slice(3))}
+                                                    onMouseLeave={handleMouseLeave}
+                                                    onClick={() => {
+                                                        setHoveredTask(null);
+                                                        setMoreTasksGroup(allDayTasks.slice(3));
+                                                    }}
                                                 >
                                                     +{allDayTasks.length - 3} more
                                                 </div>
@@ -244,19 +370,63 @@ export default function CalendarViews({ currentView, subjects, tasks, anchorDate
 
                                         {/* Timed Wrapper */}
                                         <div className="relative w-full" style={{ height: `${24 * 60}px` }}>
-                                            {timedTasks.map((t, idx) => {
-                                                const d = new Date(t.endDate!);
-                                                const topOffset = (d.getHours() + d.getMinutes() / 60) * 60;
+                                            {layoutTasks.map(({ task: t, startHour, endHour, column = 0, maxColumns = 1 }, idx) => {
+                                                const topOffset = startHour * 60;
+                                                const height = (endHour - startHour) * 60;
+                                                const widthPercent = 100 / maxColumns;
+                                                const leftPercent = column * widthPercent;
+
+                                                const isMoreBlock = (t as unknown as { isMoreBlock?: boolean }).isMoreBlock;
+                                                if (isMoreBlock) {
+                                                    const hiddenTasks = (t as unknown as { hiddenTasks: Task[] }).hiddenTasks;
+                                                    return (
+                                                        <div
+                                                            key={`more-${idx}`}
+                                                            onMouseEnter={(e) => handleMouseEnter(e, hiddenTasks)}
+                                                            onMouseLeave={handleMouseLeave}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setHoveredTask(null);
+                                                                setMoreTasksGroup(hiddenTasks);
+                                                            }}
+                                                            className="absolute rounded border border-black shadow-[2px_2px_0_#000] text-[10px] md:text-xs text-black bg-zinc-200 dark:bg-zinc-700 font-pixelify uppercase tracking-wider cursor-pointer hover:brightness-110 z-50 pointer-events-auto"
+                                                            style={{
+                                                                top: `${topOffset}px`,
+                                                                height: `${height}px`,
+                                                                left: `calc(${leftPercent}% + 2px)`,
+                                                                width: `calc(${widthPercent}% - 6px)`,
+                                                            }}
+                                                        >
+                                                            <div className="w-full h-full flex items-center justify-center overflow-hidden" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
+                                                                {t.name}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                }
+
+                                                const taskStart = t.startDate ? new Date(t.startDate) : new Date(new Date(t.endDate!).getTime() - 60 * 60 * 1000);
+                                                const timeString = `${new Date(Math.max(taskStart.getTime(), dayStart)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(Math.min(new Date(t.endDate!).getTime(), dayEnd)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
                                                 return (
                                                     <div
                                                         key={t._id || t.name + idx}
                                                         onClick={() => setSelectedTask(t)}
-                                                        className="absolute left-1 right-1 p-1 rounded border border-black shadow-[2px_2px_0_#000] overflow-hidden text-[10px] md:text-xs text-white cursor-pointer hover:brightness-110 transition-all"
-                                                        style={{ top: `${topOffset}px`, minHeight: '35px', backgroundColor: getSubjectColor(t.subjectId) }}
-                                                        title={`${t.name} - ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+                                                        onMouseEnter={(e) => handleMouseEnter(e, t)}
+                                                        onMouseLeave={handleMouseLeave}
+                                                        className="absolute p-1 rounded border border-black shadow-[2px_2px_0_#000] text-[10px] md:text-xs text-white cursor-pointer hover:brightness-110 hover:z-[60] transition-all"
+                                                        style={{
+                                                            top: `${topOffset}px`,
+                                                            height: `${height}px`,
+                                                            left: `calc(${leftPercent}% + 2px)`,
+                                                            width: `calc(${widthPercent}% - 6px)`,
+                                                            backgroundColor: getTaskColor(t),
+                                                            zIndex: 30 + column
+                                                        }}
                                                     >
-                                                        <span className="font-bold block truncate">{t.name}</span>
-                                                        <span className="text-[10px] opacity-80">{d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                                        <div className="w-full h-full overflow-hidden">
+                                                            <span className="font-bold block truncate leading-tight">{t.name}</span>
+                                                            <span className="text-[9px] opacity-80 leading-none block truncate">{timeString}</span>
+                                                        </div>
                                                     </div>
                                                 );
                                             })}
@@ -331,7 +501,7 @@ export default function CalendarViews({ currentView, subjects, tasks, anchorDate
                         const weekMinHeight = Math.max(120, (Math.min(maxRow, 4) + 1) * 28 + 40); // Base height + bars height
 
                         // Count hidden tasks per day for "+X more" functionality
-                        const hiddenTasksPerDay = Array(7).fill(0);
+                        const hiddenTasksPerDay: Task[][] = Array(7).fill([]).map(() => []);
                         stackedTasks.forEach((task: StackedTask) => {
                             if (task.rowIndex >= 3) {
                                 weekDates.forEach((date, di) => {
@@ -340,7 +510,7 @@ export default function CalendarViews({ currentView, subjects, tasks, anchorDate
                                         const te = normalizeDate(task.endDate).getTime();
                                         const ds = date.getTime();
                                         if (ds >= ts && ds <= te) {
-                                            hiddenTasksPerDay[di]++;
+                                            hiddenTasksPerDay[di].push(task);
                                         }
                                     }
                                 });
@@ -432,7 +602,7 @@ export default function CalendarViews({ currentView, subjects, tasks, anchorDate
                                         // Progress fill calculation 
                                         let progressPercent = 0;
                                         if (t.subTasks && t.subTasks.length > 0) {
-                                            const completed = t.subTasks.filter((st: any) => st.isCompleted).length;
+                                            const completed = t.subTasks.filter(st => st.isCompleted).length;
                                             progressPercent = (completed / t.subTasks.length) * 100;
                                         }
 
@@ -440,7 +610,9 @@ export default function CalendarViews({ currentView, subjects, tasks, anchorDate
                                             <div
                                                 key={t._id || t.name + idx}
                                                 onClick={() => setSelectedTask(t)}
-                                                className={`absolute group px-2 py-0.5 text-[10px] font-pixelify uppercase tracking-wider text-white border-y-2 border-black shadow-[1px_1px_0_#000] cursor-pointer hover:brightness-110 transition-all pointer-events-auto flex items-center overflow-hidden
+                                                onMouseEnter={(e) => handleMouseEnter(e, t)}
+                                                onMouseLeave={handleMouseLeave}
+                                                className={`absolute px-2 py-0.5 text-[10px] font-pixelify uppercase tracking-wider text-white border-y-2 border-black shadow-[1px_1px_0_#000] cursor-pointer hover:brightness-110 transition-all pointer-events-auto flex items-center overflow-hidden
                                                     ${isStart ? 'border-l-2' : 'border-l-0'}
                                                     ${isEnd ? 'border-r-2' : 'border-r-0'}
                                                 `}
@@ -450,7 +622,7 @@ export default function CalendarViews({ currentView, subjects, tasks, anchorDate
                                                     width: `calc(${widthPercent}% - ${isStart ? '2px' : '0px'} - ${isEnd ? '2px' : '0px'})`,
                                                     minHeight: '20px',
                                                     height: '20px',
-                                                    backgroundColor: `${getSubjectColor(t.subjectId)}`,
+                                                    backgroundColor: `${getTaskColor(t)}`,
                                                 }}
                                             >
                                                 {/* Progress Fill Indicator */}
@@ -464,42 +636,33 @@ export default function CalendarViews({ currentView, subjects, tasks, anchorDate
                                                 <span className="relative z-10 truncate drop-shadow-md">
                                                     {isStart ? t.name : '\u00A0'}
                                                 </span>
-
-                                                {/* Advanced Hover tooltip */}
-                                                <div className="absolute top-full left-0 mt-1 opacity-0 group-hover:opacity-100 bg-white dark:bg-zinc-900 border-2 border-black text-black dark:text-white p-2 text-xs shadow-[2px_2px_0_#000] pointer-events-none transition-all w-[200px] whitespace-normal z-[60]">
-                                                    <div className="font-pixelify uppercase text-[#e6b689] mb-1">{t.name}</div>
-                                                    <div className="font-roboto mb-1 text-[10px] uppercase text-zinc-500 border-b border-zinc-200 dark:border-zinc-700 pb-1">{subjects.find(s => s.id === t.subjectId)?.name || 'Personal'}</div>
-                                                    <div className="text-[10px]">Start: {t.startDate ? new Date(t.startDate).toLocaleDateString() : new Date(t.endDate!).toLocaleDateString()}</div>
-                                                    <div className="text-[10px]">End: {new Date(t.endDate!).toLocaleDateString()}</div>
-                                                    <div className="mt-1 font-pixelify">Urgency: {t.urgencyScore}</div>
-                                                    {t.subTasks && t.subTasks.length > 0 && (
-                                                        <div className="mt-1 text-[10px] text-zinc-500 font-pixelify uppercase">
-                                                            Prog: {Math.round(progressPercent)}%
-                                                        </div>
-                                                    )}
-                                                </div>
                                             </div>
                                         );
                                     })}
 
                                     {/* +X More Layer as 4th Bar */}
                                     {weekDates.map((date, di) => {
-                                        if (date && hiddenTasksPerDay[di] > 0) {
+                                        if (date && hiddenTasksPerDay[di].length > 0) {
                                             const leftPercent = (di / 7) * 100;
                                             const widthPercent = (1 / 7) * 100;
                                             return (
                                                 <div
                                                     key={`more-${di}`}
-                                                    className="absolute py-0.5 text-[9px] font-pixelify uppercase tracking-wider text-black bg-zinc-200 dark:bg-zinc-700 border-2 border-black flex items-center justify-center pointer-events-auto z-20"
+                                                    className="absolute py-0.5 text-[9px] font-pixelify uppercase tracking-wider text-black bg-zinc-200 dark:bg-zinc-700 border-2 border-black flex items-center justify-center pointer-events-auto z-20 hover:brightness-110 cursor-pointer transition-all"
                                                     style={{
                                                         top: `72px`,
                                                         left: `calc(${leftPercent}% + 2px)`,
                                                         width: `calc(${widthPercent}% - 4px)`,
                                                         height: '20px',
                                                     }}
-                                                    title={`${hiddenTasksPerDay[di]} more task(s)`}
+                                                    onMouseEnter={(e) => handleMouseEnter(e, hiddenTasksPerDay[di])}
+                                                    onMouseLeave={handleMouseLeave}
+                                                    onClick={() => {
+                                                        setHoveredTask(null);
+                                                        setMoreTasksGroup(hiddenTasksPerDay[di]);
+                                                    }}
                                                 >
-                                                    +{hiddenTasksPerDay[di]} more
+                                                    +{hiddenTasksPerDay[di].length} more
                                                 </div>
                                             );
                                         }
@@ -551,9 +714,9 @@ export default function CalendarViews({ currentView, subjects, tasks, anchorDate
 
                                         const date = new Date(year, m, dayNumber);
                                         const isToday = isSameDay(date, actualToday);
-                                        const dayTasksAll = tasks.filter(t => t.endDate && isDateInRange(date, new Date(t.startDate || t.endDate), new Date(t.endDate)));
+                                        const dayTasksAll = sortTasks(tasks.filter(t => t.endDate && isDateInRange(date, new Date(t.startDate || t.endDate), new Date(t.endDate))));
 
-                                        let text = isToday ? 'text-white' : 'text-zinc-600 dark:text-zinc-400';
+                                        const text = isToday ? 'text-white' : 'text-zinc-600 dark:text-zinc-400';
 
                                         const displayTasks = dayTasksAll.slice(0, 3);
                                         const hasMore = dayTasksAll.length > 3;
@@ -570,7 +733,7 @@ export default function CalendarViews({ currentView, subjects, tasks, anchorDate
                                                 <span className={`${text} leading-tight mt-[1px] z-10 ${isToday ? 'drop-shadow-[1px_1px_0_rgba(255,255,255,0.5)]' : ''}`}>{dayNumber}</span>
                                                 <div className="absolute bottom-[2px] left-0 right-0 flex flex-col gap-[1px] px-[2px]">
                                                     {displayTasks.map((t, idx) => (
-                                                        <div key={idx} className="h-[2px] w-full rounded-[1px]" style={{ backgroundColor: getSubjectColor(t.subjectId) }} />
+                                                        <div key={idx} className="h-[2px] w-full rounded-[1px]" style={{ backgroundColor: getTaskColor(t) }} />
                                                     ))}
                                                     {hasMore && <div className="h-[2px] w-full rounded-[1px] bg-zinc-400 dark:bg-zinc-600" />}
                                                 </div>
@@ -599,6 +762,89 @@ export default function CalendarViews({ currentView, subjects, tasks, anchorDate
     return (
         <>
             {renderView()}
+            {/* Global Hover Tooltip */}
+            {hoveredTask && (
+                <div
+                    className="fixed bg-white dark:bg-zinc-900 border-2 border-black text-black dark:text-white p-2 text-xs shadow-[2px_2px_0_#000] pointer-events-none z-[9999] w-[240px] whitespace-normal transition-opacity duration-150 animate-in fade-in"
+                    style={{
+                        left: `${Math.min(hoveredTask.x, window.innerWidth - 250)}px`,
+                        top: `${Math.min(hoveredTask.y, window.innerHeight - 150)}px`,
+                    }}
+                >
+                    {Array.isArray(hoveredTask.taskOrTasks) ? (
+                        <div className="flex flex-col gap-2">
+                            <div className="font-pixelify uppercase text-zinc-500 border-b-2 border-dashed border-zinc-200 dark:border-zinc-700 pb-1 mb-1">
+                                {hoveredTask.taskOrTasks.length} More Tasks
+                            </div>
+                            {hoveredTask.taskOrTasks.slice(0, 5).map((t, i) => (
+                                <div key={i} className="flex flex-col border-b border-zinc-100 dark:border-zinc-800 pb-1 last:border-b-0">
+                                    <div className="font-bold flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getTaskColor(t) }} />
+                                        <span className="truncate">{t.name}</span>
+                                    </div>
+                                    <div className="text-[9px] text-zinc-500 uppercase tracking-wider pl-4">
+                                        {t.endDate ? new Date(t.endDate).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : 'Ongoing'}
+                                    </div>
+                                </div>
+                            ))}
+                            {hoveredTask.taskOrTasks.length > 5 && (
+                                <div className="text-[10px] text-center text-zinc-400 font-pixelify uppercase pt-1">
+                                    ...and {hoveredTask.taskOrTasks.length - 5} more
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <>
+                            <div className="font-pixelify uppercase text-[#e6b689] mb-1">{(hoveredTask.taskOrTasks as Task).name}</div>
+                            <div className="font-roboto mb-1 text-[10px] uppercase text-zinc-500 border-b border-zinc-200 dark:border-zinc-700 pb-1">{subjects.find(s => s.id === (hoveredTask.taskOrTasks as Task).subjectId)?.name || 'Personal'}</div>
+                            <div className="text-[10px]">Start: {(hoveredTask.taskOrTasks as Task).startDate ? new Date((hoveredTask.taskOrTasks as Task).startDate!).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : 'Not set'}</div>
+                            <div className="text-[10px]">End: {(hoveredTask.taskOrTasks as Task).endDate ? new Date((hoveredTask.taskOrTasks as Task).endDate!).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : 'Ongoing'}</div>
+                            {(hoveredTask.taskOrTasks as Task).category && <div className="mt-1 font-pixelify">Category: {(hoveredTask.taskOrTasks as Task).category}</div>}
+                            {(hoveredTask.taskOrTasks as Task).urgencyScore !== undefined && <div className="mt-1 font-pixelify">Urgency: {(hoveredTask.taskOrTasks as Task).urgencyScore}</div>}
+                        </>
+                    )}
+                </div>
+            )}
+
+            {/* Hidden Tasks Group Modal */}
+            {moreTasksGroup && (
+                <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+                    {/* Backdrop */}
+                    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setMoreTasksGroup(null)} />
+
+                    {/* Modal */}
+                    <div className="bg-white dark:bg-zinc-900 border-4 border-black shadow-[8px_8px_0_#000] w-full max-w-sm flex flex-col relative z-10 animate-in zoom-in-95 duration-200">
+                        {/* Header */}
+                        <div className="flex justify-between items-center p-4 border-b-4 border-black bg-zinc-100 dark:bg-zinc-800">
+                            <h2 className="font-pixelify uppercase tracking-widest text-[#e6b689] text-xl">Hidden Tasks</h2>
+                            <button onClick={() => setMoreTasksGroup(null)} className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors">
+                                <span className="text-xl font-bold font-pixelify leading-none text-zinc-600 dark:text-zinc-400">X</span>
+                            </button>
+                        </div>
+                        {/* List */}
+                        <div className="p-4 flex flex-col gap-2 max-h-[60vh] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-zinc-300 dark:[&::-webkit-scrollbar-thumb]:bg-zinc-700">
+                            {moreTasksGroup.map(t => (
+                                <div
+                                    key={t._id || t.name}
+                                    className="border-2 border-black p-2 flex flex-col cursor-pointer transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800 shadow-[2px_2px_0_#000]"
+                                    onClick={() => {
+                                        setMoreTasksGroup(null);
+                                        setSelectedTask(t);
+                                    }}
+                                >
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <div className="w-3 h-3 rounded-full border border-black shrink-0" style={{ backgroundColor: getTaskColor(t) }} />
+                                        <span className="font-bold truncate text-sm">{t.name}</span>
+                                    </div>
+                                    <div className="text-[10px] text-zinc-500 font-pixelify uppercase tracking-wider pl-5 border-t border-dashed border-zinc-200 dark:border-zinc-700 pt-1 mt-1">
+                                        {t.endDate ? new Date(t.endDate).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : 'Ongoing'}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
             {selectedTask && (
                 <TaskDetailModal
                     task={selectedTask}

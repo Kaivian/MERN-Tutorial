@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/providers/auth.provider";
 import {
@@ -12,7 +12,9 @@ import {
     Spinner,
     Selection,
     Button,
-    cn
+    cn,
+    Tabs,
+    Tab
 } from "@heroui/react";
 import {
     LineChart,
@@ -30,22 +32,40 @@ import {
     Bar
 } from "recharts";
 import { useUserAnalytics } from "@/hooks/useUserAnalytics";
+import { UserAnalyticsTermDetail } from "@/types/user-curriculum.types";
+
+// New Components
+import GradeFrequencyChart from "./components/GradeFrequencyChart";
+import GpaAreaChart from "./components/GpaAreaChart";
+import SubjectProgressionChart from "./components/SubjectProgressionChart";
+import GradeBoxPlot from "./components/GradeBoxPlot";
+import WeightStackedChart from "./components/WeightStackedChart";
+import GradeHeatmap from "./components/GradeHeatmap";
 
 export default function GradeChartPage() {
     const { user } = useAuth();
     const { data: analyticsData, isLoading } = useUserAnalytics();
 
-    // --- COMPARSION STATE ---
+    // --- COMPARISON STATE (Legacy Bar Chart) ---
     const [selectedTerm1, setSelectedTerm1] = useState<Selection>(new Set([]));
     const [selectedTerm2, setSelectedTerm2] = useState<Selection>(new Set([]));
 
-    // --- MEMOIZED CHARTS DATA ---
-    const lineChartData = useMemo(() => {
-        return analyticsData?.termGpas || [];
-    }, [analyticsData]);
+    // --- FILTER STATE ---
+    const [filterMode, setFilterMode] = useState<string>("all_graded");
+    const [filterSingleTerm, setFilterSingleTerm] = useState<Selection>(new Set([]));
+    const [filterRangeStart, setFilterRangeStart] = useState<Selection>(new Set([]));
+    const [filterRangeEnd, setFilterRangeEnd] = useState<Selection>(new Set([]));
 
-    const pieChartData = useMemo(() => {
-        return analyticsData?.subjectStatuses || [];
+    // Initialize selections when terms load
+    useEffect(() => {
+        if (analyticsData?.termDetails) {
+            const terms = Object.keys(analyticsData.termDetails);
+            if (terms.length > 0 && Array.from(filterSingleTerm).length === 0) {
+                setFilterSingleTerm(new Set([terms[terms.length - 1]]));
+                setFilterRangeStart(new Set([terms[0]]));
+                setFilterRangeEnd(new Set([terms[terms.length - 1]]));
+            }
+        }
     }, [analyticsData]);
 
     const termsList = useMemo(() => {
@@ -54,6 +74,64 @@ export default function GradeChartPage() {
             key: k,
             label: k.replace('sem_', 'Semester ')
         }));
+    }, [analyticsData]);
+
+    // Derived Filtered Data for new charts
+    const filteredTermDetails = useMemo(() => {
+        if (!analyticsData?.termDetails) return {};
+        const allTerms = Object.keys(analyticsData.termDetails);
+
+        if (filterMode === "all") return analyticsData.termDetails;
+
+        if (filterMode === "all_graded") {
+            const result: Record<string, UserAnalyticsTermDetail[]> = {};
+            for (const term of allTerms) {
+                const hasGrade = analyticsData.termDetails[term].some(s => s.score !== null);
+                if (hasGrade) result[term] = analyticsData.termDetails[term];
+            }
+            return result;
+        }
+
+        if (filterMode === "single") {
+            const term = Array.from(filterSingleTerm)[0] as string;
+            if (term && analyticsData.termDetails[term]) {
+                return { [term]: analyticsData.termDetails[term] };
+            }
+            return {};
+        }
+
+        if (filterMode === "range") {
+            const start = Array.from(filterRangeStart)[0] as string;
+            const end = Array.from(filterRangeEnd)[0] as string;
+            if (start && end) {
+                const startIndex = allTerms.indexOf(start);
+                const endIndex = allTerms.indexOf(end);
+                const trueStart = Math.min(startIndex, endIndex);
+                const trueEnd = Math.max(startIndex, endIndex);
+
+                const result: Record<string, UserAnalyticsTermDetail[]> = {};
+                for (let i = trueStart; i <= trueEnd; i++) {
+                    result[allTerms[i]] = analyticsData.termDetails[allTerms[i]];
+                }
+                return result;
+            }
+            return {};
+        }
+
+        return analyticsData.termDetails;
+    }, [analyticsData, filterMode, filterSingleTerm, filterRangeStart, filterRangeEnd]);
+
+    const flatFilteredSubjects = useMemo(() => {
+        return Object.values(filteredTermDetails).flat();
+    }, [filteredTermDetails]);
+
+    // --- MEMOIZED CHARTS DATA (Overall) ---
+    const lineChartData = useMemo(() => {
+        return analyticsData?.termGpas || [];
+    }, [analyticsData]);
+
+    const pieChartData = useMemo(() => {
+        return analyticsData?.subjectStatuses || [];
     }, [analyticsData]);
 
     // For Term Comparison Bar Chart
@@ -100,11 +178,11 @@ export default function GradeChartPage() {
     };
 
     return (
-        <div className="flex flex-col gap-3 h-auto min-h-screen transition-colors duration-300 rounded-xl pb-10">
+        <div className="flex flex-col gap-3 h-full overflow-y-auto transition-colors duration-300 rounded-xl pb-20">
             {/* HEADER SECTION */}
             <div className="w-full relative z-20 flex flex-col gap-3 shrink-0">
                 <section className="w-full">
-                    <Card className="h-full dark:bg-[#18181b] border-t-0 border-x-0 border-b-2 border-b-[#e6b689] dark:border-b-[#9d744d] rounded-xl overflow-hidden relative shadow-none dark:border-x dark:border-y dark:border-divider">
+                    <Card className="h-full bg-white dark:bg-[#18181b] border-t-0 border-x-0 border-b-2 border-b-[#e6b689] dark:border-b-[#9d744d] rounded-xl overflow-hidden relative shadow-none dark:border-x dark:border-y dark:border-divider">
                         <div className="absolute inset-0 z-0 opacity-20 pointer-events-none bg-[radial-gradient(#71717a_1px,transparent_1px)] bg-size-[16px_16px]" />
                         <CardHeader className="relative z-10 flex flex-col items-start px-5 py-4 md:px-6 md:py-5 h-full justify-between">
                             <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-0">
@@ -135,153 +213,266 @@ export default function GradeChartPage() {
                     <Spinner color="warning" label="Crunching Numbers..." size="lg" />
                 </div>
             ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="flex flex-col gap-6">
 
-                    {/* --- LINE CHART: CUMULATIVE GPA TREND --- */}
-                    <Card className="lg:col-span-2 min-h-[400px] dark:bg-[#18181b] border-t-0 border-x-0 border-b-2 border-b-[#e6b689] rounded-xl relative shadow-none dark:border-divider">
-                        <CardHeader className="pb-0 pt-6 px-6 flex-col items-start border-b border-zinc-800/50">
-                            <h4 className="font-black text-xl text-zinc-200 uppercase tracking-wider flex items-center gap-2">
-                                <i className="hn hn-chart-line text-[#e6b689]" /> Overall GPA Trend
-                            </h4>
-                            <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mt-1 mb-4">
-                                Term vs Cumulative performance
-                            </p>
-                        </CardHeader>
-                        <CardBody className="pt-6">
-                            <div className="w-full h-[300px]">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart data={lineChartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
-                                        <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-                                        <XAxis dataKey="term" stroke="#71717a" tick={{ fill: '#71717a', fontSize: 12, fontWeight: 'bold' }} />
-                                        <YAxis domain={[0, 10]} stroke="#71717a" tick={{ fill: '#71717a', fontSize: 12, fontWeight: 'bold' }} />
-                                        <RechartsTooltip
-                                            contentStyle={{ backgroundColor: '#18181b', border: '2px solid #e6b689', borderRadius: '4px' }}
-                                            itemStyle={{ fontWeight: 'bold' }}
-                                        />
-                                        <Legend />
-                                        <Line type="monotone" dataKey="gpa" name="Term GPA" stroke="#e6b689" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                                        <Line type="monotone" dataKey="cumulativeGpa" name="Cumulative GPA" stroke="#10b981" strokeWidth={3} dot={{ r: 4 }} />
-                                    </LineChart>
-                                </ResponsiveContainer>
+                    {/* FILTER SECTION */}
+                    <Card className="w-full bg-white dark:bg-[#18181b] border-t-0 border-x-0 border-b-2 border-b-zinc-600 rounded-xl relative shadow-none dark:border-divider">
+                        <CardBody className="py-4 px-6 flex flex-col lg:flex-row gap-6 items-center justify-between">
+                            <div className="flex items-center gap-4 w-full">
+                                <i className="hn hn-filter text-2xl text-zinc-400" />
+                                <Tabs
+                                    selectedKey={filterMode}
+                                    onSelectionChange={(k) => setFilterMode(k as string)}
+                                    color="warning"
+                                    variant="underlined"
+                                    classNames={{
+                                        tabList: "gap-6 w-full relative rounded-none p-0 border-b border-divider",
+                                        cursor: "w-full bg-[#e6b689]",
+                                        tab: "max-w-fit px-0 h-10",
+                                        tabContent: "group-data-[selected=true]:text-[#e6b689]"
+                                    }}
+                                >
+                                    <Tab key="all_graded" title="Graded Terms" />
+                                    <Tab key="all" title="All Terms" />
+                                    <Tab key="single" title="Single Term" />
+                                    <Tab key="range" title="Term Range" />
+                                </Tabs>
                             </div>
-                        </CardBody>
-                    </Card>
 
-                    {/* --- PIE CHART: STATUS DISTRIBUTION --- */}
-                    <Card className="min-h-[400px] dark:bg-[#18181b] border-t-0 border-x-0 border-b-2 border-b-emerald-500 rounded-xl relative shadow-none dark:border-divider">
-                        <CardHeader className="pb-0 pt-6 px-6 flex-col items-start border-b border-zinc-800/50">
-                            <h4 className="font-black text-xl text-zinc-200 uppercase tracking-wider flex items-center gap-2">
-                                <i className="hn hn-pie-chart text-emerald-500" /> Subject Statuses
-                            </h4>
-                            <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mt-1 mb-4">
-                                Pass / Fail Ratio
-                            </p>
-                        </CardHeader>
-                        <CardBody className="pt-2 items-center flex justify-center">
-                            <div className="w-full h-[250px]">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie
-                                            data={pieChartData}
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={60}
-                                            outerRadius={90}
-                                            paddingAngle={5}
-                                            dataKey="value"
+                            {/* Dynamic Filter Controls */}
+                            <div className="flex gap-4 w-full lg:w-auto min-w-max justify-end">
+                                {filterMode === "single" && (
+                                    <Select
+                                        size="sm"
+                                        variant="bordered"
+                                        radius="none"
+                                        labelPlacement="outside"
+                                        placeholder="Select Term"
+                                        className="w-48"
+                                        selectedKeys={filterSingleTerm}
+                                        onSelectionChange={setFilterSingleTerm}
+                                        classNames={commonSelectStyles}
+                                        listboxProps={commonListboxProps}
+                                    >
+                                        {termsList.map((t) => (
+                                            <SelectItem key={t.key}>{t.label}</SelectItem>
+                                        ))}
+                                    </Select>
+                                )}
+
+                                {filterMode === "range" && (
+                                    <>
+                                        <Select
+                                            size="sm"
+                                            variant="bordered"
+                                            radius="none"
+                                            labelPlacement="outside"
+                                            placeholder="Start Term"
+                                            className="w-40"
+                                            selectedKeys={filterRangeStart}
+                                            onSelectionChange={setFilterRangeStart}
+                                            classNames={commonSelectStyles}
+                                            listboxProps={commonListboxProps}
                                         >
-                                            {pieChartData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={entry.fill} />
+                                            {termsList.map((t) => (
+                                                <SelectItem key={t.key}>{t.label}</SelectItem>
                                             ))}
-                                        </Pie>
-                                        <RechartsTooltip
-                                            contentStyle={{ backgroundColor: '#18181b', border: '2px solid #10b981', borderRadius: '4px' }}
-                                        />
-                                        <Legend verticalAlign="bottom" height={36} />
-                                    </PieChart>
-                                </ResponsiveContainer>
+                                        </Select>
+                                        <span className="text-zinc-500 font-bold self-center">to</span>
+                                        <Select
+                                            size="sm"
+                                            variant="bordered"
+                                            radius="none"
+                                            labelPlacement="outside"
+                                            placeholder="End Term"
+                                            className="w-40"
+                                            selectedKeys={filterRangeEnd}
+                                            onSelectionChange={setFilterRangeEnd}
+                                            classNames={commonSelectStyles}
+                                            listboxProps={commonListboxProps}
+                                        >
+                                            {termsList.map((t) => (
+                                                <SelectItem key={t.key}>{t.label}</SelectItem>
+                                            ))}
+                                        </Select>
+                                    </>
+                                )}
                             </div>
                         </CardBody>
                     </Card>
 
-                    {/* --- BAR CHART: TERM COMPARER --- */}
-                    <Card className="lg:col-span-3 min-h-[400px] dark:bg-[#18181b] border-t-0 border-x-0 border-b-2 border-b-blue-500 rounded-xl relative shadow-none dark:border-divider mb-10">
-                        <CardHeader className="pb-0 pt-6 px-6 flex-col md:flex-row justify-between items-start md:items-center border-b border-zinc-800/50">
-                            <div>
-                                <h4 className="font-black text-xl text-zinc-200 uppercase tracking-wider flex items-center gap-2">
-                                    <i className="hn hn-bar-chart text-blue-500" /> Term Comparer
+                    {/* NEW CHARTS GRID */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <GradeFrequencyChart subjects={flatFilteredSubjects} />
+                        <GradeBoxPlot termDetails={filteredTermDetails} />
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <GradeHeatmap termDetails={filteredTermDetails} />
+                        <div className="flex flex-col gap-6">
+                            <SubjectProgressionChart subjects={flatFilteredSubjects} />
+                            <WeightStackedChart subjects={flatFilteredSubjects} />
+                        </div>
+                    </div>
+
+                    <div className="w-full border-t border-dashed border-zinc-700 my-6"></div>
+
+                    {/* LEGACY CHARTS GRID */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* --- LINE CHART: CUMULATIVE GPA TREND --- */}
+                        <Card className="lg:col-span-2 min-h-[400px] bg-white dark:bg-[#18181b] border-t-0 border-x-0 border-b-2 border-b-[#e6b689] rounded-xl relative shadow-none dark:border-divider">
+                            <CardHeader className="pb-0 pt-6 px-6 flex-col items-start border-b border-zinc-200 dark:border-zinc-800/50">
+                                <h4 className="font-black text-xl text-zinc-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-2">
+                                    <i className="hn hn-chart-line text-[#e6b689]" /> Overall GPA Trend
                                 </h4>
                                 <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mt-1 mb-4">
-                                    Compare average scores
+                                    Term vs Cumulative performance
                                 </p>
-                            </div>
-
-                            <div className="flex gap-4 w-full md:w-auto pb-4 md:pb-0">
-                                <Select
-                                    labelPlacement="outside"
-                                    placeholder="Select Term A"
-                                    variant="bordered"
-                                    size="sm"
-                                    radius="none"
-                                    className="w-full md:w-40"
-                                    selectedKeys={selectedTerm1}
-                                    onSelectionChange={setSelectedTerm1}
-                                    classNames={commonSelectStyles}
-                                    listboxProps={commonListboxProps}
-                                >
-                                    {termsList.map((t) => (
-                                        <SelectItem key={t.key}>{t.label}</SelectItem>
-                                    ))}
-                                </Select>
-                                <Select
-                                    labelPlacement="outside"
-                                    placeholder="Select Term B"
-                                    variant="bordered"
-                                    size="sm"
-                                    radius="none"
-                                    className="w-full md:w-40"
-                                    selectedKeys={selectedTerm2}
-                                    onSelectionChange={setSelectedTerm2}
-                                    classNames={commonSelectStyles}
-                                    listboxProps={commonListboxProps}
-                                >
-                                    {termsList.map((t) => (
-                                        <SelectItem key={t.key}>{t.label}</SelectItem>
-                                    ))}
-                                </Select>
-                            </div>
-                        </CardHeader>
-                        <CardBody className="pt-6">
-                            {!comparisonData.length ? (
-                                <div className="h-full flex items-center justify-center text-zinc-600 font-mono text-sm py-10">
-                                    <div className="text-center">
-                                        <i className="hn hn-cursor-click text-4xl mb-2 opacity-50" />
-                                        <p>Select two terms above to compare their average scores.</p>
-                                    </div>
-                                </div>
-                            ) : (
+                            </CardHeader>
+                            <CardBody className="pt-6">
                                 <div className="w-full h-[300px]">
                                     <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart data={comparisonData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                                            <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-                                            <XAxis dataKey="name" stroke="#71717a" tick={{ fill: '#71717a', fontSize: 12, fontWeight: 'bold' }} />
+                                        <LineChart data={lineChartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#e4e4e7" strokeOpacity={0.5} vertical={false} className="dark:stroke-[#27272a] dark:stroke-opacity-100" />
+                                            <XAxis dataKey="term" stroke="#71717a" tick={{ fill: '#71717a', fontSize: 12, fontWeight: 'bold' }} />
                                             <YAxis domain={[0, 10]} stroke="#71717a" tick={{ fill: '#71717a', fontSize: 12, fontWeight: 'bold' }} />
                                             <RechartsTooltip
-                                                contentStyle={{ backgroundColor: '#18181b', border: '2px solid #3b82f6', borderRadius: '4px' }}
-                                                cursor={{ fill: '#27272a' }}
+                                                contentStyle={{ backgroundColor: 'var(--tooltip-bg, #18181b)', borderColor: '#e6b689', borderRadius: '8px', color: 'var(--tooltip-text, #fff)' }}
+                                                itemStyle={{ fontWeight: 'bold' }}
+                                                wrapperClassName="dark:!bg-[#18181b] !bg-white dark:!text-white !text-black shadow-lg"
                                             />
-                                            <Bar dataKey="score" name="Average Score" fill="#3b82f6" radius={[4, 4, 0, 0]}>
-                                                {comparisonData.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                                                ))}
-                                            </Bar>
-                                        </BarChart>
+                                            <Legend />
+                                            <Line type="monotone" dataKey="gpa" name="Term GPA" stroke="#e6b689" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                                            <Line type="monotone" dataKey="cumulativeGpa" name="Cumulative GPA" stroke="#10b981" strokeWidth={3} dot={{ r: 4 }} />
+                                        </LineChart>
                                     </ResponsiveContainer>
                                 </div>
-                            )}
-                        </CardBody>
-                    </Card>
+                            </CardBody>
+                        </Card>
 
+                        {/* --- PIE CHART: STATUS DISTRIBUTION --- */}
+                        <Card className="min-h-[400px] bg-white dark:bg-[#18181b] border-t-0 border-x-0 border-b-2 border-b-emerald-500 rounded-xl relative shadow-none dark:border-divider">
+                            <CardHeader className="pb-0 pt-6 px-6 flex-col items-start border-b border-zinc-200 dark:border-zinc-800/50">
+                                <h4 className="font-black text-xl text-zinc-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-2">
+                                    <i className="hn hn-pie-chart text-emerald-500" /> Subject Statuses
+                                </h4>
+                                <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mt-1 mb-4">
+                                    Pass / Fail Ratio
+                                </p>
+                            </CardHeader>
+                            <CardBody className="pt-2 items-center flex justify-center">
+                                <div className="w-full h-[250px]">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={pieChartData}
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius={60}
+                                                outerRadius={90}
+                                                paddingAngle={5}
+                                                dataKey="value"
+                                            >
+                                                {pieChartData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                                                ))}
+                                            </Pie>
+                                            <RechartsTooltip
+                                                contentStyle={{ backgroundColor: 'var(--tooltip-bg, #18181b)', borderColor: '#10b981', borderRadius: '8px', color: 'var(--tooltip-text, #fff)' }}
+                                                wrapperClassName="dark:!bg-[#18181b] !bg-white dark:!text-white !text-black shadow-lg"
+                                            />
+                                            <Legend verticalAlign="bottom" height={36} />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </CardBody>
+                        </Card>
+
+                        {/* NEW AREA CHART FOR MAGNITUDE OF CHANGE */}
+                        <div className="lg:col-span-3">
+                            <GpaAreaChart data={lineChartData} />
+                        </div>
+
+                        {/* --- BAR CHART: TERM COMPARER --- */}
+                        <Card className="lg:col-span-3 min-h-[400px] bg-white dark:bg-[#18181b] border-t-0 border-x-0 border-b-2 border-b-blue-500 rounded-xl relative shadow-none dark:border-divider mb-10">
+                            <CardHeader className="pb-0 pt-6 px-6 flex-col md:flex-row justify-between items-start md:items-center border-b border-zinc-200 dark:border-zinc-800/50">
+                                <div>
+                                    <h4 className="font-black text-xl text-zinc-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-2">
+                                        <i className="hn hn-bar-chart text-blue-500" /> Term Comparer
+                                    </h4>
+                                    <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mt-1 mb-4">
+                                        Compare average scores
+                                    </p>
+                                </div>
+
+                                <div className="flex gap-4 w-full md:w-auto pb-4 md:pb-0">
+                                    <Select
+                                        labelPlacement="outside"
+                                        placeholder="Select Term A"
+                                        variant="bordered"
+                                        size="sm"
+                                        radius="none"
+                                        className="w-full md:w-40"
+                                        selectedKeys={selectedTerm1}
+                                        onSelectionChange={setSelectedTerm1}
+                                        classNames={commonSelectStyles}
+                                        listboxProps={commonListboxProps}
+                                    >
+                                        {termsList.map((t) => (
+                                            <SelectItem key={t.key}>{t.label}</SelectItem>
+                                        ))}
+                                    </Select>
+                                    <Select
+                                        labelPlacement="outside"
+                                        placeholder="Select Term B"
+                                        variant="bordered"
+                                        size="sm"
+                                        radius="none"
+                                        className="w-full md:w-40"
+                                        selectedKeys={selectedTerm2}
+                                        onSelectionChange={setSelectedTerm2}
+                                        classNames={commonSelectStyles}
+                                        listboxProps={commonListboxProps}
+                                    >
+                                        {termsList.map((t) => (
+                                            <SelectItem key={t.key}>{t.label}</SelectItem>
+                                        ))}
+                                    </Select>
+                                </div>
+                            </CardHeader>
+                            <CardBody className="pt-6">
+                                {!comparisonData.length ? (
+                                    <div className="h-full flex items-center justify-center text-zinc-600 font-mono text-sm py-10">
+                                        <div className="text-center">
+                                            <i className="hn hn-cursor-click text-4xl mb-2 opacity-50" />
+                                            <p>Select two terms above to compare their average scores.</p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="w-full h-[300px]">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={comparisonData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                                                <CartesianGrid strokeDasharray="3 3" stroke="#e4e4e7" strokeOpacity={0.5} vertical={false} className="dark:stroke-[#27272a] dark:stroke-opacity-100" />
+                                                <XAxis dataKey="name" stroke="#71717a" tick={{ fill: '#71717a', fontSize: 12, fontWeight: 'bold' }} />
+                                                <YAxis domain={[0, 10]} stroke="#71717a" tick={{ fill: '#71717a', fontSize: 12, fontWeight: 'bold' }} />
+                                                <RechartsTooltip
+                                                    contentStyle={{ backgroundColor: 'var(--tooltip-bg, #18181b)', borderColor: '#3b82f6', borderRadius: '8px', color: 'var(--tooltip-text, #fff)' }}
+                                                    cursor={{ fill: '#27272a', opacity: 0.1 }}
+                                                    wrapperClassName="dark:!bg-[#18181b] !bg-white dark:!text-white !text-black shadow-lg"
+                                                />
+                                                <Bar dataKey="score" name="Average Score" fill="#3b82f6" radius={[4, 4, 0, 0]}>
+                                                    {comparisonData.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                                                    ))}
+                                                </Bar>
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                )}
+                            </CardBody>
+                        </Card>
+
+                    </div>
                 </div>
             )}
         </div>

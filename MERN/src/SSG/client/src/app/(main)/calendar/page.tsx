@@ -63,7 +63,13 @@ export default function CalendarPage() {
                                     const newDate = new Date(currentAnchorDate);
                                     if (currentView === "Day") newDate.setDate(newDate.getDate() - 1);
                                     if (currentView === "Week") newDate.setDate(newDate.getDate() - 7);
-                                    if (currentView === "Month") newDate.setMonth(newDate.getMonth() - 1);
+                                    if (currentView === "Month") {
+                                        const prevMonth = newDate.getMonth() - 1;
+                                        newDate.setMonth(prevMonth);
+                                        if (newDate.getMonth() !== ((prevMonth % 12 + 12) % 12)) {
+                                            newDate.setDate(0); // If day overflow, push block to end of previous month
+                                        }
+                                    }
                                     if (currentView === "Year") newDate.setFullYear(newDate.getFullYear() - 1);
                                     setCurrentAnchorDate(newDate);
                                 }}
@@ -84,7 +90,13 @@ export default function CalendarPage() {
                                     const newDate = new Date(currentAnchorDate);
                                     if (currentView === "Day") newDate.setDate(newDate.getDate() + 1);
                                     if (currentView === "Week") newDate.setDate(newDate.getDate() + 7);
-                                    if (currentView === "Month") newDate.setMonth(newDate.getMonth() + 1);
+                                    if (currentView === "Month") {
+                                        const nextMonth = newDate.getMonth() + 1;
+                                        newDate.setMonth(nextMonth);
+                                        if (newDate.getMonth() !== (nextMonth % 12)) {
+                                            newDate.setDate(0); // If day overflow, push block to end of resulting month
+                                        }
+                                    }
                                     if (currentView === "Year") newDate.setFullYear(newDate.getFullYear() + 1);
                                     setCurrentAnchorDate(newDate);
                                 }}
@@ -123,10 +135,11 @@ export default function CalendarPage() {
                                     <i className="hn hn-calendar text-lg absolute pointer-events-none text-black dark:text-white"></i>
                                     <input
                                         type="date"
-                                        value={currentAnchorDate.toISOString().split('T')[0]}
+                                        value={currentAnchorDate.toLocaleDateString('en-CA')} // Force YYYY-MM-DD local format
                                         onChange={(e) => {
                                             if (e.target.value) {
-                                                const d = new Date(e.target.value + 'T00:00:00'); // Prevent timezone shift
+                                                const [year, month, day] = e.target.value.split('-');
+                                                const d = new Date(Number(year), Number(month) - 1, Number(day));
                                                 if (!isNaN(d.getTime())) setCurrentAnchorDate(d);
                                             }
                                         }}

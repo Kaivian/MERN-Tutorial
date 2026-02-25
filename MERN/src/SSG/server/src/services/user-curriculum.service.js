@@ -193,7 +193,9 @@ class UserCurriculumService {
                             name_en: sub.name_en,
                             credit: sub.credit,
                             status: status,
-                            score: score
+                            score: score,
+                            grades: userSG ? userSG.grades : [],
+                            assessment_plan: sub.assessment_plan || []
                         });
 
                         // Calculate GPA

@@ -53,9 +53,9 @@ export default function DeadlineManagerPage() {
                 </button>
             </div>
 
-            <div className="flex-1 grid grid-cols-1 xl:grid-cols-2 gap-4 min-h-0">
+            <div className="flex-1 grid grid-cols-1 xl:grid-cols-2 gap-4">
                 {/* Column 1: Deadlines */}
-                <div className="bg-white dark:bg-zinc-800 p-4 shadow-pixel dark:shadow-pixel-dark border-2 border-black flex flex-col min-h-0 overflow-hidden">
+                <div className="bg-white dark:bg-zinc-800 p-4 shadow-pixel dark:shadow-pixel-dark border-2 border-black flex flex-col min-h-[400px] max-h-[70vh]">
                     <h2 className="text-lg font-pixelify uppercase text-[#e6b689] mb-3 tracking-widest border-b-2 border-black pb-1 drop-shadow-[1px_1px_0_rgba(0,0,0,1)]">Deadlines</h2>
                     <div className="flex-1 overflow-auto">
                         {isTasksLoading ? (
@@ -82,7 +82,7 @@ export default function DeadlineManagerPage() {
                 </div>
 
                 {/* Column 2: Todo List */}
-                <div className="bg-white dark:bg-zinc-800 p-4 shadow-pixel dark:shadow-pixel-dark border-2 border-black flex flex-col min-h-0 overflow-hidden">
+                <div className="bg-white dark:bg-zinc-800 p-4 shadow-pixel dark:shadow-pixel-dark border-2 border-black flex flex-col min-h-[400px] max-h-[70vh]">
                     <h2 className="text-lg font-pixelify uppercase text-zinc-400 mb-3 tracking-widest border-b-2 border-zinc-400 pb-1">Ongoing / To-Do</h2>
                     <div className="flex-1 overflow-auto">
                         {isTasksLoading ? (

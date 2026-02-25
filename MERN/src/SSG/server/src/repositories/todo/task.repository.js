@@ -15,7 +15,7 @@ class TaskRepository {
     }
 
     async updateById(taskId, updateData) {
-        return await Task.findByIdAndUpdate(taskId, updateData, { new: true, runValidators: true });
+        return await Task.findByIdAndUpdate(taskId, updateData, { returnDocument: 'after', runValidators: true });
     }
 
     async deleteById(taskId) {

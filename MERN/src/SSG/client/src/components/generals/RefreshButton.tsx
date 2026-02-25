@@ -67,7 +67,7 @@ const RefreshButton = React.forwardRef<HTMLButtonElement, RefreshButtonProps>(
   ) => {
     // 1. Setup Spin Hook
     const { rotation, settling, start, settle } = useSpin(spinSpeed);
-    
+
     // 2. Local state to track API execution status
     const [isExecuting, setIsExecuting] = useState(false);
 
@@ -115,6 +115,7 @@ const RefreshButton = React.forwardRef<HTMLButtonElement, RefreshButtonProps>(
         ref={ref}
         variant={variant}
         isIconOnly={isIconOnly}
+        aria-label={(props as React.ButtonHTMLAttributes<HTMLButtonElement>)['aria-label'] || tooltip}
         className={cn(
           // Base styles matching SearchInput
           "bg-default-50 dark:bg-default-100 border-small border-divider",

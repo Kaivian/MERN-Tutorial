@@ -15,7 +15,7 @@ class UserCurriculumRepository {
         return await UserCurriculum.findOneAndUpdate(
             { userId },
             { $set: { active_context: contextUpdates } },
-            { new: true, upsert: true } // upsert ensures it creates if not exists
+            { returnDocument: 'after', upsert: true } // upsert ensures it creates if not exists
         ).lean();
     }
 
