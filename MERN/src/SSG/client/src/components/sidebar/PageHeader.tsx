@@ -45,7 +45,7 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
   // ===========================================================================
   // 1. ACTION HANDLERS
   // ===========================================================================
-  
+
   const handleProfile = () => {
     router.push("/profile");
   };
@@ -98,10 +98,10 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
           <SidebarMinimalistic size={24} />
         </Button>
         <div className="flex flex-col">
-            <h2 className="text-xl font-black uppercase tracking-tighter text-black dark:text-white leading-none">
-                {title}
-            </h2>
-            <div className="h-1 w-full bg-[#e6b689] mt-1"></div>
+          <h2 className="text-xl font-black uppercase tracking-tighter text-black dark:text-white leading-none">
+            {title}
+          </h2>
+          <div className="h-1 w-full bg-[#e6b689] mt-1"></div>
         </div>
       </div>
 
@@ -132,13 +132,13 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
         {/* Retro Divider */}
         <div className="h-8 w-0.5 bg-black dark:bg-zinc-700 mx-2"></div>
 
-        <Dropdown 
-            closeOnSelect={false} 
-            className="bg-white dark:bg-zinc-900 rounded-none border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-            radius="none"
-            classNames={{
-                content: "p-0 rounded-none border-2 border-black min-w-[240px]"
-            }}
+        <Dropdown
+          closeOnSelect={false}
+          className="bg-white dark:bg-zinc-900 rounded-none border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+          radius="none"
+          classNames={{
+            content: "p-0 rounded-none border-2 border-black min-w-[240px]"
+          }}
         >
           <DropdownTrigger>
             <Button
@@ -159,31 +159,32 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
                 name={user?.fullName || "User"}
                 classNames={{
                   wrapper: "hidden md:flex text-start",
-                  name: "font-mono font-bold text-black dark:text-white text-sm uppercase",
-                  description: "font-mono text-zinc-500 text-[10px]",
+                  name: "font-sans font-bold text-black dark:text-white text-sm uppercase",
+                  description: "font-sans text-zinc-500 text-[11px]",
                 }}
               />
               <i className="hn hn-caret-down text-black dark:text-white group-hover:translate-y-0.5 transition-transform duration-200"></i>
             </Button>
           </DropdownTrigger>
 
-          <DropdownMenu 
-            aria-label="User Menu" 
+          <DropdownMenu
+            aria-label="User Menu"
             itemClasses={{
-                base: [
-                    "rounded-none",
-                    "font-mono",
-                    "text-zinc-700 dark:text-zinc-300",
-                    "data-[hover=true]:bg-[#e6b689]",
-                    "data-[hover=true]:text-black",
-                    "data-[hover=true]:font-bold",
-                    "border-b-2 border-transparent",
-                    "data-[hover=true]:border-black", // Fake border effect inside
-                    "transition-none" // Retro feels snappy, not smooth
-                ].join(" "),
-                shortcut: "font-mono text-[10px] border border-black px-1 rounded-none bg-white text-black",
-                description: "font-mono",
-                title: "uppercase tracking-wide text-xs"
+              base: [
+                "rounded-none",
+                "font-sans",
+                "font-bold",
+                "text-zinc-700 dark:text-zinc-300",
+                "data-[hover=true]:bg-[#e6b689]",
+                "data-[hover=true]:text-black",
+                "data-[hover=true]:font-bold",
+                "border-b-2 border-transparent",
+                "data-[hover=true]:border-black", // Fake border effect inside
+                "transition-none" // Retro feels snappy, not smooth
+              ].join(" "),
+              shortcut: "font-sans text-[11px] font-bold border-2 border-black px-1 rounded-none bg-white text-black shadow-[1px_1px_0_rgba(0,0,0,1)]",
+              description: "font-sans",
+              title: "uppercase tracking-wide text-sm"
             }}
           >
             {/* --- SECTION 1 --- */}
@@ -191,7 +192,7 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
               <DropdownItem
                 key="profile"
                 shortcut="⌘P"
-                startContent={<UserRounded size={18}/>}
+                startContent={<UserRounded size={18} />}
                 onPress={handleProfile}
               >
                 Profile
@@ -199,14 +200,14 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
               <DropdownItem
                 key="settings"
                 shortcut="⌘S"
-                startContent={<Settings size={18}/>}
+                startContent={<Settings size={18} />}
                 onPress={handleSettings}
               >
                 Settings
               </DropdownItem>
               <DropdownItem
                 key="theme"
-                startContent={<Pallete2 size={18}/>}
+                startContent={<Pallete2 size={18} />}
                 // Custom style for theme switcher container inside dropdown
                 endContent={<div className="scale-90 origin-right"><ThemeSwitchDropdown /></div>}
                 isReadOnly
@@ -221,7 +222,7 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
               <DropdownItem
                 key="changelog"
                 shortcut="⌘H"
-                startContent={<History size={18}/>}
+                startContent={<History size={18} />}
                 onPress={handleChangeLog}
               >
                 Change log
@@ -233,7 +234,7 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
               <DropdownItem
                 key="help"
                 shortcut="⌘I"
-                startContent={<QuestionCircle size={18}/>}
+                startContent={<QuestionCircle size={18} />}
                 onPress={handleHelp}
               >
                 Info & Help
@@ -241,7 +242,7 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
               <DropdownItem
                 key="feedback"
                 shortcut="⌘F"
-                startContent={<InfoSquare size={18}/>}
+                startContent={<InfoSquare size={18} />}
                 onPress={handleFeedback}
               >
                 Feedback
@@ -253,7 +254,7 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
               <DropdownItem
                 key="logout"
                 shortcut="⌘⇧Q"
-                startContent={<Logout2 size={18}/>}
+                startContent={<Logout2 size={18} />}
                 className="text-red-600 data-[hover=true]:bg-red-500 data-[hover=true]:text-white font-bold"
                 onPress={handleLogout}
               >

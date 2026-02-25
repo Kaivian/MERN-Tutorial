@@ -15,8 +15,8 @@ export function useUserAnalytics() {
                 throw new Error(response.message || 'Failed to fetch analytics');
             }
             setData(response.data);
-        } catch (err: any) {
-            setError(err);
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err : new Error(String(err)));
         } finally {
             setIsLoading(false);
         }

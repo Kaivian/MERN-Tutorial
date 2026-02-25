@@ -53,7 +53,7 @@ export default function CalendarPage() {
                                 <button
                                     key={view}
                                     onClick={() => setCurrentView(view)}
-                                    className={`px-3 py-1.5 font-pixelify uppercase tracking-widest text-sm transition-colors ${currentView === view
+                                    className={`px-3 py-1.5 font-sans font-bold uppercase tracking-widest text-sm transition-colors ${currentView === view
                                         ? "bg-[#e6b689] text-black border-2 border-black shadow-pixel-hover"
                                         : "text-zinc-500 hover:text-black dark:hover:text-white border-2 border-transparent"
                                         }`}
@@ -87,7 +87,7 @@ export default function CalendarPage() {
 
                             <button
                                 onClick={() => setCurrentAnchorDate(new Date())}
-                                className="px-3 py-1.5 font-pixelify text-xs uppercase tracking-widest transition-colors hover:bg-zinc-200 dark:hover:bg-zinc-800 text-black dark:text-white font-bold"
+                                className="px-3 py-1.5 font-sans uppercase tracking-widest transition-colors hover:bg-zinc-200 dark:hover:bg-zinc-800 text-black dark:text-white font-bold text-sm"
                             >
                                 Today
                             </button>
@@ -138,7 +138,7 @@ export default function CalendarPage() {
                                         return "";
                                     })()}
                                 </span>
-                                <div className="relative w-5 h-5 overflow-hidden flex items-center justify-center">
+                                <div className="relative w-5 h-5 overflow-hidden flex items-center justify-center -mt-1 hover:-translate-y-0.5 transition-transform">
                                     <i className="hn hn-calendar text-lg absolute pointer-events-none text-black dark:text-white"></i>
                                     <input
                                         type="date"
@@ -159,7 +159,7 @@ export default function CalendarPage() {
                 </div>
             </div>
 
-            <div className="flex-1 bg-white dark:bg-zinc-800 p-4 shadow-pixel dark:shadow-pixel-dark border-2 border-black overflow-hidden flex flex-col min-h-0">
+            <div className="flex-1 bg-white dark:bg-zinc-800 p-4 shadow-pixel dark:shadow-pixel-dark border-2 border-black overflow-hidden flex flex-col min-h-0 font-sans">
                 {isTasksLoading ? (
                     <div className="flex w-full h-full items-center justify-center font-bold text-zinc-500">Loading your tasks...</div>
                 ) : (

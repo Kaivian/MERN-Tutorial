@@ -116,8 +116,8 @@ export default function GradePage() {
   const commonSelectStyles = {
     trigger: "border-2 border-black shadow-pixel transition-all duration-150 data-[open=true]:translate-x-[2px] data-[open=true]:translate-y-[2px] data-[open=true]:shadow-none",
     label: "text-zinc-500 uppercase tracking-widest font-sans font-bold text-[12px]",
-    value: "font-pixelify tracking-widest uppercase text-black dark:text-zinc-300",
-    popoverContent: "rounded-none border-2 border-black shadow-pixel mx-[2px] data-[selected=true]:bg-zinc-800 data-[selected=true]:text-[#e6b689]",
+    value: "font-sans uppercase font-bold tracking-wider text-black dark:text-zinc-300",
+    popoverContent: "rounded-none font-sans font-bold border-2 border-black shadow-pixel mx-[2px] data-[selected=true]:bg-zinc-800 data-[selected=true]:text-[#e6b689]",
   };
 
   const getSelectStyles = (disabled: boolean) => ({
@@ -162,7 +162,7 @@ export default function GradePage() {
               </div>
 
               <div className="flex flex-row justify-between items-end w-full md:w-auto gap-4 md:gap-8">
-                <div className="flex flex-col gap-1 text-[11px] md:text-xs font-bold tracking-widest uppercase font-mono">
+                <div className="flex flex-col gap-1 text-[11px] md:text-sm font-bold tracking-widest uppercase font-sans">
                   <div className="flex items-center gap-1">
                     <span className="text-zinc-500"><i className="hn hn-user mr-1" />Player:</span>
                     <span className="text-zinc-900 dark:text-zinc-200 truncate max-w-37.5 sm:max-w-none">{user?.fullName ? user?.fullName : user?.username}</span>
@@ -247,7 +247,7 @@ export default function GradePage() {
                     {generatedTerms.map((term) => (
                       <SelectItem key={term.key} textValue={term.label}>
                         <div className="flex flex-col">
-                          <span className="font-pixelify uppercase tracking-widest">{term.label}</span>
+                          <span className="font-sans font-bold uppercase tracking-wider">{term.label}</span>
                         </div>
                       </SelectItem>
                     ))}
@@ -265,7 +265,7 @@ export default function GradePage() {
                         "data-[focus=true]:translate-x-[2px]", "data-[focus=true]:translate-y-[2px]",
                         "data-[focus=true]:shadow-none",
                       ].join(" "),
-                      input: "font-pixelify tracking-widest uppercase text-black dark:text-white placeholder:text-zinc-400 placeholder:font-pixelify placeholder:tracking-widest",
+                      input: "font-sans font-bold tracking-wider uppercase text-black dark:text-white placeholder:text-zinc-400 placeholder:font-sans placeholder:font-bold placeholder:tracking-wider",
                     }}
                     isClearable
                     placeholder="SEARCH..."
@@ -274,8 +274,8 @@ export default function GradePage() {
                     variant="bordered"
                     startContent={<i className="hn hn-search" />}
                   />
-                  <Button as={Link} href="/grade/chart" radius="none" className={cn(buttonStyles, "px-4 font-pixelify tracking-widest uppercase hidden sm:flex")}>
-                    <i className="hn hn-pie-chart text-lg mr-2" /> Analytics
+                  <Button as={Link} href="/grade/chart" radius="none" className={cn(buttonStyles, "px-4 font-sans font-bold tracking-wider uppercase hidden sm:flex")}>
+                    Analytics
                   </Button>
                   <Button as={Link} href="/grade/chart" isIconOnly radius="none" className={cn(buttonStyles, "flex sm:hidden")}>
                     <i className="hn hn-pie-chart text-lg" />
@@ -305,7 +305,7 @@ export default function GradePage() {
       <section className="flex-1 flex flex-col h-auto md:min-h-0">
         <Card className="flex-1 h-full bg-white dark:bg-zinc-800 border-2 border-black rounded-none overflow-hidden relative shadow-pixel dark:shadow-pixel-dark">
           <div className="absolute inset-0 z-0 opacity-5 pointer-events-none bg-[radial-gradient(#000000_1px,transparent_1px)] dark:bg-[radial-gradient(#ffffff_1px,transparent_1px)] bg-size-[10px_10px]" />
-          <div className="z-20 flex justify-between px-4 py-3 border-b-2 border-black text-xs font-pixelify text-zinc-500 uppercase tracking-widest bg-zinc-50 dark:bg-zinc-900">
+          <div className="z-20 flex justify-between px-4 py-3 border-b-2 border-black text-xs font-sans font-bold text-zinc-500 uppercase tracking-wider bg-zinc-50 dark:bg-zinc-900">
             <div>Subject Info</div>
             <div className="pr-4">Status / Score</div>
           </div>

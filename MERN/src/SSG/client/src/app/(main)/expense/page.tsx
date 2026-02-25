@@ -102,10 +102,10 @@ export default function ExpenseDashboard() {
           Expense Dashboard
         </h1>
         <div className="flex flex-wrap gap-2">
-          <Button onPress={onGuideOpen} variant="solid" className="bg-emerald-500 text-white border-2 border-black rounded-none font-bold shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all font-sans">
+          <Button onPress={onGuideOpen} variant="solid" className="bg-emerald-500 text-white border-2 border-black rounded-none font-bold shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all font-sans uppercase">
             Hướng dẫn
           </Button>
-          <Button onPress={openBudgetModal} variant="bordered" className="border-2 border-black rounded-none font-bold uppercase shadow-[2px_2px_0_rgba(0,0,0,1)]">
+          <Button onPress={openBudgetModal} variant="bordered" className="border-2 border-black rounded-none font-bold uppercase shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all font-sans bg-white dark:bg-zinc-800 text-black dark:text-white">
             + Budget
           </Button>
           <Button as={Link} href="/expense/recurring" color="secondary" variant="solid" className="border-2 border-black rounded-none font-bold uppercase shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
@@ -151,7 +151,7 @@ export default function ExpenseDashboard() {
             </Card>
 
             {/* Avg Daily Spending */}
-            <Card className={pixelCardStyle}>
+            <Card className={`${pixelCardStyle} bg-zinc-100 dark:bg-zinc-700`}>
               <CardBody className="flex flex-col gap-2 p-4 justify-center items-center">
                 <span className="text-sm font-bold text-gray-600 dark:text-gray-300 uppercase">Avg Daily Spend</span>
                 <span className="text-3xl font-bold font-sans">
@@ -339,10 +339,10 @@ export default function ExpenseDashboard() {
                 />
               </ModalBody>
               <ModalFooter className="border-t-4 border-black">
-                <Button variant="bordered" onPress={onClose} className="border-2 border-black rounded-none uppercase font-bold">
+                <Button variant="bordered" onPress={onClose} className="border-2 border-black rounded-none uppercase font-bold font-sans bg-white dark:bg-zinc-800 text-black dark:text-white">
                   Cancel
                 </Button>
-                <Button color="primary" onPress={() => handleSaveBudget(onClose)} isLoading={savingBudget} className="border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] uppercase font-bold">
+                <Button color="primary" onPress={() => handleSaveBudget(onClose)} isLoading={savingBudget} className="border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] uppercase font-bold font-sans">
                   Save Budget
                 </Button>
               </ModalFooter>

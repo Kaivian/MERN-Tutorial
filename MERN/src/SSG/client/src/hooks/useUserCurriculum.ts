@@ -12,10 +12,10 @@ export function useUserCurriculum() {
         setIsLoading(true);
         try {
             const response = await userCurriculumService.getContext(term);
-            const payload = (response as any).data || response;
-            setData(payload);
-        } catch (err: any) {
-            setError(err);
+            const payload = (response as { data?: unknown }).data || response;
+            setData(payload as UserCurriculumData);
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err : new Error(String(err)));
         } finally {
             setIsLoading(false);
         }
@@ -33,7 +33,7 @@ export function useUserCurriculum() {
             // Optimistically update local state to feel snappy
             setData({ ...data, active_context: newContext });
 
-            const response = await userCurriculumService.updateContext(newContext);
+            await userCurriculumService.updateContext(newContext);
 
             // After context updates, it's safer to re-fetch the whole thing 
             // because the backend calculates what 'subjects' should now be loaded 

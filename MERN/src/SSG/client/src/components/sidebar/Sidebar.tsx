@@ -100,7 +100,7 @@ const SidebarContent = ({ onItemClick, menuGroup1, menuGroup2 }: SidebarContentP
                           onPress={onItemClick}
                         >
                           <span className={cn(
-                            "font-bold flex-1 text-left tracking-tight",
+                            "font-sans flex-1 text-left tracking-tight", // Added font-sans here
                             item.isSubItem ? "text-[11px]" : "text-sm uppercase font-bold",
                             isSelected ? "text-black" : "currentColor"
                           )}>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { Task, Subject, GradeCategory, SubTask } from "@/types/deadline.types";
 import { v4 as uuidv4 } from "uuid";
 
@@ -17,8 +17,8 @@ export default function DeadlineForm({ subjects, initialData, onAdd, onCancel }:
     const [subjectId, setSubjectId] = useState(defaultSubjectId);
 
     // Check if an assessment plan exists for standard subjects
-    const selectedSubject = subjects.find(s => s.id === subjectId);
-    const assessmentOptions = selectedSubject?.assessment_plan || [];
+    const selectedSubject = useMemo(() => subjects.find(s => s.id === subjectId), [subjects, subjectId]);
+    const assessmentOptions = useMemo(() => selectedSubject?.assessment_plan || [], [selectedSubject]);
 
     // Dynamic default category & weight based on first available assessment
     const defaultCat = initialData?.category || (assessmentOptions.length > 0 ? assessmentOptions[0].category : "Assignment");
@@ -27,35 +27,20 @@ export default function DeadlineForm({ subjects, initialData, onAdd, onCancel }:
     const [category, setCategory] = useState<GradeCategory | string>(defaultCat);
     const [weight, setWeight] = useState(defaultWt);
 
-    const [startDate, setStartDate] = useState(initialData?.startDate ? new Date(initialData.startDate).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16));
+    const [startDate, setStartDate] = useState(() => initialData?.startDate ? new Date(initialData.startDate).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16));
     const [hasDeadline, setHasDeadline] = useState(initialData ? !!initialData.endDate : true);
-    const [endDate, setEndDate] = useState(initialData?.endDate ? new Date(initialData.endDate).toISOString().slice(0, 16) : new Date(Date.now() + 86400000 * 7).toISOString().slice(0, 16));
+    const [endDate, setEndDate] = useState(() => initialData?.endDate ? new Date(initialData.endDate).toISOString().slice(0, 16) : new Date(Date.now() + 86400000 * 7).toISOString().slice(0, 16));
 
     const [slot, setSlot] = useState(initialData?.slot || 1);
     const [difficulty, setDifficulty] = useState(initialData?.difficulty || 3);
     const [estimatedHours, setEstimatedHours] = useState(initialData?.estimatedHours || 5);
     const [subTasks, setSubTasks] = useState<SubTask[]>(initialData?.subTasks || []);
     const [newSubTaskTitle, setNewSubTaskTitle] = useState("");
-    const [urgencyScore, setUrgencyScore] = useState(initialData?.urgencyScore || 0);
     const [color, setColor] = useState(initialData?.color || "#000000"); // for personal tasks
 
-    // Auto-sync Weight when Category drops change
-    useEffect(() => {
-        if (subjectId !== 'personal' && assessmentOptions.length > 0) {
-            const matchedPlan = assessmentOptions.find(p => p.category === category);
-            if (matchedPlan) {
-                setWeight(matchedPlan.weight_percent);
-            }
-        }
-    }, [category, subjectId, assessmentOptions]);
-
-    // Recalculate urgency score when values change
-    useEffect(() => {
-        // No deadline = Backlog task, urgency is baseline 0 mechanically
-        if (!hasDeadline) {
-            setUrgencyScore(0);
-            return;
-        }
+    // Recalculate urgency score on the fly (derived state)
+    const urgencyScore = useMemo(() => {
+        if (!hasDeadline) return 0;
 
         const end = new Date(endDate).getTime();
         const now = new Date().getTime();
@@ -63,14 +48,12 @@ export default function DeadlineForm({ subjects, initialData, onAdd, onCancel }:
 
         let score = 0;
         if (subjectId === 'personal') {
-            // Personal Logic: Difficulty scaled by Time Remaining
             score = difficulty / timeRemainingDays;
         } else {
-            // Academic Logic: (Weight * Difficulty) / Time Remaining (days)
             score = (weight * difficulty) / timeRemainingDays;
         }
 
-        setUrgencyScore(Number(score.toFixed(2)));
+        return Number(score.toFixed(2));
     }, [weight, difficulty, endDate, subjectId, hasDeadline]);
 
     const handleAddSubTask = () => {
@@ -127,7 +110,20 @@ export default function DeadlineForm({ subjects, initialData, onAdd, onCancel }:
                         {/* Field: Subject */}
                         <div>
                             <label className={formLabelClass}>Subject</label>
-                            <select value={subjectId} onChange={e => setSubjectId(e.target.value)} className={inputClass}>
+                            <select
+                                value={subjectId}
+                                onChange={e => {
+                                    setSubjectId(e.target.value);
+                                    if (e.target.value !== 'personal') {
+                                        const sel = subjects.find(s => s.id === e.target.value);
+                                        if (sel && sel.assessment_plan && sel.assessment_plan.length > 0) {
+                                            setCategory(sel.assessment_plan[0].category);
+                                            setWeight(sel.assessment_plan[0].weight_percent);
+                                        }
+                                    }
+                                }}
+                                className={inputClass}
+                            >
                                 <option value="personal">👤 Personal Task</option>
                                 {subjects.map(s => <option key={s.id} value={s.id}>📚 {s.name}</option>)}
                             </select>
@@ -138,7 +134,16 @@ export default function DeadlineForm({ subjects, initialData, onAdd, onCancel }:
                             <>
                                 <div>
                                     <label className={formLabelClass}>Grade Category</label>
-                                    <select value={category} onChange={e => setCategory(e.target.value)} className={inputClass}>
+                                    <select
+                                        value={category}
+                                        onChange={e => {
+                                            const val = e.target.value;
+                                            setCategory(val);
+                                            const plan = assessmentOptions.find(p => p.category === val);
+                                            if (plan) setWeight(plan.weight_percent);
+                                        }}
+                                        className={inputClass}
+                                    >
                                         {assessmentOptions.length > 0 ? (
                                             assessmentOptions.map(p => (
                                                 <option key={p.category} value={p.category}>

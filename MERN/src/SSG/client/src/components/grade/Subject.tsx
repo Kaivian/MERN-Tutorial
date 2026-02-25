@@ -130,7 +130,7 @@ const SyllabusColumn = ({ subject, sortedPlans }: {
 );
 
 // --- MAIN COMPONENT ---
-export const SubjectRow = ({ subject, onSave }: { subject: UserSubjectGrade, onSave: (subjectId: string, payload: UpdateGradePayload) => Promise<any> }) => {
+export const SubjectRow = ({ subject, onSave }: { subject: UserSubjectGrade, onSave: (subjectId: string, payload: UpdateGradePayload) => Promise<unknown> }) => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [showSyllabus, setShowSyllabus] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -141,7 +141,7 @@ export const SubjectRow = ({ subject, onSave }: { subject: UserSubjectGrade, onS
   const initialGrades = useMemo(() => {
     const map: Record<string, (string | undefined)[]> = {};
     if (subject.grades) {
-      subject.grades.forEach((g: any) => {
+      subject.grades.forEach((g) => {
         if (!map[g.category]) map[g.category] = [];
         map[g.category][g.part_index] = g.score.toString();
       });
@@ -345,7 +345,7 @@ export const SubjectRow = ({ subject, onSave }: { subject: UserSubjectGrade, onS
         }}
       >
         <ModalContent>
-          {(onClose) => (
+          {() => (
             <>
               {/* SỬA LỖI Ở ĐÂY: Tăng padding phải (md:pr-12) để tránh nút Close */}
               <ModalHeader className="flex flex-col gap-1 p-4 pb-0">
@@ -372,7 +372,7 @@ export const SubjectRow = ({ subject, onSave }: { subject: UserSubjectGrade, onS
                       Current Average
                     </span>
                     <div className={cn(
-                      "text-3xl md:text-5xl font-pixelify tracking-widest md:order-1",
+                      "text-3xl md:text-5xl font-sans font-bold tracking-widest md:order-1",
                       statusColor === 'danger' ? "text-red-500" :
                         statusColor === 'success' ? "text-emerald-500" : "text-[#e6b689]"
                     )}>
@@ -481,12 +481,12 @@ export const SubjectRow = ({ subject, onSave }: { subject: UserSubjectGrade, onS
                                     onValueChange={(val) => handleInputChange(plan.category, partIdx, val)}
                                     classNames={{
                                       input: cn(
-                                        "text-center font-bold font-mono text-base transition-colors",
+                                        "text-center font-bold font-sans text-base transition-colors",
                                         "[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
                                         grades[plan.category]?.[partIdx] !== undefined && parseFloat(grades[plan.category]?.[partIdx] || "0") < 5 ? "text-red-500" :
                                           grades[plan.category]?.[partIdx] !== undefined && parseFloat(grades[plan.category]?.[partIdx] || "0") >= 8 ? "text-emerald-600" :
-                                            "text-zinc-800",
-                                        !isEditing && !grades[plan.category]?.[partIdx] ? "text-zinc-300" : ""
+                                            "text-zinc-800 dark:text-zinc-200",
+                                        !isEditing && !grades[plan.category]?.[partIdx] ? "text-zinc-300 dark:text-zinc-600" : ""
                                       ),
                                       inputWrapper: cn(
                                         "transition-all duration-200 h-10 min-h-10 shadow-none",
@@ -533,7 +533,7 @@ export const SubjectRow = ({ subject, onSave }: { subject: UserSubjectGrade, onS
                 <div className="flex gap-3">
                   <Button
                     className={cn(
-                      "font-pixelify uppercase tracking-widest border-2 border-black shadow-pixel hover:shadow-pixel-hover active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all",
+                      "font-sans font-bold uppercase tracking-widest border-2 border-black shadow-pixel hover:shadow-pixel-hover active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all",
                       "hidden md:flex",
                       showSyllabus ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-500" : "bg-white dark:bg-zinc-800 text-black dark:text-white"
                     )}
@@ -545,7 +545,7 @@ export const SubjectRow = ({ subject, onSave }: { subject: UserSubjectGrade, onS
 
                   <Button
                     className={cn(
-                      "font-pixelify uppercase tracking-widest border-2 border-black transition-all shadow-pixel hover:shadow-pixel-hover active:translate-y-[2px] active:translate-x-[2px] active:shadow-none min-w-35",
+                      "font-sans font-bold uppercase tracking-widest border-2 border-black transition-all shadow-pixel hover:shadow-pixel-hover active:translate-y-[2px] active:translate-x-[2px] active:shadow-none min-w-35",
                       isEditing ? "bg-emerald-400 text-black hover:bg-emerald-300" : "bg-[#e6b689] text-black hover:bg-[#d4a373]"
                     )}
                     radius="none"

@@ -164,9 +164,9 @@ export default function GradeChartPage() {
     // --- STYLES (MATCHES MAIN GRADE PAGE) ---
     const commonSelectStyles = {
         trigger: "border-zinc-600 data-[hover=true]:border-[#e6b689] dark:data-[hover=true]:border-[#9d744d] shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] transition-all duration-150 data-[open=true]:translate-x-[2px] data-[open=true]:translate-y-[2px] data-[open=true]:shadow-none data-[open=true]:border-[#e6b689]",
-        label: "text-zinc-500 uppercase tracking-wider text-[12px]",
-        value: "font-bold text-zinc-300",
-        popoverContent: "rounded-none border-2 border-[#e6b689] mx-[2px] data-[selected=true]:bg-zinc-800 data-[selected=true]:text-[#e6b689] data-[selected=true]:font-bold",
+        label: "text-zinc-500 font-sans uppercase font-bold tracking-wider text-[12px]",
+        value: "font-sans font-bold text-zinc-300",
+        popoverContent: "rounded-none border-2 font-sans border-[#e6b689] mx-[2px] data-[selected=true]:bg-zinc-800 data-[selected=true]:text-[#e6b689] data-[selected=true]:font-bold",
     };
 
     const commonListboxProps = {
@@ -205,7 +205,7 @@ export default function GradeChartPage() {
                                     color="primary"
                                     radius="none"
                                     size="sm"
-                                    className="font-bold border-2 border-black dark:border-white shadow-[2px_2px_0_rgba(0,0,0,1)] uppercase bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100"
+                                    className="font-bold border-2 border-black dark:border-zinc-600 shadow-pixel dark:shadow-pixel-dark hover:-translate-y-0.5 active:translate-y-[2px] active:translate-x-[2px] uppercase bg-blue-100/50 text-blue-900 dark:bg-zinc-800 dark:text-blue-400 font-sans transition-all"
                                 >
                                     <i className="hn hn-book text-base" />
                                     <span className="hidden md:inline">Hướng Dẫn</span>
@@ -213,7 +213,7 @@ export default function GradeChartPage() {
                             </div>
 
                             <div className="flex flex-row justify-between items-end w-full gap-4 md:gap-8 mt-2">
-                                <div className="flex flex-col gap-1 text-[11px] md:text-xs font-bold tracking-widest uppercase font-mono">
+                                <div className="flex flex-col gap-1 text-[11px] md:text-sm font-bold tracking-widest uppercase font-sans">
                                     <div className="flex items-center gap-1">
                                         <span className="text-zinc-500"><i className="hn hn-user mr-1" />Player:</span>
                                         <span className="text-zinc-900 dark:text-zinc-200 truncate">{user?.fullName || user?.username}</span>
@@ -245,7 +245,7 @@ export default function GradeChartPage() {
                                     classNames={{
                                         tabList: "gap-6 w-full relative rounded-none p-0 border-b border-divider",
                                         cursor: "w-full bg-[#e6b689]",
-                                        tab: "max-w-fit px-0 h-10",
+                                        tab: "max-w-fit px-0 h-10 font-sans font-bold uppercase tracking-widest text-[12px]",
                                         tabContent: "group-data-[selected=true]:text-[#e6b689]"
                                     }}
                                 >

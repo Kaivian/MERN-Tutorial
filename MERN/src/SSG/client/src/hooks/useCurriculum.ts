@@ -16,10 +16,10 @@ export function useCurriculumPrograms() {
                 // Since interceptor might return directly data or axios response, 
                 // we check response.data (our ApiResponse wrapping)
                 // If the interceptor unwrap directly to our custom object, response IS theApiResponse
-                const payload = (response as any).data || response;
-                setData(payload);
-            } catch (err: any) {
-                setError(err);
+                const payload = (response as { data?: unknown }).data || response;
+                setData(payload as CurriculumProgramsResponse);
+            } catch (err: unknown) {
+                setError(err instanceof Error ? err : new Error(String(err)));
             } finally {
                 setIsLoading(false);
             }
@@ -44,8 +44,8 @@ export function useCurriculumSemesters(code?: string) {
             setIsLoading(true);
             try {
                 const response = await curriculumService.getSemesters(code);
-                const payload = (response as any).data || response;
-                setData(payload || []);
+                const payload = (response as { data?: unknown }).data || response;
+                setData((payload as SemesterData[]) || []);
             } catch (err) {
                 console.error("Failed to fetch semesters:", err);
             } finally {
@@ -81,8 +81,8 @@ export function useCurriculumSubjects(code?: string, semester?: string) {
                 }
 
                 const response = await curriculumService.getSubjects(code, semIndex);
-                const payload = (response as any).data || response;
-                setData(payload || []);
+                const payload = (response as { data?: unknown }).data || response;
+                setData((payload as SubjectData[]) || []);
             } catch (err) {
                 console.error("Failed to fetch subjects:", err);
             } finally {

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Task, Subject } from "@/types/deadline.types";
-import { stackDeadlines, StackedTask } from "@/utils/calendarStacking";
+import { stackDeadlines, StackedTask } from "@/utils/calendar-stacking";
 import TaskDetailModal from "./TaskDetailModal";
 
 interface CalendarViewsProps {

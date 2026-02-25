@@ -56,7 +56,7 @@ export default function DeadlineManagerPage() {
                             setEditingTask(null);
                             setIsFormOpen(true);
                         }}
-                        className="bg-[#e6b689] hover:bg-[#d4a373] text-black font-pixelify uppercase tracking-widest px-4 py-2 border-2 border-black shadow-pixel hover:shadow-pixel-hover active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all text-sm"
+                        className="bg-[#e6b689] hover:bg-[#d4a373] text-black font-sans font-bold uppercase tracking-widest px-4 py-2 border-2 border-black shadow-pixel hover:shadow-pixel-hover active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all text-sm"
                     >
                         + Add New Task
                     </button>
@@ -67,7 +67,7 @@ export default function DeadlineManagerPage() {
                 {/* Column 1: Deadlines */}
                 <div className="bg-white dark:bg-zinc-800 p-4 shadow-pixel dark:shadow-pixel-dark border-2 border-black flex flex-col min-h-[400px] max-h-[70vh]">
                     <h2 className="text-lg font-pixelify uppercase text-[#e6b689] mb-3 tracking-widest border-b-2 border-black pb-1 drop-shadow-[1px_1px_0_rgba(0,0,0,1)]">Deadlines</h2>
-                    <div className="flex-1 overflow-auto">
+                    <div className="flex-1 overflow-auto font-sans">
                         {isTasksLoading ? (
                             <div className="flex w-full h-full items-center justify-center font-bold text-zinc-500">Loading your tasks...</div>
                         ) : deadlines.length === 0 ? (
@@ -93,8 +93,8 @@ export default function DeadlineManagerPage() {
 
                 {/* Column 2: Todo List */}
                 <div className="bg-white dark:bg-zinc-800 p-4 shadow-pixel dark:shadow-pixel-dark border-2 border-black flex flex-col min-h-[400px] max-h-[70vh]">
-                    <h2 className="text-lg font-pixelify uppercase text-zinc-400 mb-3 tracking-widest border-b-2 border-zinc-400 pb-1">Ongoing / To-Do</h2>
-                    <div className="flex-1 overflow-auto">
+                    <h2 className="text-lg font-pixelify uppercase text-zinc-400 dark:text-zinc-500 mb-3 tracking-widest border-b-2 border-zinc-400 dark:border-zinc-500 pb-1">Ongoing / To-Do</h2>
+                    <div className="flex-1 overflow-auto font-sans">
                         {isTasksLoading ? (
                             <div className="flex w-full h-full items-center justify-center font-bold text-zinc-500">Loading your tasks...</div>
                         ) : todos.length === 0 ? (
@@ -122,25 +122,27 @@ export default function DeadlineManagerPage() {
             {/* Row 2: Completed Tasks */}
             <div className="bg-zinc-50 dark:bg-zinc-800/50 p-4 shadow-pixel dark:shadow-pixel-dark border-2 border-black mt-2 overflow-auto">
                 <h2 className="text-lg font-pixelify uppercase text-green-600 mb-3 tracking-widest border-b-2 border-green-600 pb-1">Completed Tasks</h2>
-                {isTasksLoading ? (
-                    <div className="flex w-full h-full min-h-[100px] items-center justify-center font-bold text-zinc-500">Loading your tasks...</div>
-                ) : completedTasks.length === 0 ? (
-                    <div className="flex w-full h-full min-h-[100px] items-center justify-center flex-col text-center">
-                        <i className="hn hn-check-circle text-4xl text-zinc-300 dark:text-zinc-600 mb-4 [text-shadow:2px_2px_0_rgba(0,0,0,0.1)]"></i>
-                        <h2 className="text-lg font-bold text-zinc-400">No completed tasks yet.</h2>
-                    </div>
-                ) : (
-                    <DeadlineList
-                        tasks={completedTasks}
-                        subjects={currentSubjects as any}
-                        onDelete={(id) => deleteTask(id)}
-                        onEdit={(task) => {
-                            setEditingTask(task);
-                            setIsFormOpen(true);
-                        }}
-                        onToggleComplete={(task) => updateTask({ id: task._id!, updates: { isCompleted: !task.isCompleted } })}
-                    />
-                )}
+                <div className="font-sans">
+                    {isTasksLoading ? (
+                        <div className="flex w-full h-full min-h-[100px] items-center justify-center font-bold text-zinc-500">Loading your tasks...</div>
+                    ) : completedTasks.length === 0 ? (
+                        <div className="flex w-full h-full min-h-[100px] items-center justify-center flex-col text-center">
+                            <i className="hn hn-check-circle text-4xl text-zinc-300 dark:text-zinc-600 mb-4 [text-shadow:2px_2px_0_rgba(0,0,0,0.1)]"></i>
+                            <h2 className="text-lg font-bold text-zinc-400">No completed tasks yet.</h2>
+                        </div>
+                    ) : (
+                        <DeadlineList
+                            tasks={completedTasks}
+                            subjects={currentSubjects as any}
+                            onDelete={(id) => deleteTask(id)}
+                            onEdit={(task) => {
+                                setEditingTask(task);
+                                setIsFormOpen(true);
+                            }}
+                            onToggleComplete={(task) => updateTask({ id: task._id!, updates: { isCompleted: !task.isCompleted } })}
+                        />
+                    )}
+                </div>
             </div>
 
             {isFormOpen && (
