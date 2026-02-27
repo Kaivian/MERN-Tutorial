@@ -1,10 +1,12 @@
-// server/src/routes/index.js
 import { Router } from 'express';
 import ENV from '../config/env.config.js';
 import authRoutes from './auth.routes.js';
 import curriculumRoutes from './curriculum.routes.js';
 import userCurriculumRoutes from './user-curriculum.routes.js';
 import taskRoutes from './todo/task.routes.js';
+import userRoutes from './user.routes.js';
+import roleRoutes from './role.routes.js';
+import { verifyAccessToken, requireActiveAndSynced } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 
@@ -59,5 +61,13 @@ router.use('/tasks', taskRoutes);
  */
 import expenseRoutes from './expense.routes.js';
 router.use('/expense', expenseRoutes);
+
+/**
+ * Access Control & Identity Routes (Protected)
+ * @route /api/users
+ * @route /api/roles
+ */
+router.use('/users', verifyAccessToken, requireActiveAndSynced, userRoutes);
+router.use('/roles', verifyAccessToken, requireActiveAndSynced, roleRoutes);
 
 export default router;

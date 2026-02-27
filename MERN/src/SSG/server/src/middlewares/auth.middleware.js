@@ -99,15 +99,15 @@ export const requireActiveAndSynced = async (req, res, next) => {
     // 3. SECURITY CHECK: Account Status
     if (user.status === 'banned' || user.status === 'inactive') {
       logger.warn(`[Auth] Blocked request from ${user.status} user: ${user.username}`);
-      return res.error('Account is disabled or banned', 403, { 
-        errorCode: 'ACCOUNT_DISABLED' 
+      return res.error('Account is disabled or banned', 403, {
+        errorCode: 'ACCOUNT_DISABLED'
       });
     }
 
     // 4. POLICY CHECK: Force Change Password
     // Skip this check if the user is currently targeting the change-password route
     const isChangePasswordRoute = req.originalUrl.includes('/change-password');
-    
+
     if (user.mustChangePassword === true && !isChangePasswordRoute) {
       return res.error('Password Change Required', 403, {
         errorCode: 'MUST_CHANGE_PASSWORD',
@@ -119,10 +119,9 @@ export const requireActiveAndSynced = async (req, res, next) => {
     // If Admin revoked a role 1 second ago, the JWT is stale. 
     // We update req.user here so subsequent middlewares allow/deny correctly.
     if (user.roles && Array.isArray(user.roles)) {
-      // Assuming user.roles is populated. If not, you might need to populate it in repository
-      // or handle it based on your repository implementation.
-      // Here we assume userRepository.findById populates roles or returns role objects.
-      req.user.roles = user.roles.map(r => r.slug || r); 
+      // Provide the FULL role objects so the next RBAC middleware 
+      // can check r.status and r.permissions
+      req.user.roles = user.roles;
     }
 
     next();

@@ -21,13 +21,42 @@ class UserRepository {
   /* ==================== READ ==================== */
 
   /**
+   * Find users with pagination and filtering.
+   * @param {Object} query - Mongoose query object.
+   * @param {Object} options - Pagination options (page, limit).
+   */
+  async findPaginated(query = {}, { page = 1, limit = 10, sort = { createdAt: -1 } }) {
+    const skip = (page - 1) * limit;
+
+    const [docs, totalDocs] = await Promise.all([
+      User.find(query)
+        .sort(sort)
+        .skip(skip)
+        .limit(limit)
+        .populate('roles', 'name slug permissions status')
+        .select('-password -activeSession'),
+      User.countDocuments(query)
+    ]);
+
+    return {
+      docs,
+      totalDocs,
+      page,
+      limit,
+      totalPages: Math.ceil(totalDocs / limit),
+      hasNextPage: page * limit < totalDocs,
+      hasPrevPage: page > 1,
+    };
+  }
+
+  /**
    * Find a user by ID and populate their roles.
    * Standard method for fetching profile info.
    * @param {string} id - The user ID (ObjectId).
    * @returns {Promise<import('mongoose').Document | null>} User document with populated roles.
    */
   async findById(id) {
-    return await User.findById(id).populate('roles', 'name slug permissions');
+    return await User.findById(id).populate('roles', 'name slug permissions status');
   }
 
   /**
