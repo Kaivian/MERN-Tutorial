@@ -15,6 +15,7 @@ import {
 import IconSwitch from "../icons/IconSwitch";
 import { useSidebarMenu } from "@/hooks/generals/useSidebarMenu";
 import { SidebarItem, SidebarSection } from "./SidebarData";
+import { useTranslation } from "@/i18n";
 
 // --- RETRO STYLES ---
 const activeItemStyle = "bg-[#e6b689] border-2 border-black text-black shadow-pixel dark:shadow-pixel-dark translate-x-[-2px] translate-y-[-2px]";
@@ -32,6 +33,7 @@ interface SidebarContentProps {
 
 const SidebarContent = ({ onItemClick, menuGroup1, menuGroup2 }: SidebarContentProps) => {
   const pathname = usePathname();
+  const { t } = useTranslation();
 
   return (
     <div className="flex flex-col gap-3 2xl:gap-4 flex-1 overflow-hidden h-full w-full">
@@ -39,8 +41,8 @@ const SidebarContent = ({ onItemClick, menuGroup1, menuGroup2 }: SidebarContentP
         <section className="flex items-center gap-3 h-15 w-full">
           <div className="h-10 w-full flex items-center justify-center">
             {/* Logo Text Retro */}
-            <h1 className="text-[34px] font-pixelify text-[#e6b689] tracking-widest uppercase drop-shadow-[2px_2px_0_rgba(0,0,0,1)] whitespace-nowrap">
-              FPT UNIMATE
+            <h1 className="text-[34px] font-jersey10 text-[#e6b689] tracking-widest uppercase drop-shadow-[2px_2px_0_rgba(0,0,0,1)] whitespace-nowrap">
+              {t('sidebar.fpt_unimate')}
             </h1>
           </div>
         </section>
@@ -62,7 +64,7 @@ const SidebarContent = ({ onItemClick, menuGroup1, menuGroup2 }: SidebarContentP
 
                 return (
                   <section key={section.title} className="flex flex-col gap-1 2xl:gap-2 px-2">
-                    <h2 className="text-[11px] font-sans font-bold uppercase tracking-wider text-zinc-400 mb-1 px-2 border-b-2 border-transparent pb-1">
+                    <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1 px-2 border-b-2 border-transparent pb-1">
                       {section.title}
                     </h2>
 
@@ -75,12 +77,11 @@ const SidebarContent = ({ onItemClick, menuGroup1, menuGroup2 }: SidebarContentP
                           isDisabled={item.isDisabled}
                           as={Link}
                           href={item.key.startsWith('/') ? item.key : '/' + item.key}
-                          // RETRO STYLING APPLIED HERE
                           radius="none"
                           className={cn(
-                            "relative overflow-visible h-10 xl:h-11 text-left px-3 gap-3 justify-start transition-all duration-200",
+                            "relative overflow-visible h-10 xl:h-11 px-3 gap-3 justify-start transition-all duration-200",
                             isSelected ? activeItemStyle : normalItemStyle,
-                            item.isSubItem ? "ml-8 pr-3 h-8 xl:h-9 text-[11px] border-l-2 !border-l-zinc-300 dark:!border-l-zinc-700 bg-transparent hover:!bg-zinc-200 " + (isSelected ? "!border-l-[#e6b689]" : "") : ""
+                            item.isSubItem ? "ml-8 pr-3 h-8 xl:h-9 text-sm border-l-2 !border-l-zinc-300 dark:!border-l-zinc-700 bg-transparent hover:!bg-zinc-200 " + (isSelected ? "!border-l-[#e6b689]" : "") : ""
                           )}
                           fullWidth
                           size="lg"
@@ -100,8 +101,8 @@ const SidebarContent = ({ onItemClick, menuGroup1, menuGroup2 }: SidebarContentP
                           onPress={onItemClick}
                         >
                           <span className={cn(
-                            "font-sans flex-1 text-left tracking-tight", // Added font-sans here
-                            item.isSubItem ? "text-[11px]" : "text-sm uppercase font-bold",
+                            "flex-1 text-left",
+                            item.isSubItem ? "text-sm" : "text-sm uppercase font-bold",
                             isSelected ? "text-black" : "currentColor"
                           )}>
                             {item.label}
@@ -132,6 +133,7 @@ interface SidebarCollapsedProps {
 
 const SidebarCollapsed = ({ menuGroup1, menuGroup2 }: SidebarCollapsedProps) => {
   const pathname = usePathname();
+  const { t } = useTranslation();
 
   const hasVisibleItems = (sections: SidebarSection[]) => {
     return sections.some((section) =>
@@ -146,8 +148,8 @@ const SidebarCollapsed = ({ menuGroup1, menuGroup2 }: SidebarCollapsedProps) => 
       <div className="flex flex-col items-center gap-4 w-full pt-1">
         <div className="flex justify-center w-10 h-10 items-center">
           {/* Collapsed Logo */}
-          <h1 className="text-xl font-pixelify text-[#e6b689] drop-shadow-[1.5px_1.5px_0_rgba(0,0,0,1)] uppercase">
-            FPT
+          <h1 className="text-xl font-jersey10 text-[#e6b689] drop-shadow-[1.5px_1.5px_0_rgba(0,0,0,1)] uppercase">
+            {t('sidebar.fpt')}
           </h1>
         </div>
       </div>

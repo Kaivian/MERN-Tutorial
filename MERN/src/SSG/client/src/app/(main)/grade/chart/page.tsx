@@ -34,6 +34,7 @@ import {
 } from "recharts";
 import { useUserAnalytics } from "@/hooks/useUserAnalytics";
 import { UserAnalyticsTermDetail } from "@/types/user-curriculum.types";
+import { useTranslation } from "@/i18n";
 
 // New Components
 import GradeFrequencyChart from "./components/GradeFrequencyChart";
@@ -46,6 +47,7 @@ import GradeHeatmap from "./components/GradeHeatmap";
 export default function GradeChartPage() {
     const { user } = useAuth();
     const { data: analyticsData, isLoading } = useUserAnalytics();
+    const { t } = useTranslation();
 
     // --- COMPARISON STATE (Legacy Bar Chart) ---
     const [selectedTerm1, setSelectedTerm1] = useState<Selection>(new Set([]));
@@ -164,9 +166,9 @@ export default function GradeChartPage() {
     // --- STYLES (MATCHES MAIN GRADE PAGE) ---
     const commonSelectStyles = {
         trigger: "border-zinc-600 data-[hover=true]:border-[#e6b689] dark:data-[hover=true]:border-[#9d744d] shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] transition-all duration-150 data-[open=true]:translate-x-[2px] data-[open=true]:translate-y-[2px] data-[open=true]:shadow-none data-[open=true]:border-[#e6b689]",
-        label: "text-zinc-500 font-sans uppercase font-bold tracking-wider text-[12px]",
-        value: "font-sans font-bold text-zinc-300",
-        popoverContent: "rounded-none border-2 font-sans border-[#e6b689] mx-[2px] data-[selected=true]:bg-zinc-800 data-[selected=true]:text-[#e6b689] data-[selected=true]:font-bold",
+        label: "text-zinc-500 uppercase font-bold tracking-wider text-[12px]",
+        value: "font-bold text-zinc-300",
+        popoverContent: "rounded-none border-2 border-[#e6b689] mx-[2px] data-[selected=true]:bg-zinc-800 data-[selected=true]:text-[#e6b689] data-[selected=true]:font-bold",
     };
 
     const commonListboxProps = {
@@ -181,44 +183,72 @@ export default function GradeChartPage() {
         },
     };
 
+    const buttonStyles = "bg-[#e6b689] hover:bg-[#d4a373] text-black border-2 border-black font-jersey10 min-w-10 h-10 shadow-pixel hover:shadow-pixel-hover active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all";
+
     return (
-        <div className="flex flex-col gap-3 h-full overflow-y-auto transition-colors duration-300 rounded-xl pb-20">
+        <div className="flex flex-col gap-3 h-full overflow-y-auto transition-colors duration-300 rounded-xl pb-20 pr-2">
             {/* HEADER SECTION */}
             <div className="w-full relative z-20 flex flex-col gap-3 shrink-0">
                 <section className="w-full">
-                    <Card className="h-full bg-white dark:bg-[#18181b] border-t-0 border-x-0 border-b-2 border-b-[#e6b689] dark:border-b-[#9d744d] rounded-xl overflow-hidden relative shadow-none dark:border-x dark:border-y dark:border-divider">
-                        <div className="absolute inset-0 z-0 opacity-20 pointer-events-none bg-[radial-gradient(#71717a_1px,transparent_1px)] bg-size-[16px_16px]" />
-                        <CardHeader className="relative z-10 flex flex-col items-start px-5 py-4 md:px-6 md:py-5 h-full justify-between">
-                            <div className="flex items-center justify-between w-full mb-2 md:mb-0">
-                                <div className="flex items-center gap-2 md:gap-3">
-                                    <Button as={Link} href="/grade" isIconOnly radius="none" className="bg-transparent text-zinc-500 hover:text-white mr-1 md:mr-2" size="sm">
-                                        <i className="hn hn-arrow-left text-2xl" />
-                                    </Button>
-                                    <i className="hn hn-pie-chart text-retro-orange text-[28px] md:text-[32px]" />
-                                    <h1 className="text-3xl md:text-4xl font-black text-retro-orange dark:text-white uppercase tracking-wide [text-shadow:2px_2px_0_#c47c16] md:[text-shadow:3px_3px_0_#c47c16] whitespace-nowrap">
-                                        Grade Analytics
-                                    </h1>
-                                </div>
-                                <Button
-                                    onPress={onGuideOpen}
-                                    variant="flat"
-                                    color="primary"
-                                    radius="none"
-                                    size="sm"
-                                    className="font-bold border-2 border-black dark:border-zinc-600 shadow-pixel dark:shadow-pixel-dark hover:-translate-y-0.5 active:translate-y-[2px] active:translate-x-[2px] uppercase bg-blue-100/50 text-blue-900 dark:bg-zinc-800 dark:text-blue-400 font-sans transition-all"
-                                >
-                                    <i className="hn hn-book text-base" />
-                                    <span className="hidden md:inline">Hướng Dẫn</span>
-                                </Button>
-                            </div>
+                    <Card className="h-full bg-white dark:bg-[#18181b] 
+  border-t-0 border-x-0 border-b-2 
+  border-b-[#e6b689] dark:border-b-[#9d744d] 
+  rounded-xl overflow-hidden relative 
+  shadow-none dark:border-x dark:border-y dark:border-divider"
+                    >
+                        {/* Background pattern */}
+                        <div className="absolute inset-0 z-0 opacity-20 pointer-events-none 
+    bg-[radial-gradient(#71717a_1px,transparent_1px)] 
+    bg-size-[16px_16px]"
+                        />
 
-                            <div className="flex flex-row justify-between items-end w-full gap-4 md:gap-8 mt-2">
-                                <div className="flex flex-col gap-1 text-[11px] md:text-sm font-bold tracking-widest uppercase font-sans">
+                        <CardHeader
+                            className="relative z-10 
+      flex flex-row items-center justify-between 
+      px-5 py-4 md:px-6 md:py-5 
+      h-full"
+                        >
+                            {/* Left content */}
+                            <div className="flex flex-col gap-3">
+                                {/* Title */}
+                                <h1 className="text-3xl md:text-4xl font-black 
+        text-retro-orange dark:text-white 
+        uppercase tracking-wide 
+        whitespace-nowrap
+        [text-shadow:2px_2px_0_#c47c16] 
+        md:[text-shadow:3px_3px_0_#c47c16]"
+                                >
+                                    {t('gradeChart.title')}
+                                </h1>
+
+                                {/* Player info */}
+                                <div className="flex flex-col gap-1 
+        text-[11px] md:text-sm 
+        font-bold tracking-widest uppercase"
+                                >
                                     <div className="flex items-center gap-1">
-                                        <span className="text-zinc-500"><i className="hn hn-user mr-1" />Player:</span>
-                                        <span className="text-zinc-900 dark:text-zinc-200 truncate">{user?.fullName || user?.username}</span>
+                                        <span className="text-zinc-500">
+                                            {t('gradeChart.player')}:
+                                        </span>
+                                        <span className="text-zinc-900 dark:text-zinc-200 truncate">
+                                            {user?.fullName || user?.username}
+                                        </span>
                                     </div>
                                 </div>
+                            </div>
+
+                            {/* Right side button */}
+                            <div className="flex items-center">
+                                <Button
+                                    onPress={onGuideOpen}
+                                    radius="none"
+                                    className={cn(
+                                        buttonStyles,
+                                        "font-bold tracking-widest uppercase hidden sm:flex !bg-emerald-500 !text-white"
+                                    )}
+                                >
+                                    {t('grade.guide')}
+                                </Button>
                             </div>
                         </CardHeader>
                     </Card>
@@ -245,7 +275,7 @@ export default function GradeChartPage() {
                                     classNames={{
                                         tabList: "gap-6 w-full relative rounded-none p-0 border-b border-divider",
                                         cursor: "w-full bg-[#e6b689]",
-                                        tab: "max-w-fit px-0 h-10 font-sans font-bold uppercase tracking-widest text-[12px]",
+                                        tab: "max-w-fit px-0 h-10 font-bold uppercase tracking-widest text-[12px]",
                                         tabContent: "group-data-[selected=true]:text-[#e6b689]"
                                     }}
                                 >
@@ -340,10 +370,10 @@ export default function GradeChartPage() {
                         <Card className="lg:col-span-2 min-h-[400px] bg-white dark:bg-[#18181b] border-t-0 border-x-0 border-b-2 border-b-[#e6b689] rounded-xl relative shadow-none dark:border-divider">
                             <CardHeader className="pb-0 pt-6 px-6 flex-col items-start border-b border-zinc-200 dark:border-zinc-800/50">
                                 <h4 className="font-black text-xl text-zinc-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-2">
-                                    <i className="hn hn-chart-line text-[#e6b689]" /> Overall GPA Trend
+                                    <i className="hn hn-chart-line text-[#e6b689]" /> {t('gradeChart.overallGPATrend')}
                                 </h4>
                                 <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mt-1 mb-4">
-                                    Term vs Cumulative performance
+                                    {t('gradeChart.termVsCumulativePerformance')}
                                 </p>
                             </CardHeader>
                             <CardBody className="pt-6">
@@ -371,10 +401,10 @@ export default function GradeChartPage() {
                         <Card className="min-h-[400px] bg-white dark:bg-[#18181b] border-t-0 border-x-0 border-b-2 border-b-emerald-500 rounded-xl relative shadow-none dark:border-divider">
                             <CardHeader className="pb-0 pt-6 px-6 flex-col items-start border-b border-zinc-200 dark:border-zinc-800/50">
                                 <h4 className="font-black text-xl text-zinc-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-2">
-                                    <i className="hn hn-pie-chart text-emerald-500" /> Subject Statuses
+                                    <i className="hn hn-pie-chart text-emerald-500" /> {t('gradeChart.subjectStatuses')}
                                 </h4>
                                 <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mt-1 mb-4">
-                                    Pass / Fail Ratio
+                                    {t('gradeChart.passFailRatio')}
                                 </p>
                             </CardHeader>
                             <CardBody className="pt-2 items-center flex justify-center">
@@ -415,10 +445,10 @@ export default function GradeChartPage() {
                             <CardHeader className="pb-0 pt-6 px-6 flex-col md:flex-row justify-between items-start md:items-center border-b border-zinc-200 dark:border-zinc-800/50">
                                 <div>
                                     <h4 className="font-black text-xl text-zinc-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-2">
-                                        <i className="hn hn-bar-chart text-blue-500" /> Term Comparer
+                                        <i className="hn hn-bar-chart text-blue-500" /> {t('gradeChart.termComparer')}
                                     </h4>
                                     <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mt-1 mb-4">
-                                        Compare average scores
+                                        {t('gradeChart.compareAverageScores')}
                                     </p>
                                 </div>
 
@@ -462,7 +492,7 @@ export default function GradeChartPage() {
                                     <div className="h-full flex items-center justify-center text-zinc-600 font-mono text-sm py-10">
                                         <div className="text-center">
                                             <i className="hn hn-cursor-click text-4xl mb-2 opacity-50" />
-                                            <p>Select two terms above to compare their average scores.</p>
+                                            <p>{t('gradeChart.selectTwoTermsToCompare')}</p>
                                         </div>
                                     </div>
                                 ) : (
@@ -494,14 +524,14 @@ export default function GradeChartPage() {
             )}
 
             {/* USER GUIDE MODAL */}
-            <Modal isOpen={isGuideOpen} onOpenChange={onGuideOpenChange} classNames={{ base: "border-4 border-black rounded-none shadow-[8px_8px_0_rgba(0,0,0,1)] bg-white dark:bg-zinc-900 p-2 font-sans overflow-auto max-h-[90vh]", closeButton: "hover:bg-red-500 border-2 border-transparent hover:border-black rounded-none" }}>
+            <Modal isOpen={isGuideOpen} onOpenChange={onGuideOpenChange} classNames={{ base: "border-4 border-black rounded-none shadow-[8px_8px_0_rgba(0,0,0,1)] bg-white dark:bg-zinc-900 p-2 overflow-auto max-h-[90vh]", closeButton: "hover:bg-red-500 border-2 border-transparent hover:border-black rounded-none" }}>
                 <ModalContent>
                     {(onClose) => (
                         <>
-                            <ModalHeader className="flex flex-col gap-1 border-b-4 border-black text-xl font-bold font-sans text-black dark:text-white uppercase shrink-0">
+                            <ModalHeader className="flex flex-col gap-1 border-b-4 border-black text-xl font-bold text-black dark:text-white uppercase shrink-0">
                                 Hướng Dẫn: Phân Tích Điểm Số
                             </ModalHeader>
-                            <ModalBody className="py-4 flex flex-col gap-3 font-sans text-sm md:text-base leading-relaxed text-black dark:text-white">
+                            <ModalBody className="py-4 flex flex-col gap-3 text-sm md:text-base leading-relaxed text-black dark:text-white">
                                 <p><strong>Bộ Lọc Thời Gian:</strong> Chọn xem dữ liệu của &quot;Tất cả kỳ học&quot;, &quot;Chỉ một kỳ&quot;, hoặc &quot;Từ kỳ A đến kỳ B&quot; qua thanh công cụ phía trên.</p>
                                 <p><strong>Grade Frequency (Phân Bố Tần Suất Điểm):</strong> Thể hiện số lượng các môn học rớt vào từng mốc điểm cụ thể, giúp bạn biết mình thường đạt điểm ở khoảng nào nhất.</p>
                                 <p><strong>Grade Box Plot (Biểu Đồ Hộp):</strong> Giúp bạn nắm bắt biên độ dao động, điểm trung bình và mức độ phân tán điểm số của từng học kỳ hoặc môn học.</p>
@@ -514,7 +544,7 @@ export default function GradeChartPage() {
                                 <p><strong>Term Comparer (So Sánh Học Kỳ):</strong> Lựa chọn 2 học kỳ khác nhau để phân tích, đối chiếu trực tiếp điểm trung bình giữa chúng bằng biểu đồ cột.</p>
                             </ModalBody>
                             <ModalFooter className="border-t-4 border-black shrink-0">
-                                <Button color="primary" onPress={onClose} className="border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] font-bold font-sans uppercase">
+                                <Button color="primary" onPress={onClose} className="border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] font-bold uppercase">
                                     Đã hiểu
                                 </Button>
                             </ModalFooter>

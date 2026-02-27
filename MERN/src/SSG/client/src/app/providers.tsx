@@ -9,6 +9,7 @@ import { ToastProvider } from "@heroui/toast";
 import { useRouter } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { LanguageProvider } from "@/providers/language.provider";
 
 export interface ProvidersProps {
   children: React.ReactNode;
@@ -29,11 +30,13 @@ export function Providers({ children, themeProps }: ProvidersProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <HeroUIProvider navigate={router.push}>
-        <NextThemesProvider {...themeProps}>
-          <ToastProvider placement="top-right" toastOffset={8} />{children}
-        </NextThemesProvider>
-      </HeroUIProvider>
+      <LanguageProvider>
+        <HeroUIProvider navigate={router.push}>
+          <NextThemesProvider {...themeProps}>
+            <ToastProvider placement="top-right" toastOffset={8} />{children}
+          </NextThemesProvider>
+        </HeroUIProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }

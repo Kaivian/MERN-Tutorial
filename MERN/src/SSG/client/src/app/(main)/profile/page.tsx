@@ -4,6 +4,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { useAuth } from "@/providers/auth.provider";
 import { useCurriculumPrograms, useCurriculumSemesters } from "@/hooks/useCurriculum";
 import { useUserCurriculum } from "@/hooks/useUserCurriculum";
+import { useLanguage } from "@/providers/language.provider";
 import {
     Card,
     CardHeader,
@@ -15,29 +16,33 @@ import {
     Input,
     cn
 } from "@heroui/react";
+import { useTranslation } from "@/i18n";
 
 // --- DATA DEFINITIONS ---
-const majorGroups = [
+const getMajorGroups = (t: any) => [
     {
         key: "it_block",
-        label: "INFORMATION TECHNOLOGY",
+        label: t('majors.it_block'),
         items: [
-            { key: "it", label: "Information Technology" },
-            { key: "se", label: "Software Engineering" },
-            { key: "ai", label: "Artificial Intelligence" },
-            { key: "is", label: "Information Systems" },
-            { key: "gd", label: "Graphic Design & Digital Art" },
+            { key: "it", label: t('majors.it') },
+            { key: "se", label: t('majors.se') },
+            { key: "ai", label: t('majors.ai') },
+            { key: "is", label: t('majors.is') },
+            { key: "gd", label: t('majors.gd') },
         ]
     },
     {
         key: "comm_block",
-        label: "COMMUNICATION TECH",
-        items: [{ key: "multi", label: "Multimedia Communication" }]
+        label: t('majors.comm_block'),
+        items: [{ key: "multi", label: t('majors.multi') }]
     },
 ];
 
 export default function ProfilePage() {
     const { user } = useAuth();
+    const { language, setLanguage } = useLanguage();
+    const { t } = useTranslation();
+    const majorGroups = useMemo(() => getMajorGroups(t), [t]);
 
     // Local state for editing form before saving
     const [editContext, setEditContext] = useState({
@@ -139,10 +144,10 @@ export default function ProfilePage() {
 
     // STYLES
     const commonSelectStyles = {
-        trigger: "border-zinc-600 data-[hover=true]:border-[#e6b689] shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] transition-all duration-150 data-[open=true]:translate-x-[2px] data-[open=true]:translate-y-[2px] data-[open=true]:shadow-none data-[open=true]:border-[#e6b689]",
-        label: "text-zinc-500 uppercase tracking-wider text-[12px] font-bold mb-1",
-        value: "font-bold text-zinc-300",
-        popoverContent: "rounded-none border-2 border-[#e6b689] mx-[2px] data-[selected=true]:bg-zinc-800 data-[selected=true]:text-[#e6b689] data-[selected=true]:font-bold",
+        trigger: "border-zinc-600 data-[hover=true]:border-[#e6b689] shadow-pixel transition-all duration-150 data-[open=true]:translate-x-[4px] data-[open=true]:translate-y-[4px] data-[open=true]:shadow-none data-[open=true]:border-[#e6b689] font-jersey10 rounded-none",
+        label: "text-zinc-500 uppercase tracking-widest text-sm font-jersey10 mb-1",
+        value: "font-jersey10 text-xl text-zinc-300",
+        popoverContent: "rounded-none border-2 border-[#e6b689] mx-[2px] data-[selected=true]:bg-zinc-800 data-[selected=true]:text-[#e6b689] data-[selected=true]:font-jersey10",
     };
 
     const getSelectStyles = (disabled: boolean) => ({
@@ -153,81 +158,120 @@ export default function ProfilePage() {
     const commonListboxProps = {
         itemClasses: {
             base: [
-                "rounded-none", "text-zinc-500", "transition-colors", "outline-none",
+                "rounded-none", "text-zinc-500", "transition-colors", "outline-none", "font-jersey10", "text-xl",
                 "data-[focus-visible=true]:ring-0", "data-[focus-visible=true]:ring-offset-0",
                 "data-[hover=true]:!bg-[#e6b689]", "data-[hover=true]:!text-zinc-900",
-                "data-[selected=true]:!bg-[#e6b689]", "data-[selected=true]:!text-zinc-900", "data-[selected=true]:font-bold",
+                "data-[selected=true]:!bg-[#e6b689]", "data-[selected=true]:!text-zinc-900",
                 "data-[focus=true]:!bg-[#e6b689]", "data-[focus=true]:!text-zinc-900",
             ].join(" "),
         },
     };
 
-    const buttonStyles = "bg-[#e6b689] text-black border-2 border-black font-black uppercase tracking-widest px-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-[#d4a373] hover:translate-x-[2px] hover:translate-y-[2px] transition-all hover:shadow-[2px_2px_0_rgba(0,0,0,1)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none";
+    const buttonStyles = "bg-[#e6b689] text-black border-2 border-black font-jersey10 text-xl uppercase tracking-widest px-8 shadow-pixel hover:bg-[#d4a373] hover:translate-x-[2px] hover:translate-y-[2px] transition-all hover:shadow-pixel-hover active:translate-x-[4px] active:translate-y-[4px] active:shadow-none";
 
     return (
-        <div className="flex flex-col gap-6 p-4 md:p-8 max-w-5xl mx-auto w-full text-white">
+        <div className="flex flex-col gap-6 pr-2 pb-2 mx-auto w-full text-white font-jersey10 overflow-auto">
             {/* HEADER */}
             <div className="flex flex-col gap-2">
-                <h1 className="text-4xl font-black text-[#e6b689] uppercase tracking-tighter [text-shadow:3px_3px_0_#000]">
-                    Profile Management
+                <h1 className="text-5xl font-jersey10 text-[#e6b689] uppercase tracking-wider [text-shadow:3px_3px_0_#000]">
+                    {t('profile.title')}
                 </h1>
-                <p className="text-zinc-500 font-bold tracking-wide">Configure your identity and global academic context.</p>
+                <p className="text-zinc-500 font-jersey10 text-xl tracking-widest uppercase">{t('profile.subtitle')}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* LEFT: IDENTITY CARD */}
-                <Card className="bg-zinc-100 dark:bg-zinc-900 border-4 border-black shadow-[8px_8px_0_#000] rounded-none overflow-visible w-full h-full">
-                    <div className="p-4 border-b-4 border-black bg-[#e6b689] text-black">
-                        <h2 className="text-xl font-black uppercase tracking-widest flex items-center gap-2">
-                            <i className="hn hn-user" /> User Identity
-                        </h2>
-                    </div>
-                    <CardBody className="p-6 flex flex-col gap-5">
-                        <div className="flex items-center gap-4 border-b-2 border-zinc-200 dark:border-zinc-800 pb-5">
-                            <div className="w-16 h-16 bg-zinc-800 border-2 border-[#e6b689] flex items-center justify-center rounded-none shadow-[2px_2px_0_#e6b689]">
-                                <span className="font-black text-2xl text-[#e6b689]">{(user?.fullName || user?.username || "?")?.charAt(0).toUpperCase()}</span>
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="font-black text-xl text-black dark:text-white uppercase tracking-tight">{user?.fullName || user?.username}</span>
-                                <span className="font-bold text-sm text-zinc-500">{user?.roles?.join(', ') || 'No Roles Assigned'}</span>
-                            </div>
+                <div className="flex flex-col gap-8">
+                    {/* LEFT: IDENTITY CARD */}
+                    <Card className="bg-zinc-100 dark:bg-zinc-900 border-4 border-black shadow-[8px_8px_0_#000] rounded-none overflow-visible w-full">
+                        <div className="p-4 border-b-4 border-black bg-[#e6b689] text-black">
+                            <h2 className="text-2xl font-jersey10 uppercase tracking-widest flex items-center gap-2">
+                                <i className="hn hn-user" /> {t('profile.identity')}
+                            </h2>
                         </div>
+                        <CardBody className="p-6 flex flex-col gap-5">
+                            <div className="flex items-center gap-4 border-b-2 border-zinc-200 dark:border-zinc-800 pb-5">
+                                <div className="w-16 h-16 bg-zinc-800 border-2 border-[#e6b689] flex items-center justify-center rounded-none shadow-[2px_2px_0_#e6b689]">
+                                    <span className="font-jersey10 text-4xl text-[#e6b689]">{(user?.fullName || user?.username || "?")?.charAt(0).toUpperCase()}</span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="font-jersey10 text-3xl text-black dark:text-white uppercase tracking-wider">{user?.fullName || user?.username}</span>
+                                    <span className="font-jersey10 text-xl text-zinc-500 uppercase tracking-widest">{user?.roles?.join(', ') || t('general.no_roles')}</span>
+                                </div>
+                            </div>
 
-                        <div className="flex flex-col gap-2">
-                            <label className="text-xs font-bold text-zinc-500 tracking-widest uppercase">Email Address</label>
-                            <div className="font-mono bg-zinc-200 dark:bg-zinc-800 p-3 border-2 border-black text-black dark:text-zinc-200">
-                                {user?.email}
+                            <div className="flex flex-col gap-2">
+                                <label className="text-sm font-jersey10 text-zinc-500 tracking-widest uppercase">{t('profile.email')}</label>
+                                <div className="font-jersey10 text-xl bg-zinc-200 dark:bg-zinc-800 p-3 border-2 border-black text-black dark:text-zinc-200">
+                                    {user?.email}
+                                </div>
                             </div>
-                        </div>
 
-                        <div className="flex flex-col gap-2">
-                            <label className="text-xs font-bold text-zinc-500 tracking-widest uppercase">Username</label>
-                            <div className="font-mono bg-zinc-200 dark:bg-zinc-800 p-3 border-2 border-black text-black dark:text-zinc-200">
-                                {user?.username}
+                            <div className="flex flex-col gap-2">
+                                <label className="text-sm font-jersey10 text-zinc-500 tracking-widest uppercase">{t('profile.username')}</label>
+                                <div className="font-jersey10 text-xl bg-zinc-200 dark:bg-zinc-800 p-3 border-2 border-black text-black dark:text-zinc-200">
+                                    {user?.username}
+                                </div>
                             </div>
+                        </CardBody>
+                    </Card>
+
+                    {/* LANGUAGE PREFERENCES CARD */}
+                    <Card className="bg-zinc-100 dark:bg-zinc-900 border-4 border-black shadow-[8px_8px_0_#000] rounded-none overflow-visible w-full">
+                        <div className="p-4 border-b-4 border-black bg-[#f43f5e] text-white">
+                            <h2 className="text-2xl font-jersey10 uppercase tracking-widest flex items-center gap-2">
+                                <i className="hn hn-globe" /> {t('profile.language_settings')}
+                            </h2>
                         </div>
-                    </CardBody>
-                </Card>
+                        <CardBody className="p-6 flex flex-col gap-5">
+                            <Select
+                                labelPlacement="outside"
+                                label={t('profile.app_language')}
+                                placeholder={t('profile.select_language')}
+                                variant="bordered"
+                                size="md"
+                                radius="none"
+                                selectedKeys={new Set([language])}
+                                onSelectionChange={(keys) => {
+                                    const selected = Array.from(keys)[0] as "en" | "vi";
+                                    if (selected) setLanguage(selected);
+                                }}
+                                classNames={commonSelectStyles}
+                                listboxProps={commonListboxProps}
+                            >
+                                <SelectItem key="en" textValue={t('profile.english_default')}>
+                                    <div className="flex flex-col">
+                                        <span className="font-jersey10 text-xl">{t('profile.english_default')}</span>
+                                    </div>
+                                </SelectItem>
+                                <SelectItem key="vi" textValue={t('profile.vietnamese_sans')}>
+                                    <div className="flex flex-col">
+                                        <span className="font-jersey10 text-xl">{t('profile.vietnamese_sans')}</span>
+                                    </div>
+                                </SelectItem>
+                            </Select>
+                        </CardBody>
+                    </Card>
+                </div>
 
                 {/* RIGHT: ACADEMIC CONTEXT FORM */}
                 <Card className="bg-zinc-100 dark:bg-zinc-900 border-4 border-black shadow-[8px_8px_0_#000] rounded-none overflow-visible w-full">
                     <div className="p-4 border-b-4 border-black bg-[#3b82f6] text-black">
-                        <h2 className="text-xl font-black uppercase tracking-widest flex items-center gap-2 text-white">
-                            <i className="hn hn-graduation-cap" /> Academic Context
+                        <h2 className="text-2xl font-jersey10 uppercase tracking-widest flex items-center gap-2 text-white">
+                            <i className="hn hn-graduation-cap" /> {t('profile.academic_context')}
                         </h2>
                     </div>
                     <CardBody className="p-6 flex flex-col gap-6 relative">
                         {isContextLoading ? (
-                            <div className="absolute inset-0 bg-zinc-900/80 backdrop-blur-sm z-10 flex items-center justify-center">
-                                <div className="font-black text-[#e6b689] animate-pulse">LOADING PROFILE...</div>
+                            <div className="absolute inset-0 bg-zinc-900/80 backdrop-blur-sm z-20 flex items-center justify-center">
+                                <div className="font-jersey10 text-3xl uppercase tracking-widest text-[#e6b689] animate-pulse">{t('profile.loading_profile')}</div>
                             </div>
                         ) : null}
 
                         <div className="flex flex-col gap-4">
                             <Select
                                 labelPlacement="outside"
-                                label="1. Major Block"
-                                placeholder="Select block"
+                                label={t('profile.major_block')}
+                                placeholder={t('profile.select_block')}
                                 variant="bordered"
                                 size="md"
                                 radius="none"
@@ -244,8 +288,8 @@ export default function ProfilePage() {
                             <Select
                                 isDisabled={!editContext.block}
                                 labelPlacement="outside"
-                                label="2. Program"
-                                placeholder={editContext.block ? "Select program" : "Select block first"}
+                                label={t('profile.program')}
+                                placeholder={editContext.block ? t('profile.select_program') : t('profile.select_block_first')}
                                 variant="bordered"
                                 size="md"
                                 radius="none"
@@ -262,8 +306,8 @@ export default function ProfilePage() {
                             <Select
                                 isDisabled={!editContext.program}
                                 labelPlacement="outside"
-                                label="3. Cohort / Class"
-                                placeholder={!editContext.program ? "Select program first" : "Select class"}
+                                label={t('profile.cohort_class')}
+                                placeholder={!editContext.program ? t('profile.select_program_first') : t('profile.select_class')}
                                 variant="bordered"
                                 size="md"
                                 radius="none"
@@ -280,9 +324,9 @@ export default function ProfilePage() {
                             <Select
                                 isDisabled={!editContext.cohort_class}
                                 labelPlacement="outside"
-                                label="4. Current Term"
+                                label={t('profile.current_term')}
                                 classNames={getSelectStyles(!editContext.cohort_class)}
-                                placeholder={!editContext.cohort_class ? "Select class first" : "Select current term"}
+                                placeholder={!editContext.cohort_class ? t('profile.select_class_first') : t('profile.select_term')}
                                 variant="bordered"
                                 size="md"
                                 radius="none"
@@ -293,7 +337,7 @@ export default function ProfilePage() {
                                 {generatedTerms.map((term) => (
                                     <SelectItem key={term.key} textValue={term.label}>
                                         <div className="flex flex-col">
-                                            <span className="font-bold">{term.label}</span>
+                                            <span className="font-jersey10 text-xl">{term.label}</span>
                                         </div>
                                     </SelectItem>
                                 ))}
@@ -302,8 +346,8 @@ export default function ProfilePage() {
 
                         {/* NOTIFICATION TEXT */}
                         {saveSuccess && (
-                            <div className="bg-[#10b981] text-black border-2 border-black p-2 font-bold uppercase tracking-wider text-xs shadow-[2px_2px_0_#000]">
-                                Profile updated successfully! Grade views will now reflect this context.
+                            <div className="bg-[#10b981] text-black border-2 border-black p-2 font-jersey10 text-lg uppercase tracking-widest shadow-pixel">
+                                {t('profile.save_success')}
                             </div>
                         )}
 
@@ -315,7 +359,7 @@ export default function ProfilePage() {
                                 onClick={handleSave}
                                 isLoading={isSaving}
                             >
-                                {isSaving ? "Saving..." : "Save Profile"}
+                                {isSaving ? t('profile.saving') : t('profile.save_profile')}
                             </Button>
                         </div>
 

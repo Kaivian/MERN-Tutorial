@@ -6,8 +6,10 @@ import { FcGoogle } from "react-icons/fc";
 import { Form, Input, Button, Link } from "@heroui/react";
 import { VALIDATION_MESSAGES } from "@/config/validation-messages.config";
 import { useLogin } from "@/hooks/auth/useLogin";
+import { useTranslation } from "@/i18n";
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -45,9 +47,9 @@ export default function LoginPage() {
     <>
       <div className="mb-6 text-center">
         <h1 className="font-display text-2xl font-bold text-black uppercase tracking-tight drop-shadow-[2px_2px_0_rgba(0,0,0,0.1)]">
-          Hey, Welcome Back!
+          {t('auth.login_title')}
         </h1>
-        <p className="text-gray-500 font-display text-lg">Player 1, Start Game!</p>
+        <p className="text-gray-500 font-display text-lg">{t('auth.login_subtitle')}</p>
       </div>
 
       {/* Form Section */}
@@ -56,10 +58,10 @@ export default function LoginPage() {
           <Input
             isRequired
             errorMessage={VALIDATION_MESSAGES.REQUIRED}
-            label="Username"
+            label={t('auth.username')}
             labelPlacement="outside"
             name="username"
-            placeholder="Enter your username"
+            placeholder={t('auth.username_placeholder')}
             value={username}
             onValueChange={setUsername}
             isDisabled={isLoading}
@@ -69,10 +71,10 @@ export default function LoginPage() {
           <Input
             isRequired
             errorMessage={VALIDATION_MESSAGES.REQUIRED}
-            label="Password"
+            label={t('auth.password')}
             labelPlacement="outside"
             name="password"
-            placeholder="Enter your password"
+            placeholder={t('auth.password_placeholder')}
             value={password}
             onValueChange={setPassword}
             type={isVisible ? "text" : "password"}
@@ -93,7 +95,7 @@ export default function LoginPage() {
           />
           <div className="w-full flex justify-end mb-4">
             <Link href="#" className="text-sm text-gray-500 font-display hover:underline decoration-2" tabIndex={-1}>
-              Forgot password?{" "}
+              {t('auth.forgot_password')}{" "}
             </Link>
           </div>
           <Button
@@ -102,7 +104,7 @@ export default function LoginPage() {
             isLoading={isLoading}
             className="h-12 rounded-none border-4 border-black bg-retro-orange text-black text-xl font-bold uppercase tracking-widest shadow-pixel hover:translate-y-1 hover:shadow-pixel-hover active:translate-y-1 active:shadow-none transition-all duration-150 font-display"
           >
-            Login
+            {t('auth.login_btn')}
           </Button>
         </Form>
       </section>
@@ -112,7 +114,7 @@ export default function LoginPage() {
         <div className="flex items-center gap-4 py-6">
           <div className="h-1 flex-1 border-t-4 border-dotted border-black"></div>
           <span className="text-xs text-black uppercase font-bold tracking-widest bg-white px-2 font-display">
-            Or
+            {t('auth.or')}
           </span>
           <div className="h-1 flex-1 border-t-4 border-dotted border-black"></div>
         </div>
@@ -129,9 +131,9 @@ export default function LoginPage() {
         </div>
         <div className="text-center mt-8 pb-2">
           <p className="text-sm text-gray-600 font-mono">
-            New player?{" "}
+            {t('auth.new_player')}{" "}
             <Link href="/register" className="font-bold text-retro-orange hover:text-retro-dark hover:underline decoration-4 underline-offset-4 uppercase transition-colors">
-              Sign up now.
+              {t('auth.sign_up_now')}
             </Link>
           </p>
         </div>

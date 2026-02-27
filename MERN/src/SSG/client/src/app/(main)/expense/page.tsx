@@ -10,12 +10,14 @@ import {
 import axiosInstance from "@/utils/axios-client.utils";
 import Link from "next/link";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from "recharts";
+import { useTranslation } from "@/i18n";
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#a28CFE', '#FF6B6B'];
 
 export default function ExpenseDashboard() {
   const [summary, setSummary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   // Budget Modal State
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -96,23 +98,23 @@ export default function ExpenseDashboard() {
   const pixelCardStyle = "border-4 border-black shadow-[4px_4px_0_rgba(0,0,0,1)] rounded-none bg-white dark:bg-zinc-800 text-black dark:text-white";
 
   return (
-    <div className="flex flex-col gap-4 p-4 h-full overflow-y-auto font-sans pb-10">
+    <div className="flex flex-col gap-2 pr-2 h-full overflow-y-auto pb-10">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-2 gap-4">
-        <h1 className="text-3xl font-sans font-bold tracking-widest uppercase">
-          Expense Dashboard
+        <h1 className="text-3xl font-bold tracking-widest uppercase">
+          {t('expense.title')}
         </h1>
         <div className="flex flex-wrap gap-2">
-          <Button onPress={onGuideOpen} variant="solid" className="bg-emerald-500 text-white border-2 border-black rounded-none font-bold shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all font-sans uppercase">
-            Hướng dẫn
+          <Button onPress={onGuideOpen} variant="solid" className="bg-emerald-500 text-white border-2 border-black rounded-none font-bold shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all uppercase">
+            {t('expense.guide')}
           </Button>
-          <Button onPress={openBudgetModal} variant="bordered" className="border-2 border-black rounded-none font-bold uppercase shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all font-sans bg-white dark:bg-zinc-800 text-black dark:text-white">
-            + Budget
+          <Button onPress={openBudgetModal} variant="bordered" className="border-2 border-black rounded-none font-bold uppercase shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all bg-white dark:bg-zinc-800 text-black dark:text-white">
+            + {t('expense.budget')}
           </Button>
           <Button as={Link} href="/expense/recurring" color="secondary" variant="solid" className="border-2 border-black rounded-none font-bold uppercase shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
-            Chi Tiêu Theo Hạn
+            {t('expense.recurring')}
           </Button>
           <Button as={Link} href="/expense/transactions" color="primary" variant="solid" className="border-2 border-black rounded-none font-bold uppercase shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
-            Chi Tiêu Tức Thì
+            {t('expense.transactions')}
           </Button>
         </div>
       </div>
@@ -123,9 +125,9 @@ export default function ExpenseDashboard() {
             {/* Total Income */}
             <Card className={`${pixelCardStyle} bg-[#e8f5e9] dark:bg-green-900 border-green-600`}>
               <CardBody className="flex flex-col gap-2 p-4 justify-center items-center">
-                <span className="text-sm font-bold text-gray-600 dark:text-gray-300 uppercase">Total Income</span>
-                <span className="text-3xl font-bold font-sans text-green-700 dark:text-green-400">
-                  {summary.overview.totalIncome.toLocaleString('vi-VN')} ₫
+                <span className="text-sm font-bold text-gray-600 dark:text-gray-300 uppercase">{t('expense.totalIncome')}</span>
+                <span className="text-3xl font-bold text-green-700 dark:text-green-400">
+                  {summary.overview.totalIncome.toLocaleString('vi-VN')} vnd
                 </span>
               </CardBody>
             </Card>
@@ -133,9 +135,9 @@ export default function ExpenseDashboard() {
             {/* Total Expense */}
             <Card className={`${pixelCardStyle} bg-[#ffebee] dark:bg-red-900 border-red-600`}>
               <CardBody className="flex flex-col gap-2 p-4 justify-center items-center">
-                <span className="text-sm font-bold text-gray-600 dark:text-gray-300 uppercase">Total Expense</span>
-                <span className="text-3xl font-bold font-sans text-red-700 dark:text-red-400">
-                  {summary.overview.totalExpense.toLocaleString('vi-VN')} ₫
+                <span className="text-sm font-bold text-gray-600 dark:text-gray-300 uppercase">{t('expense.totalExpense')}</span>
+                <span className="text-3xl font-bold text-red-700 dark:text-red-400">
+                  {summary.overview.totalExpense.toLocaleString('vi-VN')} vnd
                 </span>
               </CardBody>
             </Card>
@@ -143,9 +145,9 @@ export default function ExpenseDashboard() {
             {/* Net Cash Flow */}
             <Card className={`${pixelCardStyle} bg-[#e3f2fd] dark:bg-blue-900 border-blue-600`}>
               <CardBody className="flex flex-col gap-2 p-4 justify-center items-center">
-                <span className="text-sm font-bold text-gray-600 dark:text-gray-300 uppercase">Net Cash Flow</span>
-                <span className="text-3xl font-bold font-sans text-blue-700 dark:text-blue-400">
-                  {summary.overview.netCashFlow.toLocaleString('vi-VN')} ₫
+                <span className="text-sm font-bold text-gray-600 dark:text-gray-300 uppercase">{t('expense.netCashFlow')}</span>
+                <span className="text-3xl font-bold text-blue-700 dark:text-blue-400">
+                  {summary.overview.netCashFlow.toLocaleString('vi-VN')} vnd
                 </span>
               </CardBody>
             </Card>
@@ -153,9 +155,9 @@ export default function ExpenseDashboard() {
             {/* Avg Daily Spending */}
             <Card className={`${pixelCardStyle} bg-zinc-100 dark:bg-zinc-700`}>
               <CardBody className="flex flex-col gap-2 p-4 justify-center items-center">
-                <span className="text-sm font-bold text-gray-600 dark:text-gray-300 uppercase">Avg Daily Spend</span>
-                <span className="text-3xl font-bold font-sans">
-                  {summary.overview.avgDailySpending.toLocaleString('vi-VN')} ₫
+                <span className="text-sm font-bold text-gray-600 dark:text-gray-300 uppercase">{t('expense.avgDailySpending')}</span>
+                <span className="text-3xl font-bold">
+                  {summary.overview.avgDailySpending.toLocaleString('vi-VN')} vnd
                 </span>
               </CardBody>
             </Card>
@@ -166,13 +168,13 @@ export default function ExpenseDashboard() {
             <CardBody className="p-4 flex flex-col gap-3">
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-bold uppercase tracking-widest text-orange-900 dark:text-orange-200">
-                  Intelligent Insights
+                  {t('expense.intelligentInsights')}
                 </h3>
               </div>
 
               <div className="flex flex-col gap-2 text-sm text-orange-900 dark:text-orange-100">
                 <div className="flex items-center gap-2">
-                  <strong>Health Status:</strong>
+                  <strong>{t('expense.healthStatus')}:</strong>
                   <span className={`px-2 py-1 font-bold border-2 border-black text-xs uppercase ${summary.insights.financialHealth === 'GOOD' ? 'bg-green-400 text-black' :
                     summary.insights.financialHealth === 'WARNING' ? 'bg-yellow-400 text-black' :
                       'bg-red-500 text-white'
@@ -180,12 +182,12 @@ export default function ExpenseDashboard() {
                     {summary.insights.financialHealth}
                   </span>
                 </div>
-                <p><strong>Suggestion:</strong> {summary.insights.suggestion}</p>
+                <p><strong>{t('expense.suggestion')}:</strong> {summary.insights.suggestion}</p>
 
                 {summary.insights.warnings.length > 0 && (
                   <div className="mt-2 p-3 bg-red-100 border-2 border-red-500 text-red-800 dark:bg-red-950 dark:text-red-200 font-bold">
                     {summary.insights.warnings.map((w: string, i: number) => (
-                      <p key={i}>⚠️ {w}</p>
+                      <p key={i}>{w}</p>
                     ))}
                   </div>
                 )}
@@ -197,7 +199,7 @@ export default function ExpenseDashboard() {
             {/* Top Categories Chart */}
             <Card className={`${pixelCardStyle} min-h-[400px]`}>
               <CardHeader className="p-4 border-b-4 border-black bg-zinc-100 dark:bg-zinc-900">
-                <h3 className="text-lg font-bold uppercase tracking-widest">Expense Breakdown</h3>
+                <h3 className="text-lg font-bold uppercase tracking-widest">{t('expense.expenseBreakdown')}</h3>
               </CardHeader>
               <CardBody className="p-4 flex flex-col justify-center items-center w-full">
                 {summary.topCategories.length > 0 ? (
@@ -229,7 +231,7 @@ export default function ExpenseDashboard() {
                     </ResponsiveContainer>
                   </div>
                 ) : (
-                  <p className="text-gray-500 italic font-bold">No expenses recorded this month.</p>
+                  <p className="text-gray-500 italic font-bold">{t('expense.noExpenses')}</p>
                 )}
               </CardBody>
             </Card>
@@ -237,7 +239,7 @@ export default function ExpenseDashboard() {
             {/* Budget Usage */}
             <Card className={`${pixelCardStyle} min-h-[300px]`}>
               <CardHeader className="p-4 border-b-4 border-black bg-zinc-100 dark:bg-zinc-900">
-                <h3 className="text-lg font-bold uppercase tracking-widest">Budget Progress</h3>
+                <h3 className="text-lg font-bold uppercase tracking-widest">{t('expense.budgetProgress')}</h3>
               </CardHeader>
               <CardBody className="p-4">
                 {summary.budgetUsage.length > 0 ? (
@@ -251,9 +253,9 @@ export default function ExpenseDashboard() {
                         <div key={i} className="flex flex-col gap-2">
                           <div className="flex justify-between items-center bg-gray-100 dark:bg-zinc-800 p-2">
                             <div className="flex flex-col">
-                              <span className="font-bold text-lg uppercase tracking-wider">{b.category}</span>
+                              <span className="font-bold text-md uppercase">{b.category}</span>
                               <span className="text-sm font-bold text-gray-600 dark:text-gray-400">
-                                {b.totalSpent.toLocaleString('vi-VN')} ₫ / {b.monthlyLimit.toLocaleString('vi-VN')} ₫
+                                {b.totalSpent.toLocaleString('vi-VN')} / {b.monthlyLimit.toLocaleString('vi-VN')} vnd
                               </span>
                             </div>
                             <Button size="sm" isIconOnly onPress={() => openEditBudgetModal(b)} className="bg-yellow-400 border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
@@ -266,7 +268,7 @@ export default function ExpenseDashboard() {
                               className={`h-full border-r-4 border-black transition-all duration-500 ${isDanger ? 'bg-red-500' : isWarning ? 'bg-yellow-400' : 'bg-[#e6b689]'}`}
                               style={{ width: `${percent}%` }}
                             ></div>
-                            <div className="absolute inset-0 flex items-center justify-center font-sans font-bold text-xs mix-blend-difference text-white drop-shadow-md">
+                            <div className="absolute inset-0 flex items-center justify-center font-bold text-xs mix-blend-difference text-white drop-shadow-md">
                               {b.percentageUsed.toFixed(0)}% {isDanger && 'OVER!'}
                             </div>
                           </div>
@@ -276,9 +278,9 @@ export default function ExpenseDashboard() {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
-                    <p className="text-gray-500 italic font-bold">No budgets active.</p>
+                    <p className="text-gray-500 italic font-bold">{t('expense.noBudgets')}</p>
                     <Button onPress={openBudgetModal} className="border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] bg-yellow-400 font-bold uppercase">
-                      Create First Budget
+                      {t('expense.createFirstBudget')}
                     </Button>
                   </div>
                 )}
@@ -289,21 +291,21 @@ export default function ExpenseDashboard() {
       )}
 
       {/* USER GUIDE MODAL */}
-      <Modal isOpen={isGuideOpen} onOpenChange={onGuideOpenChange} classNames={{ base: "border-4 border-black rounded-none shadow-[8px_8px_0_rgba(0,0,0,1)] bg-white dark:bg-zinc-900 p-2 font-sans", closeButton: "hover:bg-red-500 border-2 border-transparent hover:border-black rounded-none" }}>
+      <Modal isOpen={isGuideOpen} onOpenChange={onGuideOpenChange} classNames={{ base: "border-4 border-black rounded-none shadow-[8px_8px_0_rgba(0,0,0,1)] bg-white dark:bg-zinc-900 p-2", closeButton: "hover:bg-red-500 border-2 border-transparent hover:border-black rounded-none" }}>
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader className="flex flex-col gap-1 border-b-4 border-black text-xl font-bold font-sans text-black dark:text-white uppercase">
+              <ModalHeader className="flex flex-col gap-1 border-b-4 border-black text-xl font-bold text-black dark:text-white uppercase">
                 Hướng Dẫn: Bảng Điều Khiển
               </ModalHeader>
-              <ModalBody className="py-4 flex flex-col gap-3 font-sans text-sm md:text-base leading-relaxed text-black dark:text-white">
+              <ModalBody className="py-4 flex flex-col gap-3 text-sm md:text-base leading-relaxed text-black dark:text-white">
                 <p><strong>Khối Tổng Quan:</strong> Dễ dàng nắm bắt tình hình tài chính trong tháng qua Tổng thu (Thu nhập), Tổng chi (Chi tiêu) và Dòng tiền thuần.</p>
                 <p><strong>Gợi Ý Thông Minh:</strong> Dựa vào dữ liệu thu chi thực tế của bạn, hệ thống tự động đưa ra các đánh giá (Tốt, Cảnh báo...) và những lời khuyên hữu ích để bạn quản lý tốt hơn.</p>
                 <p><strong>Tiến Độ Ngân Sách:</strong> Thanh tiến độ giúp bạn nhìn rõ mức chi tiêu thực tế so với giới hạn định ra ban đầu. Nếu thanh chuyển sang màu đỏ (OVER!), bạn đã tiêu vượt ngân sách dự kiến cho danh mục đó.</p>
                 <p><strong>+ Budget (Thiết Lập Ngân Sách):</strong> Bạn có thể quy định số tiền tối đa được phép tiêu cho từng danh mục cụ thể (vd: Food, Transport...)</p>
               </ModalBody>
               <ModalFooter className="border-t-4 border-black">
-                <Button color="primary" onPress={onClose} className="border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] font-bold font-sans uppercase">
+                <Button color="primary" onPress={onClose} className="border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] font-bold uppercase">
                   Đã hiểu
                 </Button>
               </ModalFooter>
@@ -317,7 +319,7 @@ export default function ExpenseDashboard() {
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader className="flex flex-col gap-1 border-b-4 border-black uppercase font-sans font-bold text-xl">
+              <ModalHeader className="flex flex-col gap-1 border-b-4 border-black uppercase font-bold text-xl">
                 {isEditingBudget ? "Edit Budget" : "Set Category Budget"}
               </ModalHeader>
               <ModalBody className="py-6 flex flex-col gap-4">
@@ -339,10 +341,10 @@ export default function ExpenseDashboard() {
                 />
               </ModalBody>
               <ModalFooter className="border-t-4 border-black">
-                <Button variant="bordered" onPress={onClose} className="border-2 border-black rounded-none uppercase font-bold font-sans bg-white dark:bg-zinc-800 text-black dark:text-white">
+                <Button variant="bordered" onPress={onClose} className="border-2 border-black rounded-none uppercase font-bold bg-white dark:bg-zinc-800 text-black dark:text-white">
                   Cancel
                 </Button>
-                <Button color="primary" onPress={() => handleSaveBudget(onClose)} isLoading={savingBudget} className="border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] uppercase font-bold font-sans">
+                <Button color="primary" onPress={() => handleSaveBudget(onClose)} isLoading={savingBudget} className="border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] uppercase font-bold">
                   Save Budget
                 </Button>
               </ModalFooter>

@@ -18,9 +18,10 @@ import {
 } from "@heroui/react";
 
 import { SubjectRow } from "@/components/grade/Subject";
-import { useCurriculumPrograms, useCurriculumSemesters, useCurriculumSubjects } from "@/hooks/useCurriculum";
+import { useCurriculumPrograms, useCurriculumSemesters } from "@/hooks/useCurriculum";
 import { useUserCurriculum } from "@/hooks/useUserCurriculum";
 import { Spinner } from "@heroui/react";
+import { useTranslation } from "@/i18n";
 
 // --- DATA DEFINITIONS ---
 const majorGroups = [
@@ -44,6 +45,7 @@ const majorGroups = [
 
 export default function GradePage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   // --- LOGIC: State Management ---
   const [isEditing, setIsEditing] = useState(false);
@@ -115,9 +117,10 @@ export default function GradePage() {
   // --- STYLES ---
   const commonSelectStyles = {
     trigger: "border-2 border-black shadow-pixel transition-all duration-150 data-[open=true]:translate-x-[2px] data-[open=true]:translate-y-[2px] data-[open=true]:shadow-none",
-    label: "text-zinc-500 uppercase tracking-widest font-sans font-bold text-[12px]",
-    value: "font-sans uppercase font-bold tracking-wider text-black dark:text-zinc-300",
-    popoverContent: "rounded-none font-sans font-bold border-2 border-black shadow-pixel mx-[2px] data-[selected=true]:bg-zinc-800 data-[selected=true]:text-[#e6b689]",
+    label: "text-zinc-500 uppercase tracking-widest font-bold text-sm",
+    value: "uppercase font-bold text-black dark:text-zinc-300",
+    popoverContent: "rounded-none font-bold border-2 border-black shadow-pixel mx-[2px] data-[selected=true]:bg-zinc-800 data-[selected=true]:text-[#e6b689]",
+    listbox: "p-0 gap-0 overflow-y-auto",
   };
 
   const getSelectStyles = (disabled: boolean) => ({
@@ -132,13 +135,13 @@ export default function GradePage() {
         "rounded-none", "text-zinc-500", "transition-colors", "outline-none",
         "data-[focus-visible=true]:ring-0", "data-[focus-visible=true]:ring-offset-0",
         "data-[hover=true]:!bg-[#e6b689]", "data-[hover=true]:!text-black",
-        "data-[selected=true]:!bg-[#e6b689]", "data-[selected=true]:!text-black", "data-[selected=true]:font-pixelify",
+        "data-[selected=true]:!bg-[#e6b689]", "data-[selected=true]:!text-black", "data-[selected=true]:font-jersey10",
         "data-[focus=true]:!bg-[#e6b689]", "data-[focus=true]:!text-black",
       ].join(" "),
     },
   };
 
-  const buttonStyles = "bg-[#e6b689] hover:bg-[#d4a373] text-black border-2 border-black font-pixelify min-w-10 h-10 shadow-pixel hover:shadow-pixel-hover active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all";
+  const buttonStyles = "bg-[#e6b689] hover:bg-[#d4a373] text-black border-2 border-black font-jersey10 min-w-10 h-10 shadow-pixel hover:shadow-pixel-hover active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all";
 
   return (
     // CHANGE 1: h-auto cho mobile, md:h-screen cho desktop
@@ -156,29 +159,40 @@ export default function GradePage() {
 
               <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-0">
                 <i className="hn hn-chart-line text-[#e6b689] text-[28px] md:text-[32px] drop-shadow-[2px_2px_0_rgba(0,0,0,1)]" />
-                <h1 className="text-3xl md:text-3xl font-pixelify text-[#e6b689] uppercase tracking-widest drop-shadow-[2px_2px_0_rgba(0,0,0,1)] whitespace-nowrap">
-                  Grade Tracker
+                <h1 className="text-3xl md:text-3xl font-jersey10 text-[#e6b689] uppercase tracking-widest drop-shadow-[2px_2px_0_rgba(0,0,0,1)] whitespace-nowrap">
+                  {t('grade.title')}
                 </h1>
               </div>
 
-              <div className="flex flex-row justify-between items-end w-full md:w-auto gap-4 md:gap-8">
-                <div className="flex flex-col gap-1 text-[11px] md:text-sm font-bold tracking-widest uppercase font-sans">
+              <div className="flex w-full items-end justify-between">
+                {/* Left section */}
+                <div className="flex flex-col gap-1 text-[11px] md:text-sm font-bold tracking-widest uppercase">
                   <div className="flex items-center gap-1">
-                    <span className="text-zinc-500"><i className="hn hn-user mr-1" />Player:</span>
-                    <span className="text-zinc-900 dark:text-zinc-200 truncate max-w-37.5 sm:max-w-none">{user?.fullName ? user?.fullName : user?.username}</span>
+                    <span className="text-zinc-500">{t('grade.player')}: </span>
+                    <span className="text-zinc-900 dark:text-zinc-200 truncate max-w-37.5 sm:max-w-none">
+                      {user?.fullName ? user?.fullName : user?.username}
+                    </span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className="text-zinc-500"><i className="hn hn-calendar mr-1" />Term:</span>
-                    <span className="text-black dark:text-[#e6b689] font-bold">{currentTermLabel}</span>
+                    <span className="text-zinc-500">{t('grade.term')}: </span>
+                    <span className="text-black dark:text-[#e6b689] font-bold">
+                      {currentTermLabel}
+                    </span>
                   </div>
                 </div>
-                <div className="flex flex-col items-end">
-                  <p className="text-[10px] md:text-[11px] font-sans font-bold text-zinc-500 tracking-widest uppercase mb-0">TERM GPA</p>
-                  <div className="flex items-baseline">
-                    <span className="text-3xl md:text-4xl font-pixelify text-[#e6b689] leading-none drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">
+
+                {/* Right section - Term GPA */}
+                <div className="flex flex-col text-right">
+                  <p className="text-sm font-bold text-zinc-500 uppercase">
+                    {t('grade.termGPA')}
+                  </p>
+                  <div className="flex items-baseline justify-end">
+                    <span className="text-4xl text-[#e6b689] leading-none drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">
                       {termGpa !== undefined && termGpa !== null ? termGpa.toFixed(1) : "-"}
                     </span>
-                    <span className="text-sm md:text-xl font-pixelify text-zinc-400 ml-1">/10.0</span>
+                    <span className="text-md text-zinc-400 ml-1">
+                      /10.0
+                    </span>
                   </div>
                 </div>
               </div>
@@ -199,61 +213,81 @@ export default function GradePage() {
                   className="flex md:hidden w-full justify-between items-center cursor-pointer select-none"
                   onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
                 >
-                  <div className="flex items-center gap-2 text-[#e6b689] font-pixelify uppercase tracking-widest text-lg drop-shadow-[1px_1px_0_rgba(0,0,0,1)]">
+                  <div className="flex items-center gap-2 text-[#e6b689] font-jersey10 uppercase tracking-widest text-lg drop-shadow-[1px_1px_0_rgba(0,0,0,1)]">
                     <i className="hn hn-filter" />
-                    <span>Filter Configuration</span>
+                    <span>{t('grade.filterConfiguration')}</span>
                   </div>
                   <i className={cn("hn text-xl transition-transform duration-300", isMobileFilterOpen ? "hn-caret-up" : "hn-caret-down")} />
                 </div>
 
-                {/* FILTER GRID - Show read-only context and term selector */}
-                <div className={cn(
-                  "grid grid-cols-1 md:grid-cols-4 gap-4 w-full md:-mt-2 transition-all duration-300",
-                  isMobileFilterOpen ? "block opacity-100" : "hidden md:grid opacity-100"
-                )}>
+                <div
+                  className={cn(
+                    "grid grid-cols-1 md:grid-cols-4 gap-4 w-full md:-mt-2 transition-all duration-300",
+                    isMobileFilterOpen ? "block opacity-100" : "hidden md:grid opacity-100"
+                  )}
+                >
                   {/* READ ONLY CONTEXT */}
                   <div className="md:col-span-3 flex flex-wrap gap-2 items-center text-xs font-bold uppercase tracking-widest text-zinc-500">
                     {currentBlockKey || currentProgramKey || currentClassKey ? (
                       <>
-                        <span>{majorGroups.find(g => g.key === currentBlockKey)?.label || "No Block"}</span>
+                        <span>
+                          {majorGroups.find(g => g.key === currentBlockKey)?.label || "No Block"}
+                        </span>
                         <i className="hn hn-caret-right" />
-                        <span className="text-black dark:text-white">{getProgramLabel(currentProgramKey)}</span>
+                        <span className="text-black dark:text-white">
+                          {getProgramLabel(currentProgramKey)}
+                        </span>
                         <i className="hn hn-caret-right" />
-                        <span className="text-[#e6b689] bg-black px-2 py-1 border-2 border-[#e6b689]">{currentClassKey || "No Class"}</span>
+                        <span className="text-[#e6b689] bg-black px-2 py-1 border-2 border-[#e6b689]">
+                          {currentClassKey || "No Class"}
+                        </span>
                       </>
                     ) : (
                       <div className="flex items-center gap-2 text-red-400">
                         <i className="hn hn-error-warning-line text-lg" />
-                        <span>Profile Academic Context not configured.</span>
-                        <Button as={Link} href="/profile" size="sm" radius="none" className="bg-[#e6b689] text-black font-black uppercase shadow-[2px_2px_0_#000] border-2 border-black ml-2 h-7">Set Profile</Button>
+                        <span>{t('grade.profileAcademicContextNotConfigured')}</span>
+                        <Button
+                          as={Link}
+                          href="/profile"
+                          size="sm"
+                          radius="none"
+                          className="bg-[#e6b689] text-black font-black uppercase shadow-[2px_2px_0_#000] border-2 border-black ml-2 h-7"
+                        >
+                          {t('grade.setProfile')}
+                        </Button>
                       </div>
                     )}
                   </div>
 
-                  <Select
-                    isDisabled={!currentClassKey}
-                    labelPlacement="outside"
-                    label="4. Current Term"
-                    classNames={getSelectStyles(!currentClassKey)}
-                    placeholder={!currentClassKey ? "Select class first" : "Select current term"}
-                    variant="bordered"
-                    size="md"
-                    radius="none"
-                    selectedKeys={selectedCurrentTermKeys}
-                    onSelectionChange={handleTermChange}
-                    listboxProps={commonListboxProps}
-                    isLoading={isTermsLoading}
-                  >
-                    {generatedTerms.map((term) => (
-                      <SelectItem key={term.key} textValue={term.label}>
-                        <div className="flex flex-col">
-                          <span className="font-sans font-bold uppercase tracking-wider">{term.label}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </Select>
+                  {/* TERM SELECT */}
+                  <div className="md:col-span-1 flex justify-end">
+                    <div className="w-full max-w-full min-w-[240px]">
+                      <Select
+                        isDisabled={!currentClassKey}
+                        labelPlacement="outside-left"
+                        label="4. Current Term"
+                        classNames={getSelectStyles(!currentClassKey)}
+                        placeholder={!currentClassKey ? "Select class first" : "Select current term"}
+                        variant="bordered"
+                        size="md"
+                        radius="none"
+                        selectedKeys={selectedCurrentTermKeys}
+                        onSelectionChange={handleTermChange}
+                        listboxProps={commonListboxProps}
+                        isLoading={isTermsLoading}
+                        className="w-full"
+                      >
+                        {generatedTerms.map((term) => (
+                          <SelectItem key={term.key} textValue={term.label}>
+                            <span className="font-bold uppercase tracking-wider whitespace-nowrap">
+                              {term.label}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </Select>
+                    </div>
+                  </div>
                 </div>
-
                 <div className="flex gap-2 w-full justify-end mt-2 md:mt-0">
                   <Input
                     classNames={{
@@ -265,7 +299,7 @@ export default function GradePage() {
                         "data-[focus=true]:translate-x-[2px]", "data-[focus=true]:translate-y-[2px]",
                         "data-[focus=true]:shadow-none",
                       ].join(" "),
-                      input: "font-sans font-bold tracking-wider uppercase text-black dark:text-white placeholder:text-zinc-400 placeholder:font-sans placeholder:font-bold placeholder:tracking-wider",
+                      input: "font-bold tracking-wider uppercase text-black dark:text-white placeholder:text-zinc-400 placeholder:placeholder:font-bold placeholder:tracking-wider",
                     }}
                     isClearable
                     placeholder="SEARCH..."
@@ -274,19 +308,15 @@ export default function GradePage() {
                     variant="bordered"
                     startContent={<i className="hn hn-search" />}
                   />
-                  <Button as={Link} href="/grade/chart" radius="none" className={cn(buttonStyles, "px-4 font-sans font-bold tracking-wider uppercase hidden sm:flex")}>
-                    Analytics
+                  <Button as={Link} href="/grade/chart" radius="none" className={cn(buttonStyles, "px-4 font-bold tracking-wider uppercase hidden sm:flex")}>
+                    {t('grade.analytics')}
                   </Button>
                   <Button as={Link} href="/grade/chart" isIconOnly radius="none" className={cn(buttonStyles, "flex sm:hidden")}>
                     <i className="hn hn-pie-chart text-lg" />
                   </Button>
-                  <Button onPress={onGuideOpen} radius="none" className={cn(buttonStyles, "px-4 font-bold tracking-widest uppercase hidden sm:flex !bg-emerald-500 !text-white !font-sans")}>
-                    Hướng dẫn
+                  <Button onPress={onGuideOpen} radius="none" className={cn(buttonStyles, "px-4 font-bold tracking-widest uppercase hidden sm:flex !bg-emerald-500 !text-white")}>
+                    {t('grade.guide')}
                   </Button>
-                  <Button onPress={onGuideOpen} isIconOnly radius="none" className={cn(buttonStyles, "flex sm:hidden !bg-emerald-500 !text-white font-sans font-bold text-xs uppercase")}>
-                    HD
-                  </Button>
-                  {/* Ẩn nút filter trên mobile vì đã có toggle ở trên, hoặc giữ lại tùy ý */}
                   <Button isIconOnly radius="none" className={cn(buttonStyles, "hidden md:flex")}>
                     <i className="hn hn-filter" />
                   </Button>
@@ -305,9 +335,9 @@ export default function GradePage() {
       <section className="flex-1 flex flex-col h-auto md:min-h-0">
         <Card className="flex-1 h-full bg-white dark:bg-zinc-800 border-2 border-black rounded-none overflow-hidden relative shadow-pixel dark:shadow-pixel-dark">
           <div className="absolute inset-0 z-0 opacity-5 pointer-events-none bg-[radial-gradient(#000000_1px,transparent_1px)] dark:bg-[radial-gradient(#ffffff_1px,transparent_1px)] bg-size-[10px_10px]" />
-          <div className="z-20 flex justify-between px-4 py-3 border-b-2 border-black text-xs font-sans font-bold text-zinc-500 uppercase tracking-wider bg-zinc-50 dark:bg-zinc-900">
-            <div>Subject Info</div>
-            <div className="pr-4">Status / Score</div>
+          <div className="z-20 flex justify-between px-4 py-3 border-b-2 border-black text-xs font-bold text-zinc-500 uppercase tracking-wider bg-zinc-50 dark:bg-zinc-900">
+            <div>{t('grade.subjectInfo')}</div>
+            <div className="pr-4">{t('grade.statusScore')}</div>
           </div>
 
           <div className="absolute inset-0 z-0 opacity-5 pointer-events-none bg-[radial-gradient(#e6b689_1px,transparent_1px)] bg-size-[20px_20px]" />
@@ -315,20 +345,20 @@ export default function GradePage() {
           <CardBody className="relative z-10 p-0 h-full overflow-visible md:overflow-hidden">
             {isSubjectsLoading ? (
               <div className="h-full flex items-center justify-center py-10 md:py-0">
-                <Spinner color="warning" label="Loading subjects..." />
+                <Spinner color="warning" label={t('grade.loadingSubjects')} />
               </div>
             ) : !currentTermKey ? (
               <div className="h-full flex items-center justify-center text-zinc-600 font-mono text-sm py-10 md:py-0">
                 <div className="text-center">
                   <i className="hn hn-cursor-click text-4xl mb-2 opacity-50" />
-                  <p>Select a Term to begin.</p>
+                  <p>{t('grade.selectATermToBegin')}</p>
                 </div>
               </div>
             ) : currentSubjects.length === 0 ? (
               <div className="h-full flex items-center justify-center text-zinc-600 font-mono text-sm py-10 md:py-0">
                 <div className="text-center">
                   <i className="hn hn-folder-open text-4xl mb-2 opacity-50" />
-                  <p>No data found.</p>
+                  <p>{t('grade.noDataFound')}</p>
                 </div>
               </div>
             ) : (
@@ -361,21 +391,21 @@ export default function GradePage() {
       </section>
 
       {/* USER GUIDE MODAL */}
-      <Modal isOpen={isGuideOpen} onOpenChange={onGuideOpenChange} classNames={{ base: "border-4 border-black rounded-none shadow-[8px_8px_0_rgba(0,0,0,1)] bg-white dark:bg-zinc-900 p-2 font-sans", closeButton: "hover:bg-red-500 border-2 border-transparent hover:border-black rounded-none" }}>
+      <Modal isOpen={isGuideOpen} onOpenChange={onGuideOpenChange} classNames={{ base: "border-4 border-black rounded-none shadow-[8px_8px_0_rgba(0,0,0,1)] bg-white dark:bg-zinc-900 p-2", closeButton: "hover:bg-red-500 border-2 border-transparent hover:border-black rounded-none" }}>
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader className="flex flex-col gap-1 border-b-4 border-black text-xl font-bold font-sans text-black dark:text-white uppercase">
+              <ModalHeader className="flex flex-col gap-1 border-b-4 border-black text-xl font-bold text-black dark:text-white uppercase">
                 Hướng Dẫn: Theo Dõi Điểm Số
               </ModalHeader>
-              <ModalBody className="py-4 flex flex-col gap-3 font-sans text-sm md:text-base leading-relaxed text-black dark:text-white">
+              <ModalBody className="py-4 flex flex-col gap-3 text-sm md:text-base leading-relaxed text-black dark:text-white">
                 <p><strong>Chọn Kỳ Học:</strong> Sử dụng bộ lọc "Current Term" để xem danh sách môn học và điểm số của từng học kỳ cụ thể.</p>
                 <p><strong>Cập Nhật Điểm:</strong> Nhấn vào biểu tượng bút chì (hoặc nút Save) để bật chế độ lưu/chỉnh sửa. Bạn có thể nhập điểm mới cho các bài kiểm tra chuyên cần (Attendance), thi giữa kỳ, cuối kỳ... cho từng môn.</p>
                 <p><strong>Tính Điểm Trung Bình (GPA):</strong> Hệ thống tự động tính toán điểm trung bình tích lũy của học kỳ hiện tại (Term GPA) dựa trên số tín chỉ và điểm số của môn học đó.</p>
                 <p><strong>Phân Tích (Analytics):</strong> Chuyển sang nút Analytics để xem các biểu đồ thống kê chi tiết toàn bộ quá trình học tập của bạn.</p>
               </ModalBody>
               <ModalFooter className="border-t-4 border-black">
-                <Button color="primary" onPress={onClose} className="border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] font-bold font-sans uppercase">
+                <Button color="primary" onPress={onClose} className="border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] font-bold uppercase">
                   Đã hiểu
                 </Button>
               </ModalFooter>

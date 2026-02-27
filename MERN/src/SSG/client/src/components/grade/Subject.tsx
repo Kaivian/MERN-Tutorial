@@ -278,7 +278,7 @@ export const SubjectRow = ({ subject, onSave }: { subject: UserSubjectGrade, onS
           )} />
 
           <div className="w-20 shrink-0 pl-2">
-            <span className="font-pixelify text-black dark:text-white text-lg tracking-widest">{subject.code}</span>
+            <span className="font-jersey10 text-black dark:text-white text-lg tracking-widest">{subject.code}</span>
           </div>
 
           <div className="flex flex-col">
@@ -353,7 +353,7 @@ export const SubjectRow = ({ subject, onSave }: { subject: UserSubjectGrade, onS
 
                   {/* Title Section */}
                   <div className="mb-4 md:mb-0">
-                    <h3 className="text-xl md:text-2xl font-pixelify text-[#e6b689] uppercase tracking-widest drop-shadow-[2px_2px_0_rgba(0,0,0,1)] leading-tight">
+                    <h3 className="text-xl md:text-2xl font-jersey10 text-[#e6b689] uppercase tracking-widest drop-shadow-[2px_2px_0_rgba(0,0,0,1)] leading-tight">
                       {subject.name_en}
                     </h3>
                     <div className="flex flex-wrap gap-2 md:gap-3 mt-2 items-center">

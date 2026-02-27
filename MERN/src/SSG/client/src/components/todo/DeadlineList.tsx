@@ -19,7 +19,7 @@ export default function DeadlineList({ tasks, subjects, onDelete, onEdit, onTogg
         <div className="w-full overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[800px]">
                 <thead>
-                    <tr className="bg-zinc-100 dark:bg-zinc-900 border-y-2 border-black font-pixelify text-sm">
+                    <tr className="bg-zinc-100 dark:bg-zinc-900 border-y-2 border-black font-jersey10 text-sm">
                         <th className="p-2 uppercase tracking-wider">Task Name</th>
                         <th className="p-2 uppercase tracking-wider">Subject</th>
                         <th className="p-2 uppercase tracking-wider">Category</th>
@@ -50,14 +50,14 @@ export default function DeadlineList({ tasks, subjects, onDelete, onEdit, onTogg
                                 <td className="p-2">
                                     {isPersonal ? (
                                         <span
-                                            className="px-1.5 py-0.5 text-[10px] font-pixelify uppercase tracking-wider border-2 border-black inline-block leading-none"
+                                            className="px-1.5 py-0.5 text-[10px] font-jersey10 uppercase tracking-wider border-2 border-black inline-block leading-none"
                                             style={{ backgroundColor: task.color || '#000000', color: 'white', textShadow: '1px 1px 0 #000' }}
                                         >
                                             PERS
                                         </span>
                                     ) : subject ? (
                                         <span
-                                            className="px-1.5 py-0.5 text-[10px] font-pixelify uppercase tracking-wider border-2 border-black inline-block leading-none"
+                                            className="px-1.5 py-0.5 text-[10px] font-jersey10 uppercase tracking-wider border-2 border-black inline-block leading-none"
                                             style={{ backgroundColor: subject.color, color: 'white', textShadow: '1px 1px 0 #000' }}
                                         >
                                             {subject.name}
@@ -65,17 +65,17 @@ export default function DeadlineList({ tasks, subjects, onDelete, onEdit, onTogg
                                     ) : null}
                                 </td>
                                 <td className="p-2 font-bold text-xs uppercase tracking-wider text-zinc-500">{isPersonal ? '—' : task.category}</td>
-                                <td className="p-2 font-pixelify text-xs text-zinc-500">{isPersonal ? '—' : `${task.weight}%`}</td>
+                                <td className="p-2 font-jersey10 text-xs text-zinc-500">{isPersonal ? '—' : `${task.weight}%`}</td>
                                 <td className="p-2 text-xs">
                                     {task.endDate ? (
                                         <div className="font-bold uppercase tracking-wider">{new Date(task.endDate).toLocaleDateString([], { month: 'short', day: 'numeric' })}</div>
                                     ) : (
-                                        <div className="font-pixelify text-zinc-400">Ongoing</div>
+                                        <div className="font-jersey10 text-zinc-400">Ongoing</div>
                                     )}
-                                    {isPersonal ? null : <div className="text-[10px] text-zinc-500 font-pixelify uppercase pt-0.5">Sl.{task.slot}</div>}
+                                    {isPersonal ? null : <div className="text-[10px] text-zinc-500 font-jersey10 uppercase pt-0.5">Sl.{task.slot}</div>}
                                 </td>
                                 <td className="p-2 text-center">
-                                    <div className="inline-flex shrink-0 items-center justify-center font-pixelify border-2 border-black text-xs px-2 py-0.5" style={{
+                                    <div className="inline-flex shrink-0 items-center justify-center font-jersey10 border-2 border-black text-xs px-2 py-0.5" style={{
                                         backgroundColor: (task.urgencyScore || 0) > 20 ? '#ef4444' : (task.urgencyScore || 0) > 10 ? '#f59e0b' : '#10b981',
                                         color: 'white',
                                         textShadow: '1px 1px 0 #000'

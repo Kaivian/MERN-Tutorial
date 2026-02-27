@@ -159,8 +159,8 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
                 name={user?.fullName || "User"}
                 classNames={{
                   wrapper: "hidden md:flex text-start",
-                  name: "font-sans font-bold text-black dark:text-white text-sm uppercase",
-                  description: "font-sans text-zinc-500 text-[11px]",
+                  name: "font-bold text-black dark:text-white text-sm uppercase",
+                  description: "text-zinc-500 text-[11px]",
                 }}
               />
               <i className="hn hn-caret-down text-black dark:text-white group-hover:translate-y-0.5 transition-transform duration-200"></i>
@@ -172,7 +172,6 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
             itemClasses={{
               base: [
                 "rounded-none",
-                "font-sans",
                 "font-bold",
                 "text-zinc-700 dark:text-zinc-300",
                 "data-[hover=true]:bg-[#e6b689]",
@@ -182,8 +181,8 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
                 "data-[hover=true]:border-black", // Fake border effect inside
                 "transition-none" // Retro feels snappy, not smooth
               ].join(" "),
-              shortcut: "font-sans text-[11px] font-bold border-2 border-black px-1 rounded-none bg-white text-black shadow-[1px_1px_0_rgba(0,0,0,1)]",
-              description: "font-sans",
+              shortcut: "text-[11px] font-bold border-2 border-black px-1 rounded-none bg-white text-black shadow-[1px_1px_0_rgba(0,0,0,1)]",
+              description: "",
               title: "uppercase tracking-wide text-sm"
             }}
           >

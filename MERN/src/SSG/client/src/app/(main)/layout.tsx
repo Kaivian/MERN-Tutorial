@@ -111,7 +111,7 @@ export default function AppTemplateLayout({
       <div className="flex flex-col flex-1 min-w-0 m-2 xl:m-3 2xl:m-4 gap-2 xl:gap-3 2xl:gap-4 animate-fade-in-up">
         <PageHeader toggleSidebar={handleToggle} title={pageTitle} />
 
-        <main className="flex w-full flex-col h-full overflow-hidden relative font-sans">
+        <main className="flex w-full flex-col h-full overflow-hidden relative">
           {hasAccess ? (
             children
           ) : (

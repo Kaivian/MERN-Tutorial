@@ -9,6 +9,7 @@ import {
 } from "@heroui/react";
 import axiosInstance from "@/utils/axios-client.utils";
 import Link from "next/link";
+import { useTranslation } from "@/i18n";
 
 interface RecurringExpense {
   _id: string;
@@ -24,6 +25,7 @@ export default function RecurringExpensesPage() {
   const [recurrings, setRecurrings] = useState<RecurringExpense[]>([]);
   const [budgets, setBudgets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   // Modal State
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -154,23 +156,23 @@ export default function RecurringExpensesPage() {
   const pixelCardStyle = "border-4 border-black shadow-[4px_4px_0_rgba(0,0,0,1)] rounded-none bg-white dark:bg-zinc-800 text-black dark:text-white";
 
   return (
-    <div className="flex flex-col gap-4 p-4 h-full overflow-y-auto font-sans">
+    <div className="flex flex-col gap-4 h-full overflow-y-auto">
       <div className="flex items-center justify-between mb-2">
-        <h1 className="text-3xl font-sans font-bold tracking-widest uppercase">
-          Chi Tiêu Theo Hạn
+        <h1 className="text-3xl font-bold tracking-widest uppercase">
+          {t('expenseRecurring.title')}
         </h1>
         <div className="flex gap-2 flex-wrap justify-end">
-          <Button onPress={onGuideOpen} variant="solid" className="bg-emerald-500 text-white border-2 border-black rounded-none font-bold shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all font-sans">
-            Hướng dẫn
+          <Button onPress={onGuideOpen} variant="solid" className="bg-emerald-500 text-white border-2 border-black rounded-none font-bold shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
+            {t('expenseRecurring.guide')}
           </Button>
           <Button as={Link} href="/expense" variant="bordered" className="border-2 border-black rounded-none font-bold uppercase">
-            Back to Dashboard
+            {t('expenseRecurring.backToDashboard')}
           </Button>
           <Button onPress={handleProcessDue} isLoading={processing} color="secondary" variant="solid" className="border-2 border-black rounded-none font-bold uppercase shadow-[2px_2px_0_rgba(0,0,0,1)]">
-            Process Due
+            {t('expenseRecurring.processDue')}
           </Button>
           <Button onPress={openAddModal} color="primary" variant="solid" className="border-2 border-black rounded-none font-bold uppercase shadow-[2px_2px_0_rgba(0,0,0,1)]">
-            + Add New
+            + {t('expenseRecurring.add')}
           </Button>
         </div>
       </div>
@@ -184,7 +186,7 @@ export default function RecurringExpensesPage() {
           {recurrings.length === 0 ? (
             <Card className={pixelCardStyle}>
               <CardBody className="p-8 text-center text-gray-500 font-bold uppercase">
-                No recurring expenses found. Add one to automate your bills.
+                {t('expenseRecurring.noRecurringExpensesFound')}
               </CardBody>
             </Card>
           ) : (
@@ -194,17 +196,17 @@ export default function RecurringExpensesPage() {
                   <div className="flex flex-col w-full md:w-1/3">
                     <span className="font-bold uppercase text-lg">{r.category}</span>
                     <span className="text-sm text-gray-500">
-                      Frequency: <span className="font-bold text-black dark:text-white">{r.frequency}</span>
+                      {t('expenseRecurring.frequency')}: <span className="font-bold text-black dark:text-white">{r.frequency}</span>
                     </span>
                     <span className="text-sm font-bold text-blue-600 dark:text-blue-400">
-                      Next Due: {new Date(r.nextExecutionDate).toLocaleDateString()}
+                      {t('expenseRecurring.nextDue')}: {new Date(r.nextExecutionDate).toLocaleDateString()}
                     </span>
                     {r.description && <span className="text-sm italic">{r.description}</span>}
                   </div>
 
                   <div className="flex items-center justify-end w-full md:w-1/3 gap-4">
-                    <span className="text-2xl font-sans font-bold text-red-600">
-                      {r.amount.toLocaleString('vi-VN')} ₫
+                    <span className="text-2xl font-bold text-red-600">
+                      {r.amount.toLocaleString('vi-VN')} vnd
                     </span>
                     <div className="flex gap-2 items-center">
                       <span className={`px-2 py-1 text-xs border-2 border-black font-bold uppercase ${r.isActive ? 'bg-green-400 text-black' : 'bg-gray-300 text-gray-700'}`}>
@@ -226,21 +228,21 @@ export default function RecurringExpensesPage() {
       )}
 
       {/* USER GUIDE MODAL */}
-      <Modal isOpen={isGuideOpen} onOpenChange={onGuideOpenChange} classNames={{ base: "border-4 border-black rounded-none shadow-[8px_8px_0_rgba(0,0,0,1)] bg-white dark:bg-zinc-900 p-2 font-sans", closeButton: "hover:bg-red-500 border-2 border-transparent hover:border-black rounded-none" }}>
+      <Modal isOpen={isGuideOpen} onOpenChange={onGuideOpenChange} classNames={{ base: "border-4 border-black rounded-none shadow-[8px_8px_0_rgba(0,0,0,1)] bg-white dark:bg-zinc-900 p-2", closeButton: "hover:bg-red-500 border-2 border-transparent hover:border-black rounded-none" }}>
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader className="flex flex-col gap-1 border-b-4 border-black text-xl font-bold font-sans text-black dark:text-white uppercase">
+              <ModalHeader className="flex flex-col gap-1 border-b-4 border-black text-xl font-bold text-black dark:text-white uppercase">
                 Hướng Dẫn: Chi Phí Định Kỳ
               </ModalHeader>
-              <ModalBody className="py-4 flex flex-col gap-3 font-sans text-sm md:text-base leading-relaxed text-black dark:text-white">
+              <ModalBody className="py-4 flex flex-col gap-3 text-sm md:text-base leading-relaxed text-black dark:text-white">
                 <p><strong>Mục Đích:</strong> Tính năng này giúp bạn tự động hóa việc ghi chép các khoản chi phí hoặc thu nhập cố định phải trả/nhận lặp đi lặp lại (Ví dụ: Tiền thuê nhà, Tiền Internet, Thuê bao giải trí Netflix Spotify...).</p>
                 <p><strong>Thêm Mới (+ Add New):</strong> Nhập số tiền, tên danh mục, ngày thanh toán tiếp theo và chu kỳ lặp (Như Hàng tuần, Hàng tháng).</p>
                 <p><strong>Nút "Process Due":</strong> Nhấn vào nút này để hệ thống tự động kiểm tra xem có hóa đơn định kỳ nào đã đến hạn thu hay chưa. Nếu đến hạn, nó sẽ tự động thêm vào danh sách biến động giao dịch chính thức của bạn.</p>
                 <p><strong>Bật/Tắt (Active/Paused):</strong> Bạn có thể tạm thời thu phí ngưng kích hoạt (Paused) một hóa đơn định kỳ nếu tháng này bạn không sử dụng dịch vụ đó mà không cần thiết phải xóa hẳn nó đi khỏi hệ thống.</p>
               </ModalBody>
               <ModalFooter className="border-t-4 border-black">
-                <Button color="primary" onPress={onClose} className="border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] font-bold font-sans uppercase">
+                <Button color="primary" onPress={onClose} className="border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] font-bold uppercase">
                   Đã hiểu
                 </Button>
               </ModalFooter>
@@ -254,14 +256,14 @@ export default function RecurringExpensesPage() {
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader className="flex flex-col gap-1 border-b-4 border-black uppercase font-sans font-bold text-xl">
+              <ModalHeader className="flex flex-col gap-1 border-b-4 border-black uppercase font-bold text-xl">
                 {isEditing ? "Edit Recurring Expense" : "New Recurring Expense"}
               </ModalHeader>
               <ModalBody className="py-4 flex flex-col gap-4">
                 <div className="flex gap-4">
                   <Input
                     type="number"
-                    label="Amount (₫)"
+                    label="Amount (vnd)"
                     placeholder="0"
                     value={formData.amount}
                     onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
@@ -274,9 +276,9 @@ export default function RecurringExpensesPage() {
                     onChange={(e) => setFormData({ ...formData, frequency: e.target.value })}
                     classNames={{ base: "w-1/2", trigger: "border-2 border-black rounded-none" }}
                   >
-                    <SelectItem key="WEEKLY">WEEKLY</SelectItem>
-                    <SelectItem key="MONTHLY">MONTHLY</SelectItem>
-                    <SelectItem key="CUSTOM">CUSTOM</SelectItem>
+                    <SelectItem key="WEEKLY">{t('expenseRecurring.weekly')}</SelectItem>
+                    <SelectItem key="MONTHLY">{t('expenseRecurring.monthly')}</SelectItem>
+                    <SelectItem key="CUSTOM">{t('expenseRecurring.custom')}</SelectItem>
                   </Select>
                 </div>
 
@@ -285,7 +287,7 @@ export default function RecurringExpensesPage() {
                   placeholder="Select a budget category"
                   selectedKeys={formData.category ? [formData.category] : []}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  classNames={{ trigger: "border-2 border-black rounded-none" }}
+                  classNames={{ trigger: "border-2 border-black rounded-none", listbox: "font-sans" }}
                   isRequired
                 >
                   {[

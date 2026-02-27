@@ -6,12 +6,12 @@ import { Providers } from "./providers";
 import { fontSans, fontMono } from "@/config/font.config";
 import { getCurrentUser } from "@/services/auth-server.service";
 import { AuthProvider } from "@/providers/auth.provider";
-import { Pixelify_Sans } from "next/font/google";
+import { Jersey_10 } from "next/font/google";
 
-const fontPixel = Pixelify_Sans({
+const fontJersey = Jersey_10({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-pixelify",
+  weight: "400",
+  variable: "--font-jersey10",
 });
 
 export const metadata: Metadata = {
@@ -28,12 +28,12 @@ export default async function RootLayout({
 
   return (
     <html suppressHydrationWarning lang="en">
-      <body 
+      <body
         className={clsx(
-          "min-h-screen font-pixelify antialiased", 
-          fontSans.variable, 
+          "min-h-screen font-jersey10 antialiased",
+          fontSans.variable,
           fontMono.variable,
-          fontPixel.variable 
+          fontJersey.variable
         )}
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>

@@ -13,9 +13,9 @@ const config = {
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "monospace"],
-        display: ['var(--font-pixelify)', 'cursive'],
+        display: ['var(--font-jersey10)', 'cursive'],
         roboto: ['var(--font-roboto)', 'sans-serif'],
-        pixelify: ['var(--font-pixelify)', 'cursive'],
+        jersey10: ['var(--font-jersey10)', 'cursive'],
       },
       colors: {
         "retro-orange": "#ee9d2b", // FPT Orange
@@ -41,13 +41,13 @@ const config = {
           "50%": { transform: "translateY(-15px)" },
         },
         fadeInUp: {
-          "0%": { 
-            opacity: "0", 
-            transform: "translateY(20px)" 
+          "0%": {
+            opacity: "0",
+            transform: "translateY(20px)"
           },
-          "100%": { 
-            opacity: "1", 
-            transform: "translateY(0)" 
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0)"
           },
         },
       },

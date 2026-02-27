@@ -1,10 +1,11 @@
-// client/src/hooks/useSidebarMenu.ts
 import { useMemo, useCallback } from "react";
 import { useAuth } from "@/providers/auth.provider";
-import { sidebarSections, sidebarSections2, SidebarItem } from "@/components/sidebar/SidebarData";
+import { getSidebarSections, getSidebarSections2, SidebarItem } from "@/components/sidebar/SidebarData";
+import { useTranslation } from "@/i18n";
 
 export const useSidebarMenu = () => {
   const { checkAllPermissions, isAuthenticated } = useAuth();
+  const { t } = useTranslation();
 
   // FIX: Wrap processItems in useCallback to stabilize the function reference
   const processItems = useCallback((items: SidebarItem[]): SidebarItem[] => {
@@ -27,18 +28,18 @@ export const useSidebarMenu = () => {
   // Now the dependencies are correct: [processItems]
   // Since processItems depends on [isAuthenticated, checkAllPermissions], this chain is reactive.
   const menuGroup1 = useMemo(() => {
-    return sidebarSections.map(section => ({
+    return getSidebarSections(t).map(section => ({
       ...section,
       items: processItems(section.items)
     }));
-  }, [processItems]);
+  }, [processItems, t]);
 
   const menuGroup2 = useMemo(() => {
-    return sidebarSections2.map(section => ({
+    return getSidebarSections2(t).map(section => ({
       ...section,
       items: processItems(section.items)
     }));
-  }, [processItems]);
+  }, [processItems, t]);
 
   return {
     menuGroup1,

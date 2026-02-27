@@ -6,6 +6,7 @@ import { Subject, Task } from "@/types/deadline.types";
 import CalendarViews from "@/components/todo/calendar/CalendarViews";
 import { useTasks } from "@/hooks/useTasks";
 import { Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from "@heroui/react";
+import { useTranslation } from "@/i18n";
 
 export default function CalendarPage() {
     const [currentView, setCurrentView] = useState<"Day" | "Week" | "Month" | "Year">("Week");
@@ -30,20 +31,21 @@ export default function CalendarPage() {
     }, [userCurriculum]);
 
     const { tasks: backendTasks, isLoading: isTasksLoading } = useTasks();
+    const { t } = useTranslation();
 
     return (
         <div className="flex flex-col w-full h-full gap-4 bg-background dark:bg-zinc-900 transition-colors duration-300 relative overflow-y-auto overflow-x-auto [&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:bg-zinc-300 dark:[&::-webkit-scrollbar-thumb]:bg-zinc-700">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white dark:bg-zinc-800 p-4 shadow-pixel dark:shadow-pixel-dark border-2 border-black shrink-0 gap-4">
                 <div>
-                    <h1 className="text-2xl font-pixelify text-[#e6b689] uppercase tracking-wider drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">
-                        Calendar Hub
+                    <h1 className="text-2xl font-jersey10 text-[#e6b689] uppercase tracking-wider drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">
+                        {t('calendar.title')}
                     </h1>
-                    <p className="text-zinc-500 font-bold text-xs mt-1 uppercase tracking-wider">Visualize deadlines and workload.</p>
+                    <p className="text-zinc-500 font-bold text-xs mt-1 uppercase tracking-wider">{t('calendar.subtitle')}</p>
                 </div>
 
                 <div className="flex flex-col md:flex-row items-end md:items-center gap-2">
-                    <Button onPress={onGuideOpen} size="sm" radius="none" className="font-bold tracking-widest uppercase !bg-emerald-500 !text-white !font-sans shadow-[2px_2px_0_1px_rgba(0,0,0,1)] border-2 border-black hover:translate-y-[2px] mb-2 md:mb-0 mr-0 md:mr-4">
-                        Hướng dẫn
+                    <Button onPress={onGuideOpen} size="sm" radius="none" className="font-bold tracking-widest uppercase !bg-emerald-500 !text-white !shadow-[2px_2px_0_1px_rgba(0,0,0,1)] border-2 border-black hover:translate-y-[2px] mb-2 md:mb-0 mr-0 md:mr-4">
+                        {t('calendar.guide')}
                     </Button>
                     {/* View Switcher & Date Navigation Row */}
                     <div className="flex flex-wrap items-stretch gap-2">
@@ -53,7 +55,7 @@ export default function CalendarPage() {
                                 <button
                                     key={view}
                                     onClick={() => setCurrentView(view)}
-                                    className={`px-3 py-1.5 font-sans font-bold uppercase tracking-widest text-sm transition-colors ${currentView === view
+                                    className={`px-3 py-1.5 font-bold uppercase tracking-widest text-sm transition-colors ${currentView === view
                                         ? "bg-[#e6b689] text-black border-2 border-black shadow-pixel-hover"
                                         : "text-zinc-500 hover:text-black dark:hover:text-white border-2 border-transparent"
                                         }`}
@@ -74,22 +76,22 @@ export default function CalendarPage() {
                                         const prevMonth = newDate.getMonth() - 1;
                                         newDate.setMonth(prevMonth);
                                         if (newDate.getMonth() !== ((prevMonth % 12 + 12) % 12)) {
-                                            newDate.setDate(0); // If day overflow, push block to end of previous month
+                                            newDate.setDate(0);
                                         }
                                     }
                                     if (currentView === "Year") newDate.setFullYear(newDate.getFullYear() - 1);
                                     setCurrentAnchorDate(newDate);
                                 }}
-                                className="px-2 py-1.5 font-pixelify text-sm transition-colors hover:bg-zinc-200 dark:hover:bg-zinc-800 text-black dark:text-white"
+                                className="px-2 py-1.5 font-jersey10 text-sm transition-colors hover:bg-zinc-200 dark:hover:bg-zinc-800 text-black dark:text-white"
                             >
                                 <i className="hn hn-arrow-left"></i>
                             </button>
 
                             <button
                                 onClick={() => setCurrentAnchorDate(new Date())}
-                                className="px-3 py-1.5 font-sans uppercase tracking-widest transition-colors hover:bg-zinc-200 dark:hover:bg-zinc-800 text-black dark:text-white font-bold text-sm"
+                                className="px-3 py-1.5 uppercase tracking-widest transition-colors hover:bg-zinc-200 dark:hover:bg-zinc-800 text-black dark:text-white font-bold text-sm"
                             >
-                                Today
+                                {t('calendar.today')}
                             </button>
 
                             <button
@@ -101,13 +103,13 @@ export default function CalendarPage() {
                                         const nextMonth = newDate.getMonth() + 1;
                                         newDate.setMonth(nextMonth);
                                         if (newDate.getMonth() !== (nextMonth % 12)) {
-                                            newDate.setDate(0); // If day overflow, push block to end of resulting month
+                                            newDate.setDate(0);
                                         }
                                     }
                                     if (currentView === "Year") newDate.setFullYear(newDate.getFullYear() + 1);
                                     setCurrentAnchorDate(newDate);
                                 }}
-                                className="px-2 py-1.5 font-pixelify text-sm transition-colors hover:bg-zinc-200 dark:hover:bg-zinc-800 text-black dark:text-white"
+                                className="px-2 py-1.5 font-jersey10 text-sm transition-colors hover:bg-zinc-200 dark:hover:bg-zinc-800 text-black dark:text-white"
                             >
                                 <i className="hn hn-arrow-right"></i>
                             </button>
@@ -115,11 +117,11 @@ export default function CalendarPage() {
                             <div className="border-l-2 border-zinc-300 dark:border-zinc-700 mx-1 h-6"></div>
 
                             <div className="relative flex items-center px-2 cursor-pointer h-full">
-                                <span className="font-pixelify text-sm uppercase text-black dark:text-white mr-2 whitespace-nowrap">
+                                <span className="font-jersey10 text-sm uppercase text-black dark:text-white mr-2 whitespace-nowrap">
                                     {(() => {
                                         const isToday = currentAnchorDate.toDateString() === new Date().toDateString();
                                         if (currentView === "Day") {
-                                            return isToday ? "Today" : currentAnchorDate.toLocaleDateString('en-US', { weekday: 'long' });
+                                            return isToday ? t('calendar.today') : currentAnchorDate.toLocaleDateString('en-US', { weekday: 'long' });
                                         }
                                         if (currentView === "Week") {
                                             const d = new Date(Date.UTC(currentAnchorDate.getFullYear(), currentAnchorDate.getMonth(), currentAnchorDate.getDate()));
@@ -127,13 +129,13 @@ export default function CalendarPage() {
                                             d.setUTCDate(d.getUTCDate() + 4 - dayNum);
                                             const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
                                             const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
-                                            return `Week ${weekNo}`;
+                                            return `${t('calendar.week')} ${weekNo}`;
                                         }
                                         if (currentView === "Month") {
-                                            return `Month ${currentAnchorDate.getMonth() + 1}`;
+                                            return `${t('calendar.month')} ${currentAnchorDate.getMonth() + 1}`;
                                         }
                                         if (currentView === "Year") {
-                                            return `Year ${currentAnchorDate.getFullYear()}`;
+                                            return `${t('calendar.year')} ${currentAnchorDate.getFullYear()}`;
                                         }
                                         return "";
                                     })()}
@@ -159,30 +161,30 @@ export default function CalendarPage() {
                 </div>
             </div>
 
-            <div className="flex-1 bg-white dark:bg-zinc-800 p-4 shadow-pixel dark:shadow-pixel-dark border-2 border-black overflow-hidden flex flex-col min-h-0 font-sans">
+            <div className="flex-1 bg-white dark:bg-zinc-800 p-4 shadow-pixel dark:shadow-pixel-dark border-2 border-black overflow-hidden flex flex-col min-h-0">
                 {isTasksLoading ? (
-                    <div className="flex w-full h-full items-center justify-center font-bold text-zinc-500">Loading your tasks...</div>
+                    <div className="flex w-full h-full items-center justify-center font-bold text-zinc-500">{t('calendar.loading')}</div>
                 ) : (
                     <CalendarViews currentView={currentView} subjects={currentSubjects as any} tasks={backendTasks} anchorDate={currentAnchorDate} />
                 )}
             </div>
 
             {/* USER GUIDE MODAL */}
-            <Modal isOpen={isGuideOpen} onOpenChange={onGuideOpenChange} classNames={{ base: "border-4 border-black rounded-none shadow-[8px_8px_0_rgba(0,0,0,1)] bg-white dark:bg-zinc-900 p-2 font-sans", closeButton: "hover:bg-red-500 border-2 border-transparent hover:border-black rounded-none" }}>
+            <Modal isOpen={isGuideOpen} onOpenChange={onGuideOpenChange} classNames={{ base: "border-4 border-black rounded-none shadow-[8px_8px_0_rgba(0,0,0,1)] bg-white dark:bg-zinc-900 p-2", closeButton: "hover:bg-red-500 border-2 border-transparent hover:border-black rounded-none" }}>
                 <ModalContent>
                     {(onClose) => (
                         <>
-                            <ModalHeader className="flex flex-col gap-1 border-b-4 border-black text-xl font-bold font-sans text-black dark:text-white uppercase shrink-0">
+                            <ModalHeader className="flex flex-col gap-1 border-b-4 border-black text-xl font-bold text-black dark:text-white uppercase shrink-0">
                                 Hướng Dẫn: Lịch Sự Kiện
                             </ModalHeader>
-                            <ModalBody className="py-4 flex flex-col gap-3 font-sans text-sm md:text-base leading-relaxed text-black dark:text-white">
+                            <ModalBody className="py-4 flex flex-col gap-3 text-sm md:text-base leading-relaxed text-black dark:text-white">
                                 <p><strong>Chế độ xem:</strong> Sử dụng các nút (Day/Week/Month/Year) để linh hoạt chuyển đổi lưới hiển thị thời gian, tùy thuộc vào tầm nhìn phân bổ của bạn đối với công việc.</p>
                                 <p><strong>Điều hướng vị trí:</strong> Sử dụng mũi tên Trái/Phải để chuyển tới hoặc lùi lại khoảng thời gian tương ứng. Nút "Today" lập tức đưa bạn về ngày hiện tại.</p>
                                 <p><strong>Chọn ngày nhanh:</strong> Nhấn vào biểu tượng lịch nhỏ cạnh mục ngày tháng để truy cập một ngày bất kỳ mà không cần click mũi tên nhiều lần.</p>
                                 <p><strong>Hiển thị Sự Kiện:</strong> Các bài tập, hạn chót (Deadline) và thẻ nhiệm vụ (To-Do) ở Manager sẽ tự động đồng bộ hóa màu sắc trên lịch để bạn có cái nhìn tổng quan nhất.</p>
                             </ModalBody>
                             <ModalFooter className="border-t-4 border-black shrink-0">
-                                <Button color="primary" onPress={onClose} className="border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] font-bold font-sans uppercase">
+                                <Button color="primary" onPress={onClose} className="border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] font-bold uppercase">
                                     Đã hiểu
                                 </Button>
                             </ModalFooter>

@@ -18,3 +18,80 @@
 .animate-fade-in {
   animation: fadeIn 0.3s ease-in-out;
 }
+
+/* Retro 8-bit Scrollbar Configuration */
+::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+
+::-webkit-scrollbar-track {
+  background: #fff5e6;
+  border-left: 2px solid #000000;
+  border-top: 2px solid #000000;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #18181b;
+  border-left: 2px solid #27272a;
+  border-top: 2px solid #27272a;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #ee9d2b;
+  border: 2px solid #000000;
+  box-shadow: inset 2px 2px 0px 0px rgba(255, 255, 255, 0.4), inset -2px -2px 0px 0px rgba(0, 0, 0, 0.2);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  border: 2px solid #000000;
+  box-shadow: inset 2px 2px 0px 0px rgba(255, 255, 255, 0.2), inset -2px -2px 0px 0px rgba(0, 0, 0, 0.4);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #d4a373;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: #d4a373;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* --- Typography Adjustments --- */
+.font-jersey10,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+button {
+  letter-spacing: 0.05em;
+  word-spacing: 0.1em;
+}
+
+/* --- Language Switching --- */
+/* In Vietnamese mode, standard text is sans-serif for better readability */
+html[lang="vi"] body {
+  font-family: var(--font-sans), sans-serif !important;
+  letter-spacing: normal;
+  word-spacing: normal;
+}
+
+/* Titles and specific elements retain the Jersey 10 font */
+html[lang="vi"] h1,
+html[lang="vi"] h2,
+html[lang="vi"] h3,
+html[lang="vi"] h4,
+html[lang="vi"] h5,
+html[lang="vi"] h6,
+html[lang="vi"] .font-black,
+html[lang="vi"] .font-jersey10,
+html[lang="vi"] button {
+  font-family: var(--font-jersey10), monospace !important;
+  letter-spacing: 0.05em !important;
+  word-spacing: 0.1em !important;
+}

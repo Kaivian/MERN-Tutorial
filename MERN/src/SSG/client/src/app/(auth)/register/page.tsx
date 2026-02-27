@@ -10,20 +10,22 @@ import { VALIDATION_MESSAGES } from "@/config/validation-messages.config";
 import { useDebounce } from "@/hooks/generals/useDebounce";
 import { PASSWORD_REGEX, EMAIL_REGEX } from "@/utils/regex.utils";
 import { useRegister } from "@/hooks/auth/useRegister"; // [NEW IMPORT]
+import { useTranslation } from "@/i18n";
 
 // Regex đơn giản cho username: Chỉ chữ và số, không khoảng trắng, không ký tự đặc biệt
 const USERNAME_REGEX = /^[a-zA-Z0-9]+$/;
 
 export default function RegisterPage() {
+  const { t } = useTranslation();
   // --- HOOK INTEGRATION ---
   const { handleRegister, isLoading } = useRegister();
 
   const [isVisible, setIsVisible] = useState(false);
   const [isConfirmVisible, setIsConfirmVisible] = useState(false);
-  
+
   // State for form fields
   // Đổi 'name' thành 'username' để rõ nghĩa hơn với backend
-  const [username, setUsername] = useState(""); 
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -38,18 +40,18 @@ export default function RegisterPage() {
   const usernameErrors = useMemo(() => {
     const errors = [];
     if (debouncedUsername.length > 0) {
-      if (debouncedUsername.length < 3) errors.push("Username must be at least 3 characters");
-      if (debouncedUsername.length > 30) errors.push("Username must be less than 30 characters");
-      if (!USERNAME_REGEX.test(debouncedUsername)) errors.push("Username allows only letters and numbers");
+      if (debouncedUsername.length < 3) errors.push(t('auth.err_username_min'));
+      if (debouncedUsername.length > 30) errors.push(t('auth.err_username_max'));
+      if (!USERNAME_REGEX.test(debouncedUsername)) errors.push(t('auth.err_username_format'));
     }
     return errors;
-  }, [debouncedUsername]);
+  }, [debouncedUsername, t]);
 
   // 2. Validate Email
   const emailErrors = useMemo(() => {
     const errors = [];
     if (debouncedEmail.length > 0) {
-        if (!EMAIL_REGEX.test(debouncedEmail)) errors.push(VALIDATION_MESSAGES.EMAIL_FORMAT || "Invalid email format");
+      if (!EMAIL_REGEX.test(debouncedEmail)) errors.push(VALIDATION_MESSAGES.EMAIL_FORMAT || "Invalid email format");
     }
     return errors;
   }, [debouncedEmail]);
@@ -75,14 +77,14 @@ export default function RegisterPage() {
   }, [debouncedConfirmPassword, password]);
 
   // Check valid to disable button
-  const isSubmitDisabled = 
-    !username || 
-    !email || 
-    !password || 
-    !confirmPassword || 
+  const isSubmitDisabled =
+    !username ||
+    !email ||
+    !password ||
+    !confirmPassword ||
     usernameErrors.length > 0 ||
     emailErrors.length > 0 ||
-    passwordErrors.length > 0 || 
+    passwordErrors.length > 0 ||
     confirmPasswordErrors.length > 0;
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -91,13 +93,13 @@ export default function RegisterPage() {
 
     // Call the Hook
     await handleRegister({
-        username,
-        email,
-        password,
-        confirmPassword,
-        // Backend yêu cầu fullName, ta map tạm username vào đây
-        // vì UI đã bỏ trường nhập Full Name
-        fullName: username 
+      username,
+      email,
+      password,
+      confirmPassword,
+      // Backend yêu cầu fullName, ta map tạm username vào đây
+      // vì UI đã bỏ trường nhập Full Name
+      fullName: username
     });
   };
 
@@ -105,14 +107,14 @@ export default function RegisterPage() {
   const inputStyles = {
     inputWrapper: [
       "bg-white",
-      "border-4",             
+      "border-4",
       "border-black",
-      "rounded-none",         
+      "rounded-none",
       "shadow-none",
-      "h-10",                 
+      "h-10",
       "data-[hover=true]:border-black",
       "group-data-[focus=true]:border-black",
-      "group-data-[focus=true]:shadow-pixel", 
+      "group-data-[focus=true]:shadow-pixel",
       "group-data-[focus=true]:bg-orange-50",
       "transition-all",
       "duration-200"
@@ -127,33 +129,33 @@ export default function RegisterPage() {
       {/* HEADER SECTION */}
       <div className="relative mb-4">
         <div className="absolute -top-4 -right-2 opacity-20 text-retro-orange hidden sm:block">
-            <Box size={48} strokeWidth={1} />
+          <Box size={48} strokeWidth={1} />
         </div>
 
         <div className="border-l-8 border-retro-orange pl-4 py-1">
-            <h1 className="font-display text-2xl md:text-3xl font-bold text-black uppercase leading-tight tracking-tight">
-                FPT Unimate - Personal Management Solution
-            </h1>
+          <h1 className="font-display text-2xl md:text-3xl font-bold text-black uppercase leading-tight tracking-tight">
+            {t('auth.register_title')}
+          </h1>
         </div>
-        
+
         <p className="mt-3 text-gray-600 font-mono text-sm">
-            {">"} Press Start to Join...
+          {t('auth.register_subtitle')}
         </p>
       </div>
 
       {/* FORM SECTION */}
       <section>
         <Form className="flex flex-col gap-3" onSubmit={onSubmit}>
-            
+
           {/* 1. Player Name (Username) */}
           <Input
             isRequired
             errorMessage={usernameErrors.length > 0 ? usernameErrors[0] : null}
             isInvalid={usernameErrors.length > 0}
-            label="Player Name (Username)" // Updated label for clarity
+            label={t('auth.player_name')} // Updated label for clarity
             labelPlacement="outside"
             name="username"
-            placeholder="Enter your username (e.g. kaivian)"
+            placeholder={t('auth.player_name_placeholder')}
             value={username}
             onValueChange={setUsername}
             isDisabled={isLoading}
@@ -164,10 +166,10 @@ export default function RegisterPage() {
           <Input
             isRequired
             type="email"
-            label="Email Address"
+            label={t('auth.email')}
             labelPlacement="outside"
             name="email"
-            placeholder="Address your email"
+            placeholder={t('auth.email_placeholder')}
             value={email}
             onValueChange={setEmail}
             isDisabled={isLoading}
@@ -179,10 +181,10 @@ export default function RegisterPage() {
           {/* 3. Password */}
           <Input
             isRequired
-            label="Password"
+            label={t('auth.password')}
             labelPlacement="outside"
             name="password"
-            placeholder="Create a secret key"
+            placeholder={t('auth.create_secret')}
             value={password}
             onValueChange={setPassword}
             type={isVisible ? "text" : "password"}
@@ -190,13 +192,13 @@ export default function RegisterPage() {
             classNames={inputStyles}
             isInvalid={passwordErrors.length > 0}
             errorMessage={
-                passwordErrors.length > 0 ? (
-                  <ul className="list-disc list-inside text-tiny text-danger font-mono">
-                    {passwordErrors.map((err, i) => (
-                      <li key={i}>{err}</li>
-                    ))}
-                  </ul>
-                ) : null
+              passwordErrors.length > 0 ? (
+                <ul className="list-disc list-inside text-tiny text-danger font-mono">
+                  {passwordErrors.map((err, i) => (
+                    <li key={i}>{err}</li>
+                  ))}
+                </ul>
+              ) : null
             }
             endContent={
               <button
@@ -214,10 +216,10 @@ export default function RegisterPage() {
           {/* 4. Confirm Password */}
           <Input
             isRequired
-            label="Confirm Password"
+            label={t('auth.confirm_password')}
             labelPlacement="outside"
             name="confirmPassword"
-            placeholder="Verify secret key"
+            placeholder={t('auth.verify_secret')}
             value={confirmPassword}
             onValueChange={setConfirmPassword}
             type={isConfirmVisible ? "text" : "password"}
@@ -246,7 +248,7 @@ export default function RegisterPage() {
             isDisabled={isSubmitDisabled || isLoading}
             className="h-10 mt-2 rounded-none border-4 border-black bg-retro-orange text-white text-xl font-bold uppercase tracking-widest shadow-pixel hover:translate-y-1 hover:shadow-pixel-hover active:translate-y-1 active:shadow-none transition-all duration-150 font-display disabled:opacity-50 disabled:shadow-none disabled:translate-y-1"
           >
-            {isLoading ? "LOADING..." : "CREATE ACCOUNT"}
+            {isLoading ? t('auth.loading') : t('auth.create_account')}
           </Button>
         </Form>
       </section>
@@ -256,11 +258,11 @@ export default function RegisterPage() {
         <div className="flex items-center gap-4 py-6">
           <div className="h-1 flex-1 border-t-4 border-dashed border-black/30"></div>
           <span className="text-xs text-gray-500 uppercase font-bold tracking-widest bg-white px-2 font-display">
-            Or continue with
+            {t('auth.or_continue')}
           </span>
           <div className="h-1 flex-1 border-t-4 border-dashed border-black/30"></div>
         </div>
-        
+
         <div className="grid grid-cols-1">
           <Button
             isDisabled={isLoading}
@@ -270,14 +272,14 @@ export default function RegisterPage() {
             <span className="uppercase text-xs sm:text-sm ml-2">Google</span>
           </Button>
         </div>
-        
+
         <div className="text-center mt-8 -mb-3">
-             <p className="text-sm text-gray-600 font-mono">
-                Already have an account?{" "}
-                <Link href="/login" className="font-bold text-retro-orange hover:text-retro-dark hover:underline decoration-4 underline-offset-4 uppercase transition-colors">
-                    Log in
-                </Link>
-             </p>
+          <p className="text-sm text-gray-600 font-mono">
+            {t('auth.already_have_account')}{" "}
+            <Link href="/login" className="font-bold text-retro-orange hover:text-retro-dark hover:underline decoration-4 underline-offset-4 uppercase transition-colors">
+              {t('auth.log_in')}
+            </Link>
+          </p>
         </div>
       </section>
     </>

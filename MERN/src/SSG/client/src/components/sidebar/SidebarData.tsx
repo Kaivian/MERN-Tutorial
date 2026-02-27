@@ -23,48 +23,48 @@ export interface SidebarSection {
   items: SidebarItem[];
 }
 
-export const sidebarSections: SidebarSection[] = [
+export const getSidebarSections = (t: any): SidebarSection[] => [
   {
-    title: "Management",
+    title: t('sidebar.management') || "Management",
     items: [
       {
         key: "dashboard",
-        label: siteConfig.links.dashboard.label,
+        label: t('links.dashboard'),
         icon: () => <i className="hn hn-home-solid" style={{ fontSize: '25px' }}></i>,
         iconSize: 31,
       },
       {
         key: "grade",
-        label: siteConfig.links.grade.label,
+        label: t('links.grade'),
         icon: () => <i className="hn hn-clipboard-solid" style={{ fontSize: '25px' }}></i>,
         iconSize: 31,
       },
       {
         key: "grade/chart",
-        label: siteConfig.links.gradeChart.label,
+        label: t('links.gradeChart'),
         icon: () => <i className="hn hn-chart-line-solid" style={{ fontSize: '18px' }}></i>,
         isSubItem: true,
       },
       {
         key: "expense",
-        label: siteConfig.links.expense.label,
+        label: t('links.expense'),
         icon: () => <i className="hn hn-wallet" style={{ fontSize: '25px' }}></i>,
         iconSize: 31,
       }
     ],
   },
   {
-    title: "Todo",
+    title: t('sidebar.todo') || "Todo",
     items: [
       {
         key: "calendar",
-        label: siteConfig.links.calendar.label,
+        label: t('links.calendar'),
         icon: () => <i className="hn hn-calender-solid" style={{ fontSize: '25px' }}></i>,
         iconSize: 31,
       },
       {
         key: "deadline-manager",
-        label: siteConfig.links.deadlineManager.label,
+        label: t('links.deadlineManager'),
         icon: () => <i className="hn hn-clock-solid" style={{ fontSize: '25px' }}></i>,
         iconSize: 31,
       },
@@ -72,20 +72,20 @@ export const sidebarSections: SidebarSection[] = [
   },
 ];
 
-export const sidebarSections2: SidebarSection[] = [
+export const getSidebarSections2 = (t: any): SidebarSection[] => [
   {
-    title: "Quản trị",
+    title: t('sidebar.admin') || "Quản trị",
     items: [
       {
         key: "user-accounts",
-        label: siteConfig.links.userAccount.label,
+        label: t('links.userAccount'),
         icon: (props) => <User {...props} />,
         iconSize: 31,
         requiredPerms: siteConfig.links.userAccount.requiredPerms,
       },
       {
         key: "roles",
-        label: siteConfig.links.role.label,
+        label: t('links.roles'),
         icon: (props) => <ShieldUser {...props} />,
         iconSize: 31,
         requiredPerms: siteConfig.links.role.requiredPerms,

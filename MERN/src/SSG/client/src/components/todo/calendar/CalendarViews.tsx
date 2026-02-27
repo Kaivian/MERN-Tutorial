@@ -114,17 +114,17 @@ export default function CalendarViews({ currentView, subjects, tasks: rawTasks, 
                         onClick={() => setSelectedTask(focusTask)}
                         className="bg-[#e6b689] border-4 border-black p-4 shadow-pixel relative overflow-hidden cursor-pointer hover:bg-[#e0ad7c] transition-colors"
                     >
-                        <div className="absolute top-0 right-0 bg-black text-white font-pixelify px-3 py-1 uppercase tracking-widest text-xs">
+                        <div className="absolute top-0 right-0 bg-black text-white font-jersey10 px-3 py-1 uppercase tracking-widest text-xs">
                             Focus Task
                         </div>
-                        <h2 className="text-xl font-pixelify uppercase text-black mb-2">{focusTask.name}</h2>
+                        <h2 className="text-xl font-jersey10 uppercase text-black mb-2">{focusTask.name}</h2>
                         <div className="flex gap-4 mb-4">
                             {focusTask.subjectId === 'personal' ? (
-                                <span className="font-pixelify text-black border-2 border-black px-2 py-0.5 bg-white text-xs">PERSONAL</span>
+                                <span className="font-jersey10 text-black border-2 border-black px-2 py-0.5 bg-white text-xs">PERSONAL</span>
                             ) : (
                                 <>
-                                    <span className="font-pixelify text-black border-2 border-black px-2 py-0.5 bg-white text-xs">Slot {focusTask.slot}</span>
-                                    <span className="font-pixelify text-black border-2 border-black px-2 py-0.5 bg-white text-xs" style={{ borderBottomColor: getTaskColor(focusTask), borderBottomWidth: '4px' }}>
+                                    <span className="font-jersey10 text-black border-2 border-black px-2 py-0.5 bg-white text-xs">Slot {focusTask.slot}</span>
+                                    <span className="font-jersey10 text-black border-2 border-black px-2 py-0.5 bg-white text-xs" style={{ borderBottomColor: getTaskColor(focusTask), borderBottomWidth: '4px' }}>
                                         {subjects.find(s => s.id === focusTask.subjectId)?.name || 'Subject'}
                                     </span>
                                 </>
@@ -150,7 +150,7 @@ export default function CalendarViews({ currentView, subjects, tasks: rawTasks, 
                 )}
 
                 <div className="flex flex-col gap-4">
-                    <h3 className="font-pixelify text-lg uppercase tracking-widest text-zinc-400">Other Deadlines Today</h3>
+                    <h3 className="font-jersey10 text-lg uppercase tracking-widest text-zinc-400">Other Deadlines Today</h3>
                     {sortedTasks.slice(1).map(task => (
                         <div
                             key={task._id || `task-${task.name}`}
@@ -161,10 +161,10 @@ export default function CalendarViews({ currentView, subjects, tasks: rawTasks, 
                         >
                             <div>
                                 <h4 className="font-bold text-base leading-tight">{task.name}</h4>
-                                <p className="text-xs font-pixelify text-zinc-500 uppercase">Urgency: {task.urgencyScore}</p>
+                                <p className="text-xs font-jersey10 text-zinc-500 uppercase">Urgency: {task.urgencyScore}</p>
                             </div>
                             <div className="text-right">
-                                <div className="text-xs font-pixelify uppercase tracking-wider">{task.subjectId === 'personal' ? 'Personal' : `Slot ${task.slot}`}</div>
+                                <div className="text-xs font-jersey10 uppercase tracking-wider">{task.subjectId === 'personal' ? 'Personal' : `Slot ${task.slot}`}</div>
                                 <div className="text-xs text-zinc-500 font-bold">{new Date(task.endDate!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                             </div>
                         </div>
@@ -200,8 +200,8 @@ export default function CalendarViews({ currentView, subjects, tasks: rawTasks, 
                         const isToday = isSameDay(date, actualToday);
                         return (
                             <div key={i} className={`flex-1 text-center py-2 border-r border-zinc-200 dark:border-zinc-700 last:border-r-0 ${isToday ? 'bg-[#e6b689]/20' : ''}`}>
-                                <div className="text-[10px] font-pixelify uppercase tracking-wider text-zinc-500 leading-none mb-1">{date.toLocaleDateString('en-US', { weekday: 'short' })}</div>
-                                <div className={`text-base font-pixelify leading-none ${isToday ? 'text-[#e6b689]' : ''}`}>{date.getDate()}</div>
+                                <div className="text-[10px] font-jersey10 uppercase tracking-wider text-zinc-500 leading-none mb-1">{date.toLocaleDateString('en-US', { weekday: 'short' })}</div>
+                                <div className={`text-base font-jersey10 leading-none ${isToday ? 'text-[#e6b689]' : ''}`}>{date.getDate()}</div>
                             </div>
                         );
                     })}
@@ -211,11 +211,11 @@ export default function CalendarViews({ currentView, subjects, tasks: rawTasks, 
                         {/* Time Grid Y-Axis */}
                         <div className="w-16 shrink-0 border-r-2 border-black bg-zinc-50 dark:bg-zinc-900 flex flex-col relative z-20">
                             {/* All Day Axis Label */}
-                            <div className="h-[80px] border-b-2 border-black bg-zinc-100 dark:bg-zinc-800 text-right pr-2 pt-2 text-[10px] font-pixelify uppercase text-zinc-500">
+                            <div className="h-[80px] border-b-2 border-black bg-zinc-100 dark:bg-zinc-800 text-right pr-2 pt-2 text-[10px] font-jersey10 uppercase text-zinc-500">
                                 All Day
                             </div>
                             {hours.map(h => (
-                                <div key={h} className="h-[60px] border-b border-zinc-200 dark:border-zinc-700 text-right pr-2 pt-1 text-[10px] font-pixelify text-zinc-400">
+                                <div key={h} className="h-[60px] border-b border-zinc-200 dark:border-zinc-700 text-right pr-2 pt-1 text-[10px] font-jersey10 text-zinc-400">
                                     {h}:00
                                 </div>
                             ))}
@@ -354,7 +354,7 @@ export default function CalendarViews({ currentView, subjects, tasks: rawTasks, 
                                             })}
                                             {allDayTasks.length > 3 && (
                                                 <div
-                                                    className="text-[9px] font-pixelify uppercase tracking-wider text-black bg-zinc-200 dark:bg-zinc-700 border-2 border-black flex items-center justify-center pointer-events-auto z-20 hover:brightness-110 cursor-pointer transition-all shrink-0"
+                                                    className="text-[9px] font-jersey10 uppercase tracking-wider text-black bg-zinc-200 dark:bg-zinc-700 border-2 border-black flex items-center justify-center pointer-events-auto z-20 hover:brightness-110 cursor-pointer transition-all shrink-0"
                                                     style={{ height: '18px' }}
                                                     onMouseEnter={(e) => handleMouseEnter(e, allDayTasks.slice(3))}
                                                     onMouseLeave={handleMouseLeave}
@@ -389,7 +389,7 @@ export default function CalendarViews({ currentView, subjects, tasks: rawTasks, 
                                                                 setHoveredTask(null);
                                                                 setMoreTasksGroup(hiddenTasks);
                                                             }}
-                                                            className="absolute rounded border border-black shadow-[2px_2px_0_#000] text-[10px] md:text-xs text-black bg-zinc-200 dark:bg-zinc-700 font-pixelify uppercase tracking-wider cursor-pointer hover:brightness-110 z-50 pointer-events-auto"
+                                                            className="absolute rounded border border-black shadow-[2px_2px_0_#000] text-[10px] md:text-xs text-black bg-zinc-200 dark:bg-zinc-700 font-jersey10 uppercase tracking-wider cursor-pointer hover:brightness-110 z-50 pointer-events-auto"
                                                             style={{
                                                                 top: `${topOffset}px`,
                                                                 height: `${height}px`,
@@ -459,13 +459,13 @@ export default function CalendarViews({ currentView, subjects, tasks: rawTasks, 
         return (
             <div className="flex flex-col h-full border-2 border-black shadow-pixel-dark bg-white dark:bg-zinc-900 overflow-hidden shrink-0">
                 <div className="p-3 border-b-2 border-black flex justify-between items-center bg-zinc-50 dark:bg-zinc-800 shrink-0">
-                    <h2 className="text-xl font-pixelify uppercase text-black dark:text-white drop-shadow-[1px_1px_0_rgba(255,255,255,0.1)]">
+                    <h2 className="text-xl font-jersey10 uppercase text-black dark:text-white drop-shadow-[1px_1px_0_rgba(255,255,255,0.1)]">
                         {baseDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                     </h2>
                 </div>
                 <div className="grid grid-cols-7 border-b-2 border-black bg-zinc-100 dark:bg-zinc-800 shrink-0">
                     {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(d => (
-                        <div key={d} className="p-1.5 text-center font-pixelify uppercase tracking-wider text-[10px] text-zinc-500 border-r border-zinc-200 dark:border-zinc-700 last:border-r-0">
+                        <div key={d} className="p-1.5 text-center font-jersey10 uppercase tracking-wider text-[10px] text-zinc-500 border-r border-zinc-200 dark:border-zinc-700 last:border-r-0">
                             {d}
                         </div>
                     ))}
@@ -612,7 +612,7 @@ export default function CalendarViews({ currentView, subjects, tasks: rawTasks, 
                                                 onClick={() => setSelectedTask(t)}
                                                 onMouseEnter={(e) => handleMouseEnter(e, t)}
                                                 onMouseLeave={handleMouseLeave}
-                                                className={`absolute px-2 py-0.5 text-[10px] font-pixelify uppercase tracking-wider text-white border-y-2 border-black shadow-[1px_1px_0_#000] cursor-pointer hover:brightness-110 transition-all pointer-events-auto flex items-center overflow-hidden
+                                                className={`absolute px-2 py-0.5 text-[10px] font-jersey10 uppercase tracking-wider text-white border-y-2 border-black shadow-[1px_1px_0_#000] cursor-pointer hover:brightness-110 transition-all pointer-events-auto flex items-center overflow-hidden
                                                     ${isStart ? 'border-l-2' : 'border-l-0'}
                                                     ${isEnd ? 'border-r-2' : 'border-r-0'}
                                                 `}
@@ -648,7 +648,7 @@ export default function CalendarViews({ currentView, subjects, tasks: rawTasks, 
                                             return (
                                                 <div
                                                     key={`more-${di}`}
-                                                    className="absolute py-0.5 text-[9px] font-pixelify uppercase tracking-wider text-black bg-zinc-200 dark:bg-zinc-700 border-2 border-black flex items-center justify-center pointer-events-auto z-20 hover:brightness-110 cursor-pointer transition-all"
+                                                    className="absolute py-0.5 text-[9px] font-jersey10 uppercase tracking-wider text-black bg-zinc-200 dark:bg-zinc-700 border-2 border-black flex items-center justify-center pointer-events-auto z-20 hover:brightness-110 cursor-pointer transition-all"
                                                     style={{
                                                         top: `72px`,
                                                         left: `calc(${leftPercent}% + 2px)`,
@@ -685,7 +685,7 @@ export default function CalendarViews({ currentView, subjects, tasks: rawTasks, 
         return (
             <div className="h-full w-full overflow-y-auto [&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:bg-zinc-300 dark:[&::-webkit-scrollbar-thumb]:bg-zinc-700">
                 <div className="mb-4 text-center shrink-0">
-                    <h2 className="text-2xl font-pixelify uppercase text-[#e6b689] tracking-widest drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">[ {year} ]</h2>
+                    <h2 className="text-2xl font-jersey10 uppercase text-[#e6b689] tracking-widest drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">[ {year} ]</h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 px-1">
                     {months.map(m => {
@@ -697,7 +697,7 @@ export default function CalendarViews({ currentView, subjects, tasks: rawTasks, 
 
                         return (
                             <div key={m} className="border-2 border-black shadow-pixel bg-white dark:bg-zinc-900 p-3 flex flex-col">
-                                <h3 className="font-pixelify text-base uppercase mb-2 text-center text-[#e6b689]">{firstDay.toLocaleString('default', { month: 'short' })}</h3>
+                                <h3 className="font-jersey10 text-base uppercase mb-2 text-center text-[#e6b689]">{firstDay.toLocaleString('default', { month: 'short' })}</h3>
                                 <div className="grid grid-cols-7 mb-1">
                                     {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
                                         <div key={i} className="text-center text-[10px] font-bold text-zinc-400">{d}</div>
@@ -724,7 +724,7 @@ export default function CalendarViews({ currentView, subjects, tasks: rawTasks, 
                                         return (
                                             <div
                                                 key={i}
-                                                className={`w-5 h-7 flex flex-col items-center justify-start text-[9px] font-pixelify mx-auto border border-transparent transition-all hover:border-black hover:shadow-[1px_1px_0_#000] cursor-pointer relative overflow-hidden ${isToday ? 'bg-[#e6b689] text-black shadow-[1px_1px_0_#000] border-black' : ''}`}
+                                                className={`w-5 h-7 flex flex-col items-center justify-start text-[9px] font-jersey10 mx-auto border border-transparent transition-all hover:border-black hover:shadow-[1px_1px_0_#000] cursor-pointer relative overflow-hidden ${isToday ? 'bg-[#e6b689] text-black shadow-[1px_1px_0_#000] border-black' : ''}`}
                                                 title={dayTasksAll.length > 0 ? dayTasksAll.map(t => t.name).join(', ') : ''}
                                                 onClick={() => {
                                                     if (dayTasksAll.length === 1) setSelectedTask(dayTasksAll[0]);
@@ -773,7 +773,7 @@ export default function CalendarViews({ currentView, subjects, tasks: rawTasks, 
                 >
                     {Array.isArray(hoveredTask.taskOrTasks) ? (
                         <div className="flex flex-col gap-2">
-                            <div className="font-pixelify uppercase text-zinc-500 border-b-2 border-dashed border-zinc-200 dark:border-zinc-700 pb-1 mb-1">
+                            <div className="font-jersey10 uppercase text-zinc-500 border-b-2 border-dashed border-zinc-200 dark:border-zinc-700 pb-1 mb-1">
                                 {hoveredTask.taskOrTasks.length} More Tasks
                             </div>
                             {hoveredTask.taskOrTasks.slice(0, 5).map((t, i) => (
@@ -788,19 +788,19 @@ export default function CalendarViews({ currentView, subjects, tasks: rawTasks, 
                                 </div>
                             ))}
                             {hoveredTask.taskOrTasks.length > 5 && (
-                                <div className="text-[10px] text-center text-zinc-400 font-pixelify uppercase pt-1">
+                                <div className="text-[10px] text-center text-zinc-400 font-jersey10 uppercase pt-1">
                                     ...and {hoveredTask.taskOrTasks.length - 5} more
                                 </div>
                             )}
                         </div>
                     ) : (
                         <>
-                            <div className="font-pixelify uppercase text-[#e6b689] mb-1">{(hoveredTask.taskOrTasks as Task).name}</div>
+                            <div className="font-jersey10 uppercase text-[#e6b689] mb-1">{(hoveredTask.taskOrTasks as Task).name}</div>
                             <div className="font-roboto mb-1 text-[10px] uppercase text-zinc-500 border-b border-zinc-200 dark:border-zinc-700 pb-1">{subjects.find(s => s.id === (hoveredTask.taskOrTasks as Task).subjectId)?.name || 'Personal'}</div>
                             <div className="text-[10px]">Start: {(hoveredTask.taskOrTasks as Task).startDate ? new Date((hoveredTask.taskOrTasks as Task).startDate!).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : 'Not set'}</div>
                             <div className="text-[10px]">End: {(hoveredTask.taskOrTasks as Task).endDate ? new Date((hoveredTask.taskOrTasks as Task).endDate!).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : 'Ongoing'}</div>
-                            {(hoveredTask.taskOrTasks as Task).category && <div className="mt-1 font-pixelify">Category: {(hoveredTask.taskOrTasks as Task).category}</div>}
-                            {(hoveredTask.taskOrTasks as Task).urgencyScore !== undefined && <div className="mt-1 font-pixelify">Urgency: {(hoveredTask.taskOrTasks as Task).urgencyScore}</div>}
+                            {(hoveredTask.taskOrTasks as Task).category && <div className="mt-1 font-jersey10">Category: {(hoveredTask.taskOrTasks as Task).category}</div>}
+                            {(hoveredTask.taskOrTasks as Task).urgencyScore !== undefined && <div className="mt-1 font-jersey10">Urgency: {(hoveredTask.taskOrTasks as Task).urgencyScore}</div>}
                         </>
                     )}
                 </div>
@@ -816,9 +816,9 @@ export default function CalendarViews({ currentView, subjects, tasks: rawTasks, 
                     <div className="bg-white dark:bg-zinc-900 border-4 border-black shadow-[8px_8px_0_#000] w-full max-w-sm flex flex-col relative z-10 animate-in zoom-in-95 duration-200">
                         {/* Header */}
                         <div className="flex justify-between items-center p-4 border-b-4 border-black bg-zinc-100 dark:bg-zinc-800">
-                            <h2 className="font-pixelify uppercase tracking-widest text-[#e6b689] text-xl">Hidden Tasks</h2>
+                            <h2 className="font-jersey10 uppercase tracking-widest text-[#e6b689] text-xl">Hidden Tasks</h2>
                             <button onClick={() => setMoreTasksGroup(null)} className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors">
-                                <span className="text-xl font-bold font-pixelify leading-none text-zinc-600 dark:text-zinc-400">X</span>
+                                <span className="text-xl font-bold font-jersey10 leading-none text-zinc-600 dark:text-zinc-400">X</span>
                             </button>
                         </div>
                         {/* List */}
@@ -836,7 +836,7 @@ export default function CalendarViews({ currentView, subjects, tasks: rawTasks, 
                                         <div className="w-3 h-3 rounded-full border border-black shrink-0" style={{ backgroundColor: getTaskColor(t) }} />
                                         <span className="font-bold truncate text-sm">{t.name}</span>
                                     </div>
-                                    <div className="text-[10px] text-zinc-500 font-pixelify uppercase tracking-wider pl-5 border-t border-dashed border-zinc-200 dark:border-zinc-700 pt-1 mt-1">
+                                    <div className="text-[10px] text-zinc-500 font-jersey10 uppercase tracking-wider pl-5 border-t border-dashed border-zinc-200 dark:border-zinc-700 pt-1 mt-1">
                                         {t.endDate ? new Date(t.endDate).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : 'Ongoing'}
                                     </div>
                                 </div>
