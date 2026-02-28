@@ -23,6 +23,7 @@ import { MoreVertical, Plus, Edit2, Lock, Unlock, Trash2 } from "lucide-react";
 import { usePermission } from "@/providers/auth.provider";
 import { addToast } from "@heroui/react";
 import { RoleModal } from "./components/RoleModal";
+import AccessDenied from "@/components/errors/AccessDenied";
 
 export default function RolesPage() {
   const [roles, setRoles] = useState<Role[]>([]);
@@ -31,6 +32,7 @@ export default function RolesPage() {
   const canEdit = usePermission("roles:edit");
   const canCreate = usePermission("roles:create");
   const canDelete = usePermission("roles:delete");
+  const canView = usePermission("roles:view");
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
@@ -54,8 +56,12 @@ export default function RolesPage() {
   };
 
   useEffect(() => {
+    if (!canView) {
+      setIsLoading(false);
+      return;
+    }
     fetchRoles();
-  }, []);
+  }, [canView]);
 
   const handleStatusChange = async (role: Role) => {
     try {
@@ -79,6 +85,10 @@ export default function RolesPage() {
       }
     }
   };
+
+  if (!canView) {
+    return <AccessDenied />;
+  }
 
   return (
     <div className="w-full p-6 space-y-6 font-jersey10 tracking-wide">

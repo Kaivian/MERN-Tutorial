@@ -25,6 +25,7 @@ import { MoreVertical, Search, Plus, Lock, Unlock, Edit2 } from "lucide-react";
 import { usePermission } from "@/providers/auth.provider";
 import { addToast } from "@heroui/react";
 import { UserModal } from "./components/UserModal";
+import AccessDenied from "@/components/errors/AccessDenied";
 
 export default function UserAccountsPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -35,6 +36,7 @@ export default function UserAccountsPage() {
 
   const canEdit = usePermission("users:edit");
   const canCreate = usePermission("users:create");
+  const canView = usePermission("users:view");
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -59,11 +61,15 @@ export default function UserAccountsPage() {
   };
 
   useEffect(() => {
+    if (!canView) {
+      setIsLoading(false);
+      return;
+    }
     const delayDebounceFn = setTimeout(() => {
       fetchUsers();
     }, 500);
     return () => clearTimeout(delayDebounceFn);
-  }, [page, search]);
+  }, [page, search, canView]);
 
   const handleStatusChange = async (user: User) => {
     try {
@@ -75,6 +81,10 @@ export default function UserAccountsPage() {
       addToast({ title: "Action failed", description: error.message, color: "danger" });
     }
   };
+
+  if (!canView) {
+    return <AccessDenied />;
+  }
 
   return (
     <div className="w-full p-6 space-y-6 font-jersey10 tracking-wide">

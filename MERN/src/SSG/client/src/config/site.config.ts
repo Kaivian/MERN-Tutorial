@@ -107,7 +107,7 @@ export const siteConfig = {
     userAccount: {
       label: "User Accounts",
       path: "/user-accounts",
-      requiredPerms: ["user-accounts:view"] as const
+      requiredPerms: ["users:view"] as const
     },
     createAccount: {
       label: "Create Account",
