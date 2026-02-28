@@ -1,7 +1,12 @@
 // client/src/hooks/useCurriculum.ts
 import { useState, useEffect } from "react";
-import { curriculumService } from "@/services/curriculum.service";
-import { CurriculumProgramsResponse, SemesterData, SubjectData } from "@/types/curriculum.types";
+import { useQuery } from "@tanstack/react-query";
+import { curriculumService, hierarchyService } from "@/services/curriculum.service";
+import { CurriculumProgramsResponse, SemesterData, SubjectData, MajorCategory, Major, AdminClass } from "@/types/curriculum.types";
+
+// ============================================================
+// EXISTING hooks (student-facing helpers for old curriculum data)
+// ============================================================
 
 export function useCurriculumPrograms() {
     const [data, setData] = useState<CurriculumProgramsResponse | null>(null);
@@ -13,9 +18,6 @@ export function useCurriculumPrograms() {
             setIsLoading(true);
             try {
                 const response = await curriculumService.getPrograms();
-                // Since interceptor might return directly data or axios response, 
-                // we check response.data (our ApiResponse wrapping)
-                // If the interceptor unwrap directly to our custom object, response IS theApiResponse
                 const payload = (response as { data?: unknown }).data || response;
                 setData(payload as CurriculumProgramsResponse);
             } catch (err: unknown) {
@@ -30,22 +32,35 @@ export function useCurriculumPrograms() {
     return { data, isLoading, error };
 }
 
-export function useCurriculumSemesters(code?: string) {
-    const [data, setData] = useState<SemesterData[]>([]);
+export function useCurriculumSemesters(classId?: string, totalSemesters?: number) {
+    // Always call hooks unconditionally
+    const [legacyData, setLegacyData] = useState<SemesterData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
+    // If totalSemesters is available, generate terms offline (new hierarchy path)
+    const isNewHierarchy = !!classId && !!totalSemesters;
+    const generatedData: SemesterData[] = isNewHierarchy
+        ? Array.from({ length: totalSemesters! }, (_, i) => ({
+            key: `sem_${i + 1}`,
+            label: `Semester ${i + 1}`,
+            shortLabel: `S${i + 1}`,
+            semesterIndex: i + 1,
+        }))
+        : [];
+
     useEffect(() => {
-        if (!code) {
-            setData([]);
+        // Only fetch from old API if we're in legacy mode (no totalSemesters)
+        if (!classId || isNewHierarchy) {
+            setLegacyData([]);
             return;
         }
 
         const fetchSemesters = async () => {
             setIsLoading(true);
             try {
-                const response = await curriculumService.getSemesters(code);
+                const response = await curriculumService.getSemesters(classId);
                 const payload = (response as { data?: unknown }).data || response;
-                setData((payload as SemesterData[]) || []);
+                setLegacyData((payload as SemesterData[]) || []);
             } catch (err) {
                 console.error("Failed to fetch semesters:", err);
             } finally {
@@ -53,9 +68,12 @@ export function useCurriculumSemesters(code?: string) {
             }
         };
         fetchSemesters();
-    }, [code]);
+    }, [classId, isNewHierarchy]);
 
-    return { data, isLoading };
+    return {
+        data: isNewHierarchy ? generatedData : legacyData,
+        isLoading
+    };
 }
 
 export function useCurriculumSubjects(code?: string, semester?: string) {
@@ -71,7 +89,6 @@ export function useCurriculumSubjects(code?: string, semester?: string) {
         const fetchSubjects = async () => {
             setIsLoading(true);
             try {
-                // Parse semester index from 'sem_1'
                 let semIndex: number | undefined;
                 if (semester) {
                     const parts = semester.split('_');
@@ -95,3 +112,43 @@ export function useCurriculumSubjects(code?: string, semester?: string) {
 
     return { data, isLoading };
 }
+
+// ============================================================
+// NEW: Admin Hierarchy hooks (for student-facing profile selects)
+// ============================================================
+
+export function useAdminHierarchyCategories() {
+    return useQuery<MajorCategory[]>({
+        queryKey: ["hierarchy-categories"],
+        queryFn: async () => {
+            const res = await hierarchyService.getCategories();
+            return res.data || [];
+        },
+        staleTime: 5 * 60 * 1000,
+    });
+}
+
+export function useAdminHierarchyMajors(categoryId?: string) {
+    return useQuery<Major[]>({
+        queryKey: ["hierarchy-majors", categoryId],
+        queryFn: async () => {
+            const res = await hierarchyService.getMajors(categoryId);
+            return res.data || [];
+        },
+        enabled: !!categoryId,
+        staleTime: 5 * 60 * 1000,
+    });
+}
+
+export function useAdminHierarchyClasses(majorId?: string) {
+    return useQuery<AdminClass[]>({
+        queryKey: ["hierarchy-classes", majorId],
+        queryFn: async () => {
+            const res = await hierarchyService.getClasses(majorId);
+            return res.data || [];
+        },
+        enabled: !!majorId,
+        staleTime: 5 * 60 * 1000,
+    });
+}
+

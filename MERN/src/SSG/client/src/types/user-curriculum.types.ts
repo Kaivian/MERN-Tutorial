@@ -21,8 +21,16 @@ export interface UserSubjectGrade extends Omit<SubjectData, 'score'> {
     grades: UserGradeComponent[]; // Re-mapped for the component
 }
 
+export interface ContextLabels {
+    block: string | null;
+    program: string | null;
+    cohort_class: string | null;
+}
+
 export interface UserCurriculumData {
     active_context: UserCurriculumContext;
+    context_labels: ContextLabels;
+    total_semesters: number;
     current_view_term?: string;
     term_gpa: number | null;
     subjects: UserSubjectGrade[];

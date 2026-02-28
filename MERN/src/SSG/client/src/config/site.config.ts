@@ -124,6 +124,11 @@ export const siteConfig = {
       path: "/roles/create",
       requiredPerms: ["roles:create"] as const
     },
+    curriculums: {
+      label: "Curriculums",
+      path: "/curriculums",
+      requiredPerms: ["curriculums:manage"] as const
+    },
 
   } satisfies Record<string, RouteLinkEntry>,
 } as const;

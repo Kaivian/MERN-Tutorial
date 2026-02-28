@@ -55,6 +55,7 @@ class CurriculumService {
         }
 
         return subjects.map(sub => ({
+            id: sub._id,
             code: sub.code,
             name_en: sub.name_en,
             name_vi: sub.name_vi,
@@ -62,7 +63,7 @@ class CurriculumService {
             prerequisite: sub.prerequisite,
             semester: sub.semester,
             assessment_plan: sub.assessment_plan || [],
-            status: "Not Started",
+            status: "Not Started", // Context-specific fields, might need separating later
             score: null
         }));
     }
@@ -83,6 +84,84 @@ class CurriculumService {
             shortLabel: `Sem ${sem}`,
             semesterIndex: sem
         }));
+    }
+
+    /**
+     * Creates a new curriculum
+     */
+    async createCurriculum(data) {
+        const existing = await curriculumRepository.findByCode(data.curriculum_info.code);
+        if (existing) {
+            throw new Error('Curriculum with this code already exists');
+        }
+        return await curriculumRepository.create(data);
+    }
+
+    /**
+     * Updates an existing curriculum
+     */
+    async updateCurriculum(code, updateData) {
+        const updated = await curriculumRepository.update(code, updateData);
+        if (!updated) {
+            throw new Error('Curriculum not found');
+        }
+        return updated;
+    }
+
+    /**
+     * Deletes a curriculum and its associated subjects
+     */
+    async deleteCurriculum(code) {
+        const curriculum = await curriculumRepository.findByCode(code);
+        if (!curriculum) {
+            throw new Error('Curriculum not found');
+        }
+
+        // Delete associated subjects first
+        if (curriculum.subjects && curriculum.subjects.length > 0) {
+            await curriculumRepository.deleteSubjectsForCurriculum(curriculum.subjects);
+        }
+
+        return await curriculumRepository.delete(code);
+    }
+
+    /**
+     * Creates a new subject and links it to a curriculum
+     */
+    async createSubject(curriculumCode, subjectData) {
+        // Ensure curriculum exists
+        const curriculum = await curriculumRepository.findByCode(curriculumCode);
+        if (!curriculum) {
+            throw new Error('Curriculum not found');
+        }
+
+        const newSubject = await curriculumRepository.createSubject(subjectData);
+        await curriculumRepository.addSubjectToCurriculum(curriculumCode, newSubject._id);
+
+        return newSubject;
+    }
+
+    /**
+     * Updates an existing subject
+     */
+    async updateSubject(subjectId, updateData) {
+        const updated = await curriculumRepository.updateSubject(subjectId, updateData);
+        if (!updated) {
+            throw new Error('Subject not found');
+        }
+        return updated;
+    }
+
+    /**
+     * Deletes a subject and unlinks it from the curriculum
+     */
+    async deleteSubject(curriculumCode, subjectId) {
+        const deleted = await curriculumRepository.deleteSubject(subjectId);
+        if (!deleted) {
+            throw new Error('Subject not found');
+        }
+        await curriculumRepository.removeSubjectFromCurriculum(curriculumCode, subjectId);
+        return deleted;
     }
 }
 

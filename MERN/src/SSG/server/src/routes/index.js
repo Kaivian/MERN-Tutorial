@@ -6,6 +6,7 @@ import userCurriculumRoutes from './user-curriculum.routes.js';
 import taskRoutes from './todo/task.routes.js';
 import userRoutes from './user.routes.js';
 import roleRoutes from './role.routes.js';
+import adminCurriculumRoutes from './admin-curriculum.routes.js';
 import { verifyAccessToken, requireActiveAndSynced } from '../middlewares/auth.middleware.js';
 
 const router = Router();
@@ -69,5 +70,12 @@ router.use('/expense', expenseRoutes);
  */
 router.use('/users', verifyAccessToken, requireActiveAndSynced, userRoutes);
 router.use('/roles', verifyAccessToken, requireActiveAndSynced, roleRoutes);
+
+/**
+ * Admin Curriculum Management Routes
+ * @route /api/admin/*
+ * @desc  Handles MajorCategory, Major, AdminClass, and curriculum builder
+ */
+router.use('/admin', adminCurriculumRoutes);
 
 export default router;

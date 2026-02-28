@@ -18,6 +18,7 @@ export function useTranslation() {
 
     const t = (key: TranslationKey | string, variables?: Record<string, string | number>) => {
         const keys = key.split('.');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let value: any = dictionary;
 
         for (const k of keys) {
@@ -34,6 +35,7 @@ export function useTranslation() {
 
         // Fallback to English key if not found in current language
         if (language !== 'en') {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let enValue: any = en;
             for (const k of keys) {
                 if (enValue === undefined) break;

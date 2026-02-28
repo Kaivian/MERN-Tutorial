@@ -1,16 +1,93 @@
 // server/src/services/user-curriculum.service.js
+import mongoose from 'mongoose';
 import userCurriculumRepository from '../repositories/user-curriculum.repository.js';
 import curriculumRepository from '../repositories/curriculum.repository.js';
 import { Subject } from '../models/curriculum/subject.model.js';
+import MajorCategory from '../models/curriculum/major-category.model.js';
+import Major from '../models/curriculum/major.model.js';
+import AdminClass from '../models/curriculum/admin-class.model.js';
+import Curriculum from '../models/curriculum/curriculum.model.js';
 import logger from '../utils/logger.utils.js';
+
+/**
+ * Determines if a string is a valid MongoDB ObjectId
+ */
+function isObjectId(val) {
+    return mongoose.Types.ObjectId.isValid(val) && String(new mongoose.Types.ObjectId(val)) === val;
+}
 
 class UserCurriculumService {
     async updateContext(userId, contextUpdates) {
         return await userCurriculumRepository.updateActiveContext(userId, contextUpdates);
     }
 
+    /**
+     * Fetches subjects for a cohort_class value.
+     * Supports BOTH:
+     *   - New hierarchy: cohort_class = AdminClass._id (MongoDB ObjectId)
+     *   - Legacy seed data: cohort_class = Curriculum code string (e.g., "BIT_SE_K19D_K20A")
+     */
+    async _fetchSubjects(cohortClass, semIndex) {
+        if (isObjectId(cohortClass)) {
+            return await curriculumRepository.findSubjectsByClassId(cohortClass, semIndex);
+        } else {
+            return await curriculumRepository.findSubjectsByCurriculumCode(cohortClass, semIndex);
+        }
+    }
+
+    /**
+     * Resolves the saved active_context IDs into human-readable labels + totalSemesters.
+     * Supports both new hierarchy (ObjectId) and legacy (string codes).
+     */
+    async _resolveContextLabels(activeContext) {
+        const labels = { block: null, program: null, cohort_class: null };
+        let totalSemesters = 9; // default
+
+        if (!activeContext.cohort_class) return { labels, totalSemesters };
+
+        if (isObjectId(activeContext.cohort_class)) {
+            // New hierarchy path
+            try {
+                const adminClass = await AdminClass.findById(activeContext.cohort_class)
+                    .populate({ path: 'majorId', populate: { path: 'majorCategoryId' } })
+                    .lean();
+
+                if (adminClass) {
+                    totalSemesters = adminClass.totalSemesters || 9;
+                    labels.cohort_class = `${adminClass.code} – ${adminClass.name}`;
+
+                    if (adminClass.majorId) {
+                        labels.program = adminClass.majorId.name || adminClass.majorId.code;
+                        if (adminClass.majorId.majorCategoryId) {
+                            labels.block = adminClass.majorId.majorCategoryId.name || adminClass.majorId.majorCategoryId.code;
+                        }
+                    }
+                }
+            } catch (err) {
+                logger.warn('[UserCurriculumService] Failed to resolve hierarchy labels:', err.message);
+            }
+        } else {
+            // Legacy path — use old Curriculum code
+            try {
+                const curriculum = await Curriculum.findOne({ 'curriculum_info.code': activeContext.cohort_class }).lean();
+                if (curriculum) {
+                    labels.cohort_class = curriculum.curriculum_info.code;
+                    labels.program = curriculum.curriculum_info.name_en || curriculum.curriculum_info.code;
+                    labels.block = 'Information Technology'; // Legacy default
+
+                    // Count distinct semesters from subjects
+                    const semesters = await curriculumRepository.findAvailableSemesters(activeContext.cohort_class);
+                    totalSemesters = semesters.length > 0 ? Math.max(...semesters) : 9;
+                }
+            } catch (err) {
+                logger.warn('[UserCurriculumService] Failed to resolve legacy labels:', err.message);
+            }
+        }
+
+        return { labels, totalSemesters };
+    }
+
     async getContextAndGrades(userId, termOverride = null) {
-        // Fetch raw curriculum from DB
         const userCurr = await userCurriculumRepository.findByUserId(userId);
         const activeContext = userCurr.active_context || {};
 
@@ -19,19 +96,17 @@ class UserCurriculumService {
 
         const termToUse = termOverride || activeContext.term;
 
-        // If they have a selected class and term, fetch subjects and compute 
+        // Resolve labels for display on Grade page
+        const { labels: contextLabels, totalSemesters } = await this._resolveContextLabels(activeContext);
+
         if (activeContext.cohort_class && termToUse) {
             const termIndexMatch = termToUse.match(/\d+/);
             const semIndex = termIndexMatch ? parseInt(termIndexMatch[0], 10) : null;
 
-            const subjects = await curriculumRepository.findSubjectsByCurriculumCode(
-                activeContext.cohort_class,
-                semIndex
-            );
+            const subjects = await this._fetchSubjects(activeContext.cohort_class, semIndex);
 
-            if (subjects) {
+            if (subjects && subjects.length > 0) {
                 formattedSubjects = subjects.map(sub => {
-                    // Find user's grades for this subject
                     const userSG = userCurr.subject_grades.find(sg => sg.subjectId.toString() === sub._id.toString());
 
                     return {
@@ -45,7 +120,7 @@ class UserCurriculumService {
                         assessment_plan: sub.assessment_plan || [],
                         status: userSG ? userSG.status : "Not Started",
                         score: userSG ? userSG.totalScore : null,
-                        grades: userSG ? userSG.grades : [] // Raw array of { category, part_index, score }
+                        grades: userSG ? userSG.grades : []
                     };
                 });
 
@@ -68,6 +143,8 @@ class UserCurriculumService {
 
         return {
             active_context: activeContext,
+            context_labels: contextLabels,
+            total_semesters: totalSemesters,
             current_view_term: termToUse,
             term_gpa: termGpa,
             subjects: formattedSubjects
@@ -75,22 +152,17 @@ class UserCurriculumService {
     }
 
     async updateSubjectGrade(userId, subjectId, payload) {
-        // payload: { semester, grades: [{ category, part_index, score }] }
-
-        // 1. Fetch Subject to parse weighting
         const subject = await Subject.findById(subjectId).lean();
         if (!subject) throw new Error("Subject not found");
 
         const plan = subject.assessment_plan || [];
 
-        // 2. Compute the total score from saved pieces
         let totalScore = 0;
         let accumulatedWeight = 0;
         let isFailed = false;
 
         const { grades, semester } = payload;
 
-        // Group grades by category
         const gradeMap = {};
         grades.forEach(g => {
             if (!gradeMap[g.category]) gradeMap[g.category] = [];
@@ -100,14 +172,12 @@ class UserCurriculumService {
         plan.forEach(item => {
             const recorded = gradeMap[item.category] || [];
             if (recorded.length > 0) {
-                // Average for this category
                 const catSum = recorded.reduce((sum, r) => sum + r.score, 0);
                 const catAvg = catSum / item.part_count;
 
                 totalScore += catAvg * (item.weight_percent / 100);
                 accumulatedWeight += (item.weight_percent / item.part_count) * recorded.length;
 
-                // Simple check for completion criteria, e.g. ">= 4"
                 if (item.completion_criteria) {
                     const match = item.completion_criteria.match(/([>|<|=]+)\s*([0-9.]+)/);
                     if (match) {
@@ -130,7 +200,6 @@ class UserCurriculumService {
             else status = "Passed";
         }
 
-        // 3. Save it 
         return await userCurriculumRepository.upsertSubjectGrades(
             userId,
             subjectId,
@@ -155,14 +224,10 @@ class UserCurriculumService {
         let termDetails = {};
 
         if (activeContext.cohort_class) {
-            // Fetch all subjects across all semesters for this cohort
-            const allSubjects = await curriculumRepository.findSubjectsByCurriculumCode(
-                activeContext.cohort_class,
-                null
-            );
+            // Supports both new hierarchy (ObjectId) and legacy (string code)
+            const allSubjects = await this._fetchSubjects(activeContext.cohort_class, null);
 
-            if (allSubjects) {
-                // Pre-populate termDetails buckets and organize subjects by semester
+            if (allSubjects && allSubjects.length > 0) {
                 const semesters = [...new Set(allSubjects.map(s => s.semester))].sort((a, b) => a - b);
                 semesters.forEach(sem => {
                     termDetails[`sem_${sem}`] = [];
@@ -181,13 +246,11 @@ class UserCurriculumService {
                         const status = userSG ? userSG.status : "Not Started";
                         const score = userSG ? userSG.totalScore : null;
 
-                        // Tally statuses
                         if (status === "Passed") subjectStatuses.Passed++;
                         else if (status === "Failed") subjectStatuses.Failed++;
                         else if (status === "In Progress") subjectStatuses.InProgress++;
                         else subjectStatuses.NotStarted++;
 
-                        // Add to termDetails
                         termDetails[`sem_${sem}`].push({
                             code: sub.code,
                             name_en: sub.name_en,
@@ -198,21 +261,17 @@ class UserCurriculumService {
                             assessment_plan: sub.assessment_plan || []
                         });
 
-                        // Calculate GPA
                         if (score !== null) {
                             termQualityPoints += (score * sub.credit);
                             termCredits += sub.credit;
-
                             cumulativeQualityPoints += (score * sub.credit);
                             cumulativeCredits += sub.credit;
                         }
                     });
 
-                    // Push term GPA
                     const termGpa = termCredits > 0 ? (termQualityPoints / termCredits) : null;
                     const cumulativeGpa = cumulativeCredits > 0 ? (cumulativeQualityPoints / cumulativeCredits) : null;
 
-                    // Only add if there were credits attempted in this or previous semesters
                     if (termCredits > 0 || cumulativeCredits > 0) {
                         termGpas.push({
                             term: `Sem ${sem}`,
@@ -220,7 +279,6 @@ class UserCurriculumService {
                             cumulativeGpa: cumulativeGpa !== null ? Number(cumulativeGpa.toFixed(2)) : null
                         });
                     } else {
-                        // placeholder for empty terms up to now
                         termGpas.push({ term: `Sem ${sem}`, gpa: null, cumulativeGpa: null });
                     }
                 });
@@ -230,10 +288,10 @@ class UserCurriculumService {
         return {
             termGpas,
             subjectStatuses: [
-                { name: 'Passed', value: subjectStatuses.Passed, fill: '#10b981' }, // emerald-500
-                { name: 'Failed', value: subjectStatuses.Failed, fill: '#ef4444' }, // red-500
-                { name: 'In Progress', value: subjectStatuses.InProgress, fill: '#e6b689' }, // warning
-                { name: 'Not Started', value: subjectStatuses.NotStarted, fill: '#d4d4d8' } // zinc-300
+                { name: 'Passed', value: subjectStatuses.Passed, fill: '#10b981' },
+                { name: 'Failed', value: subjectStatuses.Failed, fill: '#ef4444' },
+                { name: 'In Progress', value: subjectStatuses.InProgress, fill: '#e6b689' },
+                { name: 'Not Started', value: subjectStatuses.NotStarted, fill: '#d4d4d8' }
             ],
             termDetails
         };

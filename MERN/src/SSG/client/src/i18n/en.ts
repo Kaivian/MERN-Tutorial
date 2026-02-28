@@ -54,6 +54,7 @@ export const en = {
         deadlineManager: "Deadline Manager",
         userAccount: "User Accounts",
         roles: "Roles",
+        curriculums: "Curriculums",
     },
     navbar: {
         brand: "MERN Frontend",

@@ -1,5 +1,5 @@
 // client/src/types/rbac.types.ts
-import { ApiResponse } from './auth.types';
+import { ApiResponse, User } from './auth.types';
 
 export interface AuditLog {
   id: string;
@@ -7,7 +7,7 @@ export interface AuditLog {
   action: string;
   resource: string;
   resourceId: string;
-  details: any;
+  details: unknown;
   ipAddress: string;
   createdAt: string;
 }
@@ -24,7 +24,7 @@ export interface Role {
 }
 
 export interface PaginatedUsersResponse {
-  docs: any[]; // User type
+  docs: User[]; // User type
   totalDocs: number;
   page: number;
   limit: number;
@@ -36,4 +36,4 @@ export interface PaginatedUsersResponse {
 export type RolesResponse = ApiResponse<{ roles: Role[] }>;
 export type RoleResponse = ApiResponse<{ role: Role }>;
 export type UsersResponse = ApiResponse<PaginatedUsersResponse>;
-export type UserResponse = ApiResponse<{ user: any }>;
+export type UserResponse = ApiResponse<{ user: User }>;

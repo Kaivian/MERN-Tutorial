@@ -18,77 +18,42 @@ import {
 } from "@heroui/react";
 
 import { SubjectRow } from "@/components/grade/Subject";
-import { useCurriculumPrograms, useCurriculumSemesters } from "@/hooks/useCurriculum";
 import { useUserCurriculum } from "@/hooks/useUserCurriculum";
 import { Spinner } from "@heroui/react";
 import { useTranslation } from "@/i18n";
-
-// --- DATA DEFINITIONS ---
-const majorGroups = [
-  {
-    key: "it_block",
-    label: "INFORMATION TECHNOLOGY",
-    items: [
-      { key: "it", label: "Information Technology" },
-      { key: "se", label: "Software Engineering" },
-      { key: "ai", label: "Artificial Intelligence" },
-      { key: "is", label: "Information Systems" },
-      { key: "gd", label: "Graphic Design & Digital Art" },
-    ]
-  },
-  {
-    key: "comm_block",
-    label: "COMMUNICATION TECH",
-    items: [{ key: "multi", label: "Multimedia Communication" }]
-  },
-];
 
 export default function GradePage() {
   const { user } = useAuth();
   const { t } = useTranslation();
 
-  // --- LOGIC: State Management ---
+  // --- State ---
   const [isEditing, setIsEditing] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const { isOpen: isGuideOpen, onOpen: onGuideOpen, onOpenChange: onGuideOpenChange } = useDisclosure();
 
-  // --- API DATA FETCHING ---
-  const { data: programsData, isLoading: isProgramsLoading } = useCurriculumPrograms();
-  const { data: userCurriculum, isLoading: isUserCurriculumLoading, updateContext, saveGrades, refetch } = useUserCurriculum();
+  // --- API DATA ---
+  const { data: userCurriculum, isLoading: isUserCurriculumLoading, saveGrades, refetch } = useUserCurriculum();
 
-  // Extract selected keys from saved context, defaulting to empty sets if not loaded yet
-  const selectedBlockKeys = React.useMemo(() => new Set(userCurriculum?.active_context?.block ? [userCurriculum.active_context.block] : []), [userCurriculum]);
-  const selectedProgramKeys = React.useMemo(() => new Set(userCurriculum?.active_context?.program ? [userCurriculum.active_context.program] : []), [userCurriculum]);
-  const selectedClassKeys = React.useMemo(() => new Set(userCurriculum?.active_context?.cohort_class ? [userCurriculum.active_context.cohort_class] : []), [userCurriculum]);
-  const selectedCurrentTermKeys = React.useMemo(() => new Set(userCurriculum?.current_view_term ? [userCurriculum.current_view_term] : (userCurriculum?.active_context?.term ? [userCurriculum.active_context.term] : [])), [userCurriculum]);
+  // Context values from server (read-only on Grade page — set on Profile page)
+  const activeContext = userCurriculum?.active_context;
+  const contextLabels = userCurriculum?.context_labels;
+  const totalSemesters = userCurriculum?.total_semesters ?? 0;
 
-  // --- MEMOIZED VALUES ---
-  const getSingleKey = (selection: Selection): string | null => {
-    if (selection === "all") return null;
-    const key = Array.from(selection)[0] as string | undefined;
-    return key || null;
-  };
+  const currentTermKey = userCurriculum?.current_view_term || activeContext?.term || null;
+  const selectedCurrentTermKeys = useMemo(() => new Set(currentTermKey ? [currentTermKey] : []), [currentTermKey]);
 
-  const currentBlockKey = getSingleKey(selectedBlockKeys);
-  const currentProgramKey = getSingleKey(selectedProgramKeys);
-  const currentClassKey = getSingleKey(selectedClassKeys);
-  const currentTermKey = getSingleKey(selectedCurrentTermKeys);
+  const hasContext = !!(activeContext?.cohort_class);
 
-  const availablePrograms = useMemo(() => {
-    const group = majorGroups.find((g) => g.key === currentBlockKey);
-    return group ? group.items : [];
-  }, [currentBlockKey]);
+  // Generate semester list from server-provided totalSemesters
+  const generatedTerms = useMemo(() => {
+    if (totalSemesters <= 0) return [];
+    return Array.from({ length: totalSemesters }, (_, i) => ({
+      key: `sem_${i + 1}`,
+      label: `Semester ${i + 1}`,
+      shortLabel: `S${i + 1}`,
+    }));
+  }, [totalSemesters]);
 
-  const availableClasses = useMemo(() => {
-    if (!currentProgramKey || !programsData) return [];
-    const program = programsData[currentProgramKey];
-    return program ? program.classes : [];
-  }, [currentProgramKey, programsData]);
-
-  // Hook for Term list (still fetched based on class)
-  const { data: generatedTerms, isLoading: isTermsLoading } = useCurriculumSemesters(currentClassKey || undefined);
-
-  // The subjects now come securely from the UserCurriculum context payload
   const currentSubjects = userCurriculum?.subjects || [];
   const termGpa = userCurriculum?.term_gpa;
   const isSubjectsLoading = isUserCurriculumLoading;
@@ -99,19 +64,11 @@ export default function GradePage() {
   }, [currentTermKey, generatedTerms]);
 
   const handleTermChange = (keys: Selection) => {
-    const selectedTerm = getSingleKey(keys);
+    if (keys === "all") return;
+    const selectedTerm = Array.from(keys)[0] as string | undefined;
     if (selectedTerm) {
       refetch(selectedTerm);
     }
-  };
-
-  const getProgramLabel = (progKey: string | null) => {
-    if (!progKey) return "Not Set";
-    for (const group of majorGroups) {
-      const prog = group.items.find(i => i.key === progKey);
-      if (prog) return prog.label;
-    }
-    return progKey;
   };
 
   // --- STYLES ---
@@ -144,11 +101,9 @@ export default function GradePage() {
   const buttonStyles = "bg-[#e6b689] hover:bg-[#d4a373] text-black border-2 border-black font-jersey10 min-w-10 h-10 shadow-pixel hover:shadow-pixel-hover active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all";
 
   return (
-    // CHANGE 1: h-auto cho mobile, md:h-screen cho desktop
     <div className="overflow-hidden flex flex-col gap-3 h-auto md:h-screen transition-colors duration-300 rounded-xl pb-10 md:pb-0">
 
       {/* HEADER & FILTERS */}
-      {/* CHANGE 2: relative cho mobile (scroll được), sticky top-0 cho desktop */}
       <div className="w-full relative md:sticky md:top-0 z-20 flex flex-col md:flex-row gap-3 shrink-0">
 
         {/* SECTION 1: HEADER */}
@@ -165,7 +120,6 @@ export default function GradePage() {
               </div>
 
               <div className="flex w-full items-end justify-between">
-                {/* Left section */}
                 <div className="flex flex-col gap-1 text-[11px] md:text-sm font-bold tracking-widest uppercase">
                   <div className="flex items-center gap-1">
                     <span className="text-zinc-500">{t('grade.player')}: </span>
@@ -181,7 +135,6 @@ export default function GradePage() {
                   </div>
                 </div>
 
-                {/* Right section - Term GPA */}
                 <div className="flex flex-col text-right">
                   <p className="text-sm font-bold text-zinc-500 uppercase">
                     {t('grade.termGPA')}
@@ -208,7 +161,7 @@ export default function GradePage() {
 
               <div className="flex flex-col gap-4 justify-between items-center w-full">
 
-                {/* MOBILE TOGGLE HEADER */}
+                {/* MOBILE TOGGLE */}
                 <div
                   className="flex md:hidden w-full justify-between items-center cursor-pointer select-none"
                   onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
@@ -226,20 +179,20 @@ export default function GradePage() {
                     isMobileFilterOpen ? "block opacity-100" : "hidden md:grid opacity-100"
                   )}
                 >
-                  {/* READ ONLY CONTEXT */}
+                  {/* CONTEXT DISPLAY (read-only, labels from server) */}
                   <div className="md:col-span-3 flex flex-wrap gap-2 items-center text-xs font-bold uppercase tracking-widest text-zinc-500">
-                    {currentBlockKey || currentProgramKey || currentClassKey ? (
+                    {hasContext ? (
                       <>
                         <span>
-                          {majorGroups.find(g => g.key === currentBlockKey)?.label || "No Block"}
+                          {contextLabels?.block || "No Block"}
                         </span>
                         <i className="hn hn-caret-right" />
                         <span className="text-black dark:text-white">
-                          {getProgramLabel(currentProgramKey)}
+                          {contextLabels?.program || "No Program"}
                         </span>
                         <i className="hn hn-caret-right" />
                         <span className="text-[#e6b689] bg-black px-2 py-1 border-2 border-[#e6b689]">
-                          {currentClassKey || "No Class"}
+                          {contextLabels?.cohort_class || "No Class"}
                         </span>
                       </>
                     ) : (
@@ -263,18 +216,17 @@ export default function GradePage() {
                   <div className="md:col-span-1 flex justify-end">
                     <div className="w-full max-w-full min-w-[240px]">
                       <Select
-                        isDisabled={!currentClassKey}
+                        isDisabled={!hasContext || generatedTerms.length === 0}
                         labelPlacement="outside-left"
                         label="4. Current Term"
-                        classNames={getSelectStyles(!currentClassKey)}
-                        placeholder={!currentClassKey ? "Select class first" : "Select current term"}
+                        classNames={getSelectStyles(!hasContext)}
+                        placeholder={!hasContext ? "Set profile first" : "Select current term"}
                         variant="bordered"
                         size="md"
                         radius="none"
                         selectedKeys={selectedCurrentTermKeys}
                         onSelectionChange={handleTermChange}
                         listboxProps={commonListboxProps}
-                        isLoading={isTermsLoading}
                         className="w-full"
                       >
                         {generatedTerms.map((term) => (
@@ -331,7 +283,6 @@ export default function GradePage() {
       </div>
 
       {/* SECTION 3: CONTENT LIST */}
-      {/* CHANGE 3: h-auto cho mobile để scroll trang, min-h-0 cho desktop để scroll internal */}
       <section className="flex-1 flex flex-col h-auto md:min-h-0">
         <Card className="flex-1 h-full bg-white dark:bg-zinc-800 border-2 border-black rounded-none overflow-hidden relative shadow-pixel dark:shadow-pixel-dark">
           <div className="absolute inset-0 z-0 opacity-5 pointer-events-none bg-[radial-gradient(#000000_1px,transparent_1px)] dark:bg-[radial-gradient(#ffffff_1px,transparent_1px)] bg-size-[10px_10px]" />
@@ -362,9 +313,6 @@ export default function GradePage() {
                 </div>
               </div>
             ) : (
-              // CHANGE 4: Điều kiện render ScrollShadow
-              // Mobile: Div thường (để scroll toàn trang)
-              // Desktop: ScrollShadow (để scroll nội bộ)
               <>
                 <div className="block md:hidden w-full h-full">
                   <div className="flex flex-col">
@@ -372,7 +320,6 @@ export default function GradePage() {
                       <SubjectRow key={sub.code} subject={sub} onSave={saveGrades} />
                     ))}
                   </div>
-                  {/* Spacer cho mobile scroll */}
                   <div className="h-10" />
                 </div>
 
@@ -399,7 +346,7 @@ export default function GradePage() {
                 Hướng Dẫn: Theo Dõi Điểm Số
               </ModalHeader>
               <ModalBody className="py-4 flex flex-col gap-3 text-sm md:text-base leading-relaxed text-black dark:text-white">
-                <p><strong>Chọn Kỳ Học:</strong> Sử dụng bộ lọc "Current Term" để xem danh sách môn học và điểm số của từng học kỳ cụ thể.</p>
+                <p><strong>Chọn Kỳ Học:</strong> Sử dụng bộ lọc &quot;Current Term&quot; để xem danh sách môn học và điểm số của từng học kỳ cụ thể.</p>
                 <p><strong>Cập Nhật Điểm:</strong> Nhấn vào biểu tượng bút chì (hoặc nút Save) để bật chế độ lưu/chỉnh sửa. Bạn có thể nhập điểm mới cho các bài kiểm tra chuyên cần (Attendance), thi giữa kỳ, cuối kỳ... cho từng môn.</p>
                 <p><strong>Tính Điểm Trung Bình (GPA):</strong> Hệ thống tự động tính toán điểm trung bình tích lũy của học kỳ hiện tại (Term GPA) dựa trên số tín chỉ và điểm số của môn học đó.</p>
                 <p><strong>Phân Tích (Analytics):</strong> Chuyển sang nút Analytics để xem các biểu đồ thống kê chi tiết toàn bộ quá trình học tập của bạn.</p>

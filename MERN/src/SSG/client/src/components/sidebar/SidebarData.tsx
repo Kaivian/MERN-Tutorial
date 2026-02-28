@@ -4,6 +4,7 @@ import { InternalIconName } from "../icons/IconSwitch";
 import {
   User, ShieldUser,
 } from '@solar-icons/react';
+import { GraduationCap } from 'lucide-react';
 import { siteConfig } from "@/config/site.config";
 
 export interface SidebarItem {
@@ -23,7 +24,7 @@ export interface SidebarSection {
   items: SidebarItem[];
 }
 
-export const getSidebarSections = (t: any): SidebarSection[] => [
+export const getSidebarSections = (t: (key: string) => string): SidebarSection[] => [
   {
     title: t('sidebar.management') || "Management",
     items: [
@@ -72,7 +73,7 @@ export const getSidebarSections = (t: any): SidebarSection[] => [
   },
 ];
 
-export const getSidebarSections2 = (t: any): SidebarSection[] => [
+export const getSidebarSections2 = (t: (key: string) => string): SidebarSection[] => [
   {
     title: t('sidebar.admin') || "Quản trị",
     items: [
@@ -90,6 +91,14 @@ export const getSidebarSections2 = (t: any): SidebarSection[] => [
         iconSize: 31,
         requiredPerms: siteConfig.links.role.requiredPerms,
       },
+      {
+        key: "curriculums",
+        label: t('links.curriculums'),
+        icon: (props: React.SVGProps<SVGSVGElement>) => <GraduationCap {...props} />,
+        iconSize: 31,
+        requiredPerms: siteConfig.links.curriculums.requiredPerms,
+      },
     ],
   },
 ];
+

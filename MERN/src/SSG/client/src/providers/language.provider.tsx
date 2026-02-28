@@ -19,11 +19,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         // Load preference from local storage on mount
         const savedLang = localStorage.getItem("app-language") as Language;
         if (savedLang && (savedLang === "en" || savedLang === "vi")) {
-            setLanguageState(savedLang);
             document.documentElement.lang = savedLang;
         } else {
             document.documentElement.lang = "en"; // Default
         }
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
     }, []);
 

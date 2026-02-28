@@ -10,6 +10,7 @@ import { useTasks } from "@/hooks/useTasks";
 import axiosInstance from "@/utils/axios-client.utils";
 import { UserService } from "@/services/user.service";
 import { RoleService } from "@/services/role.service";
+import { adminCurriculumService } from "@/services/curriculum.service";
 
 export default function DashboardPage() {
   const { user, hasPermission } = useAuth();
@@ -22,6 +23,7 @@ export default function DashboardPage() {
 
   const canViewUsers = hasPermission("read_users");
   const canViewRoles = hasPermission("read_roles");
+  const canViewCurriculum = hasPermission("curriculums:manage");
 
   // --- Grade Data ---
   const { data: userCurriculum, isLoading: isCurriculumLoading } = useUserCurriculum();
@@ -49,6 +51,14 @@ export default function DashboardPage() {
     totalRoles: 0,
     loadingUsers: false,
     loadingRoles: false
+  });
+
+  // --- Curriculum Admin Data ---
+  const [curriculumData, setCurriculumData] = useState({
+    totalCategories: 0,
+    totalMajors: 0,
+    totalClasses: 0,
+    loading: false
   });
 
   useEffect(() => {
@@ -93,6 +103,29 @@ export default function DashboardPage() {
 
     fetchAdminSummaries();
   }, [canViewUsers, canViewRoles]);
+
+  useEffect(() => {
+    const fetchCurriculumSummary = async () => {
+      if (!canViewCurriculum) return;
+      setCurriculumData(prev => ({ ...prev, loading: true }));
+      try {
+        const [catRes, majorRes, classRes] = await Promise.all([
+          adminCurriculumService.getMajorCategories(),
+          adminCurriculumService.getMajors(),
+          adminCurriculumService.getClasses()
+        ]);
+        setCurriculumData({
+          totalCategories: catRes.data?.length || 0,
+          totalMajors: majorRes.data?.length || 0,
+          totalClasses: classRes.data?.length || 0,
+          loading: false
+        });
+      } catch {
+        setCurriculumData(prev => ({ ...prev, loading: false }));
+      }
+    };
+    fetchCurriculumSummary();
+  }, [canViewCurriculum]);
 
   const retroCardStyle = "border-4 border-black shadow-[4px_4px_0_rgba(0,0,0,1)] rounded-none bg-white dark:bg-zinc-800 text-black dark:text-white transition-transform hover:-translate-y-1 hover:shadow-[6px_6px_0_rgba(0,0,0,1)] duration-200";
   const retroHeaderStyle = "border-b-4 border-black font-jersey10 uppercase tracking-widest text-xl px-4 py-3 bg-zinc-100 dark:bg-zinc-900 flex items-center justify-between";
@@ -319,6 +352,48 @@ export default function DashboardPage() {
               </div>
               <Button as={Link} href="/roles" className={cn(pixelButtonContentStyle, "mt-4 bg-amber-400 dark:bg-amber-600 text-black dark:text-white w-full border-black shrink-0")}>
                 Manage Roles <i className="hn hn-arrow-right ml-1"></i>
+              </Button>
+            </CardBody>
+          </Card>
+        )}
+
+        {/* --- Curriculum Admin Summary --- */}
+        {canViewCurriculum && (
+          <Card className={retroCardStyle}>
+            <CardHeader className={cn(retroHeaderStyle, "bg-orange-100 dark:bg-orange-900")}>
+              <div className="flex items-center gap-2">
+                <i className="hn hn-book-open text-orange-500 dark:text-orange-400 text-2xl drop-shadow-[1px_1px_0_rgba(0,0,0,1)]"></i>
+                <span className="text-black dark:text-white uppercase tracking-widest font-bold">Curriculum Admin</span>
+              </div>
+            </CardHeader>
+            <CardBody className="p-5 flex flex-col justify-between h-full relative overflow-hidden min-h-[220px]">
+              <div className="absolute inset-0 z-0 opacity-5 pointer-events-none bg-[radial-gradient(#ea580c_1px,transparent_1px)] bg-size-[20px_20px]" />
+              <div className="z-10 flex-1 flex flex-col justify-center gap-3">
+                {curriculumData.loading ? (
+                  <Spinner color="warning" />
+                ) : (
+                  <>
+                    <div className="flex justify-between items-center bg-zinc-50 dark:bg-zinc-900 border-2 border-black p-3 shadow-inner">
+                      <span className="font-bold text-zinc-500 text-sm uppercase">Categories</span>
+                      <span className="text-3xl text-orange-500 dark:text-orange-400 font-black drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">
+                        {curriculumData.totalCategories}
+                      </span>
+                    </div>
+                    <div className="flex gap-3">
+                      <div className="flex-1 flex justify-between items-center bg-zinc-50 dark:bg-zinc-900 border-2 border-black p-2 shadow-inner">
+                        <span className="font-bold text-zinc-500 text-xs uppercase">Majors</span>
+                        <span className="text-xl text-orange-500 dark:text-orange-400 font-black">{curriculumData.totalMajors}</span>
+                      </div>
+                      <div className="flex-1 flex justify-between items-center bg-zinc-50 dark:bg-zinc-900 border-2 border-black p-2 shadow-inner">
+                        <span className="font-bold text-zinc-500 text-xs uppercase">Classes</span>
+                        <span className="text-xl text-orange-500 dark:text-orange-400 font-black">{curriculumData.totalClasses}</span>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+              <Button as={Link} href="/curriculums" className={cn(pixelButtonContentStyle, "mt-4 bg-orange-400 dark:bg-orange-600 text-black dark:text-white w-full border-black shrink-0")}>
+                Manage Curriculums <i className="hn hn-arrow-right ml-1"></i>
               </Button>
             </CardBody>
           </Card>

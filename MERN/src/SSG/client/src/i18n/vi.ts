@@ -54,6 +54,7 @@ export const vi = {
         deadlineManager: "Quản lý Deadline",
         userAccount: "Tài khoản người dùng",
         roles: "Vai trò",
+        curriculums: "Chương trình đào tạo",
     },
     navbar: {
         brand: "MERN Frontend",

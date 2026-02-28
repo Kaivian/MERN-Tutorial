@@ -2,61 +2,44 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { useAuth } from "@/providers/auth.provider";
-import { useCurriculumPrograms, useCurriculumSemesters } from "@/hooks/useCurriculum";
+import {
+    useAdminHierarchyCategories,
+    useAdminHierarchyMajors,
+    useAdminHierarchyClasses,
+} from "@/hooks/useCurriculum";
 import { useUserCurriculum } from "@/hooks/useUserCurriculum";
 import { useLanguage } from "@/providers/language.provider";
 import {
     Card,
-    CardHeader,
     CardBody,
     Select,
     SelectItem,
     Button,
     Selection,
-    Input,
-    cn
 } from "@heroui/react";
 import { useTranslation } from "@/i18n";
-
-// --- DATA DEFINITIONS ---
-const getMajorGroups = (t: any) => [
-    {
-        key: "it_block",
-        label: t('majors.it_block'),
-        items: [
-            { key: "it", label: t('majors.it') },
-            { key: "se", label: t('majors.se') },
-            { key: "ai", label: t('majors.ai') },
-            { key: "is", label: t('majors.is') },
-            { key: "gd", label: t('majors.gd') },
-        ]
-    },
-    {
-        key: "comm_block",
-        label: t('majors.comm_block'),
-        items: [{ key: "multi", label: t('majors.multi') }]
-    },
-];
+import { AdminClass } from "@/types/curriculum.types";
 
 export default function ProfilePage() {
     const { user } = useAuth();
     const { language, setLanguage } = useLanguage();
     const { t } = useTranslation();
-    const majorGroups = useMemo(() => getMajorGroups(t), [t]);
 
-    // Local state for editing form before saving
+    // Edit state — stores IDs from the new hierarchy
     const [editContext, setEditContext] = useState({
-        block: null as string | null,
-        program: null as string | null,
-        cohort_class: null as string | null,
-        term: null as string | null,
+        block: null as string | null,        // MajorCategory._id
+        program: null as string | null,      // Major._id
+        cohort_class: null as string | null, // AdminClass._id
+        term: null as string | null,         // "sem_1", "sem_2", …
     });
 
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
 
     // --- API DATA FETCHING ---
-    const { data: programsData } = useCurriculumPrograms();
+    const { data: categories = [], isLoading: catsLoading } = useAdminHierarchyCategories();
+    const { data: majors = [], isLoading: majorsLoading } = useAdminHierarchyMajors(editContext.block ?? undefined);
+    const { data: classes = [], isLoading: classesLoading } = useAdminHierarchyClasses(editContext.program ?? undefined);
     const { data: userCurriculum, updateContext, isLoading: isContextLoading } = useUserCurriculum();
 
     // Load existing context into editable state
@@ -83,39 +66,22 @@ export default function ProfilePage() {
     };
 
     const handleBlockChange = (keys: Selection) => {
-        setEditContext({
-            block: getSingleKey(keys),
-            program: null,
-            cohort_class: null,
-            term: null
-        });
+        setEditContext({ block: getSingleKey(keys), program: null, cohort_class: null, term: null });
         setSaveSuccess(false);
     };
 
     const handleProgramChange = (keys: Selection) => {
-        setEditContext(prev => ({
-            ...prev,
-            program: getSingleKey(keys),
-            cohort_class: null,
-            term: null
-        }));
+        setEditContext(prev => ({ ...prev, program: getSingleKey(keys), cohort_class: null, term: null }));
         setSaveSuccess(false);
     };
 
     const handleClassChange = (keys: Selection) => {
-        setEditContext(prev => ({
-            ...prev,
-            cohort_class: getSingleKey(keys),
-            term: "sem_1"
-        }));
+        setEditContext(prev => ({ ...prev, cohort_class: getSingleKey(keys), term: "sem_1" }));
         setSaveSuccess(false);
     };
 
     const handleTermChange = (keys: Selection) => {
-        setEditContext(prev => ({
-            ...prev,
-            term: getSingleKey(keys)
-        }));
+        setEditContext(prev => ({ ...prev, term: getSingleKey(keys) }));
         setSaveSuccess(false);
     };
 
@@ -128,19 +94,15 @@ export default function ProfilePage() {
         setTimeout(() => setSaveSuccess(false), 3000);
     };
 
-    // Derivative Options
-    const availablePrograms = useMemo(() => {
-        const group = majorGroups.find((g) => g.key === editContext.block);
-        return group ? group.items : [];
-    }, [editContext.block]);
-
-    const availableClasses = useMemo(() => {
-        if (!editContext.program || !programsData) return [];
-        const program = programsData[editContext.program];
-        return program ? program.classes : [];
-    }, [editContext.program, programsData]);
-
-    const { data: generatedTerms } = useCurriculumSemesters(editContext.cohort_class || undefined);
+    // Find selected class to get totalSemesters for the term dropdown
+    const selectedClassObj: AdminClass | undefined = classes.find(c => c._id === editContext.cohort_class);
+    const totalSemesters = selectedClassObj?.totalSemesters ?? 0;
+    const generatedTerms = useMemo(() => {
+        return Array.from({ length: totalSemesters }, (_, i) => ({
+            key: `sem_${i + 1}`,
+            label: `Semester ${i + 1}`,
+        }));
+    }, [totalSemesters]);
 
     // STYLES
     const commonSelectStyles = {
@@ -268,7 +230,9 @@ export default function ProfilePage() {
                         ) : null}
 
                         <div className="flex flex-col gap-4">
+                            {/* 1. Major Category (Block) */}
                             <Select
+                                isLoading={catsLoading}
                                 labelPlacement="outside"
                                 label={t('profile.major_block')}
                                 placeholder={t('profile.select_block')}
@@ -280,13 +244,15 @@ export default function ProfilePage() {
                                 classNames={getSelectStyles(false)}
                                 listboxProps={commonListboxProps}
                             >
-                                {majorGroups.map((group) => (
-                                    <SelectItem key={group.key}>{group.label}</SelectItem>
+                                {categories.map((cat) => (
+                                    <SelectItem key={cat._id}>{cat.name}</SelectItem>
                                 ))}
                             </Select>
 
+                            {/* 2. Major (Program) */}
                             <Select
                                 isDisabled={!editContext.block}
+                                isLoading={majorsLoading}
                                 labelPlacement="outside"
                                 label={t('profile.program')}
                                 placeholder={editContext.block ? t('profile.select_program') : t('profile.select_block_first')}
@@ -298,13 +264,15 @@ export default function ProfilePage() {
                                 classNames={getSelectStyles(!editContext.block)}
                                 listboxProps={commonListboxProps}
                             >
-                                {availablePrograms.map((major) => (
-                                    <SelectItem key={major.key}>{major.label}</SelectItem>
+                                {majors.map((major) => (
+                                    <SelectItem key={major._id}>{major.name} ({major.code})</SelectItem>
                                 ))}
                             </Select>
 
+                            {/* 3. AdminClass (Cohort/Class) */}
                             <Select
                                 isDisabled={!editContext.program}
+                                isLoading={classesLoading}
                                 labelPlacement="outside"
                                 label={t('profile.cohort_class')}
                                 placeholder={!editContext.program ? t('profile.select_program_first') : t('profile.select_class')}
@@ -316,11 +284,12 @@ export default function ProfilePage() {
                                 classNames={getSelectStyles(!editContext.program)}
                                 listboxProps={commonListboxProps}
                             >
-                                {availableClasses.map((cls) => (
-                                    <SelectItem key={cls.key}>{cls.label}</SelectItem>
+                                {classes.map((cls) => (
+                                    <SelectItem key={cls._id}>{cls.code} – {cls.name}</SelectItem>
                                 ))}
                             </Select>
 
+                            {/* 4. Semester (Term) */}
                             <Select
                                 isDisabled={!editContext.cohort_class}
                                 labelPlacement="outside"
