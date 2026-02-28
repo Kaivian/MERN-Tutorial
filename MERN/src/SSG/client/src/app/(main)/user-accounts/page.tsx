@@ -87,7 +87,7 @@ export default function UserAccountsPage() {
   }
 
   return (
-    <div className="w-full p-6 space-y-6 font-jersey10 tracking-wide">
+    <div className="w-full space-y-6 font-jersey10 tracking-wide">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-retro-bg dark:bg-retro-bg-dark p-6 border-4 border-black dark:border-white shadow-pixel dark:shadow-pixel-dark mb-8 gap-4">
         <div>
           <h1 className="text-4xl font-bold text-retro-orange uppercase drop-shadow-[2px_2px_0px_#000]">User Accounts</h1>
