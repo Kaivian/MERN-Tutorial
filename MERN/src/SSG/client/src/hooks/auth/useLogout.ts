@@ -2,7 +2,6 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { authService } from "@/services/auth-client.service";
 
 interface UseLogoutOptions {
@@ -10,7 +9,6 @@ interface UseLogoutOptions {
 }
 
 export const useLogout = (options?: UseLogoutOptions) => {
-  const router = useRouter();
   const onceRef = useRef(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -22,12 +20,12 @@ export const useLogout = (options?: UseLogoutOptions) => {
 
     try {
       await authService.logout();
-      router.replace(options?.redirectTo || "/login");
+      window.location.href = options?.redirectTo || "/login";
     } finally {
       setIsLoading(false);
       onceRef.current = false;
     }
-  }, [isLoading, options?.redirectTo, router]);
+  }, [isLoading, options?.redirectTo]);
 
   return {
     logout,

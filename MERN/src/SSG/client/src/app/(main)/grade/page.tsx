@@ -21,6 +21,8 @@ import { SubjectRow } from "@/components/grade/Subject";
 import { useUserCurriculum } from "@/hooks/useUserCurriculum";
 import { Spinner } from "@heroui/react";
 import { useTranslation } from "@/i18n";
+import { UserSubjectGrade } from "@/types/user-curriculum.types";
+import { userCurriculumService } from "@/services/user-curriculum.service";
 
 export default function GradePage() {
   const { user } = useAuth();
@@ -30,9 +32,39 @@ export default function GradePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const { isOpen: isGuideOpen, onOpen: onGuideOpen, onOpenChange: onGuideOpenChange } = useDisclosure();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [allSubjects, setAllSubjects] = useState<UserSubjectGrade[]>([]);
+  const [isSearchingAll, setIsSearchingAll] = useState(false);
 
   // --- API DATA ---
   const { data: userCurriculum, isLoading: isUserCurriculumLoading, saveGrades, refetch } = useUserCurriculum();
+
+  // Fetch all subjects dynamically when the user starts searching
+  React.useEffect(() => {
+    if (searchQuery && allSubjects.length === 0 && !isSearchingAll) {
+      setIsSearchingAll(true);
+      userCurriculumService.getContext('all')
+        .then((res: any) => {
+          if (res.data && res.data.subjects) {
+            setAllSubjects(res.data.subjects);
+          }
+        })
+        .catch((err: any) => console.error("Failed to load all subjects for search", err))
+        .finally(() => setIsSearchingAll(false));
+    }
+  }, [searchQuery, allSubjects.length, isSearchingAll]);
+
+  const handleSaveGradesWrapper = async (subjectId: string, payload: any) => {
+    await saveGrades(subjectId, payload);
+    // If we have all subjects loaded, we need to refresh them to get new grades
+    if (allSubjects.length > 0) {
+      userCurriculumService.getContext('all').then((res: any) => {
+        if (res.data && res.data.subjects) {
+          setAllSubjects(res.data.subjects);
+        }
+      });
+    }
+  };
 
   // Context values from server (read-only on Grade page — set on Profile page)
   const activeContext = userCurriculum?.active_context;
@@ -55,6 +87,15 @@ export default function GradePage() {
   }, [totalSemesters]);
 
   const currentSubjects = userCurriculum?.subjects || [];
+
+  const displaySubjects = useMemo(() => {
+    if (!searchQuery) return currentSubjects;
+    const lowerQuery = searchQuery.toLowerCase();
+    return currentSubjects.filter((sub) =>
+      sub.code.toLowerCase().includes(lowerQuery) || sub.name_en.toLowerCase().includes(lowerQuery)
+    );
+  }, [currentSubjects, searchQuery]);
+
   const termGpa = userCurriculum?.term_gpa;
   const isSubjectsLoading = isUserCurriculumLoading;
 
@@ -259,6 +300,8 @@ export default function GradePage() {
                     radius="none"
                     variant="bordered"
                     startContent={<i className="hn hn-search" />}
+                    value={searchQuery}
+                    onValueChange={setSearchQuery}
                   />
                   <Button as={Link} href="/grade/chart" radius="none" className={cn(buttonStyles, "px-4 font-bold tracking-wider uppercase hidden sm:flex")}>
                     {t('grade.analytics')}
@@ -305,7 +348,7 @@ export default function GradePage() {
                   <p>{t('grade.selectATermToBegin')}</p>
                 </div>
               </div>
-            ) : currentSubjects.length === 0 ? (
+            ) : displaySubjects.length === 0 ? (
               <div className="h-full flex items-center justify-center text-zinc-600 font-mono text-sm py-10 md:py-0">
                 <div className="text-center">
                   <i className="hn hn-folder-open text-4xl mb-2 opacity-50" />
@@ -316,8 +359,8 @@ export default function GradePage() {
               <>
                 <div className="block md:hidden w-full h-full">
                   <div className="flex flex-col">
-                    {currentSubjects.map((sub) => (
-                      <SubjectRow key={sub.code} subject={sub} onSave={saveGrades} />
+                    {displaySubjects.map((sub) => (
+                      <SubjectRow key={sub.code} subject={sub} onSave={handleSaveGradesWrapper} />
                     ))}
                   </div>
                   <div className="h-10" />
@@ -325,8 +368,8 @@ export default function GradePage() {
 
                 <ScrollShadow className="hidden md:block w-full h-full">
                   <div className="flex flex-col">
-                    {currentSubjects.map((sub) => (
-                      <SubjectRow key={sub.code} subject={sub} onSave={saveGrades} />
+                    {displaySubjects.map((sub) => (
+                      <SubjectRow key={sub.code} subject={sub} onSave={handleSaveGradesWrapper} />
                     ))}
                   </div>
                   <div className="h-20" />

@@ -9,8 +9,7 @@
 
 "use client";
 
-import { useTransition } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { addToast } from "@heroui/react";
 import { useApi } from "@/hooks/generals/useApi";
 import { authService } from "@/services/auth-client.service";
@@ -40,10 +39,8 @@ interface UseRegisterReturn {
  * @returns {UseRegisterReturn} An object containing the registration handler and loading state.
  */
 export const useRegister = (): UseRegisterReturn => {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const [isPending, startTransition] = useTransition();
-  
+
   // Initialize API hook with the registration service
   const { execute, loading } = useApi(authService.register);
 
@@ -80,7 +77,7 @@ export const useRegister = (): UseRegisterReturn => {
       // The server is expected to set HttpOnly cookies (accessToken, refreshToken)
       // immediately upon success, facilitating the "Auto-Login" pattern.
       const res = await execute(payload, { showToast: false });
-      
+
       // Guard clause: Ensure the response contains valid user data
       if (!res?.data?.user) return;
 
@@ -113,12 +110,8 @@ export const useRegister = (): UseRegisterReturn => {
       // ----------------------------------------------------------------------
       // 5. State Synchronization & Navigation
       // ----------------------------------------------------------------------
-      // Wrapping navigation in startTransition ensures that the UI remains
-      // responsive while Next.js re-validates server components (e.g., Layout headers).
-      startTransition(() => {
-        router.refresh(); // Invalidate client cache to reflect the new session
-        router.push(targetPath); // Navigate to the target route
-      });
+      // Force a full page reload to avoid Next.js router cache issues and ensure fresh server state
+      window.location.href = targetPath;
 
     } catch (error) {
       // Log warning for debugging purposes.
@@ -129,6 +122,6 @@ export const useRegister = (): UseRegisterReturn => {
 
   return {
     handleRegister,
-    isLoading: loading || isPending,
+    isLoading: loading,
   };
 };

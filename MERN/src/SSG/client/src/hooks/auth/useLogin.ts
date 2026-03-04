@@ -6,8 +6,7 @@
 
 "use client";
 
-import { useTransition } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { addToast } from "@heroui/react";
 import { useApi } from "@/hooks/generals/useApi";
 import { authService } from "@/services/auth-client.service";
@@ -20,9 +19,7 @@ interface UseLoginReturn {
 }
 
 export const useLogin = (): UseLoginReturn => {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const [isPending, startTransition] = useTransition();
   const { execute, loading } = useApi(authService.login);
 
   const handleLogin = async (payload: LoginPayload): Promise<void> => {
@@ -88,13 +85,9 @@ export const useLogin = (): UseLoginReturn => {
       }
 
       // 5. Sync Server State & Navigate
-      // Wrapping both actions in startTransition ensures high-priority UI updates 
-      // are not blocked and helps coordinate the router cache invalidation.
-      // It fetch 2 times but it's acceptable/
-      startTransition(() => {
-        router.refresh(); // Invalidate Client Cache & Re-fetch Server Components (RootLayout)
-        router.push(targetPath); // Navigate to the determined path
-      });
+      // Force a full page reload to ensure all cookies are sent to the Next.js server
+      // and the client-side cache is completely cleared.
+      window.location.href = targetPath;
 
     } catch (error) {
       console.warn("[useLogin] Login process failed:", error);
@@ -107,6 +100,6 @@ export const useLogin = (): UseLoginReturn => {
     handleLogin,
     // Combine API loading state with the transition pending state
     // to prevent user interaction while redirecting.
-    isLoading: loading || isPending,
+    isLoading: loading,
   };
 };

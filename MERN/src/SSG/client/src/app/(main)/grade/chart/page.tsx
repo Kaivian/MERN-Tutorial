@@ -35,10 +35,10 @@ import {
 import { useUserAnalytics } from "@/hooks/useUserAnalytics";
 import { UserAnalyticsTermDetail } from "@/types/user-curriculum.types";
 import { useTranslation } from "@/i18n";
+import { useUserCurriculum } from "@/hooks/useUserCurriculum";
 
 // New Components
 import GradeFrequencyChart from "./components/GradeFrequencyChart";
-import GpaAreaChart from "./components/GpaAreaChart";
 import SubjectProgressionChart from "./components/SubjectProgressionChart";
 import GradeBoxPlot from "./components/GradeBoxPlot";
 import WeightStackedChart from "./components/WeightStackedChart";
@@ -48,6 +48,7 @@ export default function GradeChartPage() {
     const { user } = useAuth();
     const { data: analyticsData, isLoading } = useUserAnalytics();
     const { t } = useTranslation();
+    const { data: userCurriculum } = useUserCurriculum();
 
     // --- COMPARISON STATE (Legacy Bar Chart) ---
     const [selectedTerm1, setSelectedTerm1] = useState<Selection>(new Set([]));
@@ -133,8 +134,45 @@ export default function GradeChartPage() {
 
     // --- MEMOIZED CHARTS DATA (Overall) ---
     const lineChartData = useMemo(() => {
-        return analyticsData?.termGpas || [];
-    }, [analyticsData]);
+        const rawData = analyticsData?.termGpas || [];
+        const totalSemesters = userCurriculum?.total_semesters || 0;
+
+        if (totalSemesters <= 0) return rawData.map(d => ({ ...d, term: d.term.replace('sem_', 'Sem ') }));
+
+        let lastCumulative = null;
+        for (let i = rawData.length - 1; i >= 0; i--) {
+            if (rawData[i].cumulativeGpa !== null) {
+                lastCumulative = rawData[i].cumulativeGpa;
+                break;
+            }
+        }
+
+        const fullData = [];
+        for (let i = 1; i <= totalSemesters; i++) {
+            const termId = `sem_${i}`;
+            const existing = rawData.find(d => d.term === termId);
+            if (existing) {
+                fullData.push({ ...existing, term: `Sem ${i}`, goalGpa: null });
+            } else {
+                fullData.push({
+                    term: `Sem ${i}`,
+                    gpa: null,
+                    cumulativeGpa: null,
+                    goalGpa: lastCumulative
+                });
+            }
+        }
+
+        let foundLast = false;
+        for (let i = fullData.length - 1; i >= 0; i--) {
+            if (fullData[i].cumulativeGpa !== null && !foundLast) {
+                fullData[i].goalGpa = fullData[i].cumulativeGpa;
+                foundLast = true;
+            }
+        }
+
+        return fullData;
+    }, [analyticsData, userCurriculum]);
 
     const pieChartData = useMemo(() => {
         return analyticsData?.subjectStatuses || [];
@@ -389,8 +427,9 @@ export default function GradeChartPage() {
                                                 wrapperClassName="dark:!bg-[#18181b] !bg-white dark:!text-white !text-black shadow-lg"
                                             />
                                             <Legend />
-                                            <Line type="monotone" dataKey="gpa" name="Term GPA" stroke="#e6b689" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                                            <Line type="monotone" dataKey="cumulativeGpa" name="Cumulative GPA" stroke="#10b981" strokeWidth={3} dot={{ r: 4 }} />
+                                            <Line type="monotone" dataKey="gpa" name="Term GPA" stroke="#e6b689" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} connectNulls />
+                                            <Line type="monotone" dataKey="cumulativeGpa" name="Cumulative GPA" stroke="#10b981" strokeWidth={3} dot={{ r: 4 }} connectNulls />
+                                            <Line type="monotone" dataKey="goalGpa" name="Maintenance Goal" stroke="#ef4444" strokeDasharray="5 5" strokeWidth={2} dot={false} connectNulls />
                                         </LineChart>
                                     </ResponsiveContainer>
                                 </div>
@@ -434,11 +473,6 @@ export default function GradeChartPage() {
                                 </div>
                             </CardBody>
                         </Card>
-
-                        {/* NEW AREA CHART FOR MAGNITUDE OF CHANGE */}
-                        <div className="lg:col-span-3">
-                            <GpaAreaChart data={lineChartData} />
-                        </div>
 
                         {/* --- BAR CHART: TERM COMPARER --- */}
                         <Card className="lg:col-span-3 min-h-[400px] bg-white dark:bg-[#18181b] border-t-0 border-x-0 border-b-2 border-b-blue-500 rounded-xl relative shadow-none dark:border-divider mb-10">
@@ -537,11 +571,10 @@ export default function GradeChartPage() {
                                 <p><strong>Grade Box Plot (Biểu Đồ Hộp):</strong> Giúp bạn nắm bắt biên độ dao động, điểm trung bình và mức độ phân tán điểm số của từng học kỳ hoặc môn học.</p>
                                 <p><strong>Grade Heatmap (Biểu Đồ Nhiệt):</strong> Trực quan hóa điểm số theo từng môn và học kỳ bằng màu sắc. Màu càng đậm thể hiện điểm số càng cao.</p>
                                 <p><strong>Subject Progression (Tiến Độ Môn Học):</strong> Theo dõi sự thay đổi điểm số qua các bài kiểm tra/đánh giá trong cùng một môn học theo thời gian.</p>
-                                <p><strong>Weight Stacked (Trọng Số Điểm):</strong> Hiển thị tỉ trọng của từng điểm thành phần cấu thành nên điểm tổng kết của môn học.</p>
-                                <p><strong>Overall GPA Trend (Xu Hướng GPA Tổng Thể):</strong> Biểu đồ đường so sánh giữa GPA của từng học kỳ riêng biệt (Term GPA) và GPA tích lũy tổng cộng (Cumulative GPA).</p>
-                                <p><strong>Subject Statuses (Trạng Thái Môn Học):</strong> Biểu đồ tròn cho thấy tỷ lệ hoàn thành môn học (Qua môn / Trượt / Học lại).</p>
-                                <p><strong>GPA Area Chart (Biểu Đồ Diện Tích Tích Lũy):</strong> Quan sát độ lớn và sự biến động của điểm GPA qua các kỳ học.</p>
-                                <p><strong>Term Comparer (So Sánh Học Kỳ):</strong> Lựa chọn 2 học kỳ khác nhau để phân tích, đối chiếu trực tiếp điểm trung bình giữa chúng bằng biểu đồ cột.</p>
+                                <p><strong>Trọng Số Điểm (Weight Stacked):</strong> Hiển thị tỉ trọng của từng điểm thành phần cấu thành nên điểm tổng kết của môn học.</p>
+                                <p><strong>Xu Hướng GPA Tổng Thể (Overall GPA Trend):</strong> Biểu đồ đường so sánh giữa GPA của từng học kỳ riêng biệt (Term GPA) và GPA tích lũy tổng cộng (Cumulative GPA). Đường đứt nét đỏ thể hiện mục tiêu duy trì điểm số cho các kỳ tương lai.</p>
+                                <p><strong>Trạng Thái Môn Học (Subject Statuses):</strong> Biểu đồ tròn cho thấy tỷ lệ hoàn thành môn học (Qua môn / Trượt / Học lại).</p>
+                                <p><strong>So Sánh Học Kỳ (Term Comparer):</strong> Lựa chọn 2 học kỳ khác nhau để phân tích, đối chiếu trực tiếp điểm trung bình giữa chúng bằng biểu đồ cột.</p>
                             </ModalBody>
                             <ModalFooter className="border-t-4 border-black shrink-0">
                                 <Button color="primary" onPress={onClose} className="border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] font-bold uppercase">

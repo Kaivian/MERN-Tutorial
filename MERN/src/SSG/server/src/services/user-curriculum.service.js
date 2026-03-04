@@ -100,8 +100,11 @@ class UserCurriculumService {
         const { labels: contextLabels, totalSemesters } = await this._resolveContextLabels(activeContext);
 
         if (activeContext.cohort_class && termToUse) {
-            const termIndexMatch = termToUse.match(/\d+/);
-            const semIndex = termIndexMatch ? parseInt(termIndexMatch[0], 10) : null;
+            let semIndex = null;
+            if (termToUse !== 'all') {
+                const termIndexMatch = termToUse.match(/\d+/);
+                semIndex = termIndexMatch ? parseInt(termIndexMatch[0], 10) : null;
+            }
 
             const subjects = await this._fetchSubjects(activeContext.cohort_class, semIndex);
 
@@ -124,19 +127,21 @@ class UserCurriculumService {
                     };
                 });
 
-                // Calculate Term GPA
-                let totalQualityPoints = 0;
-                let totalCredits = 0;
+                // Calculate Term GPA (Only meaningful if a specific term is selected)
+                if (termToUse !== 'all') {
+                    let totalQualityPoints = 0;
+                    let totalCredits = 0;
 
-                formattedSubjects.forEach(sub => {
-                    if (sub.score !== null) {
-                        totalQualityPoints += (sub.score * sub.credit);
-                        totalCredits += sub.credit;
+                    formattedSubjects.forEach(sub => {
+                        if (sub.score !== null) {
+                            totalQualityPoints += (sub.score * sub.credit);
+                            totalCredits += sub.credit;
+                        }
+                    });
+
+                    if (totalCredits > 0) {
+                        termGpa = totalQualityPoints / totalCredits;
                     }
-                });
-
-                if (totalCredits > 0) {
-                    termGpa = totalQualityPoints / totalCredits;
                 }
             }
         }

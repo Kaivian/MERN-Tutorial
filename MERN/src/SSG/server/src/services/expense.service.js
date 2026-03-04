@@ -108,7 +108,7 @@ class ExpenseService {
   async getDashboardSummary(userId) {
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
 
     // 1. Overview
     const overview = await expenseRepository.getMonthlySummary(userId, firstDay, lastDay);
@@ -119,7 +119,9 @@ class ExpenseService {
 
     // 3. Budgets
     const budgets = await expenseRepository.getBudgets(userId);
+    let totalBudgetLimit = 0;
     const budgetUsage = budgets.map(b => {
+      totalBudgetLimit += b.monthlyLimit;
       const spentInfo = categoriesSum.find(c => c._id === b.category);
       const totalSpent = spentInfo ? spentInfo.totalSpent : 0;
       return {
@@ -131,9 +133,12 @@ class ExpenseService {
       };
     });
 
+    overview.totalIncome = totalBudgetLimit;
+    overview.netCashFlow = totalBudgetLimit - overview.totalExpense;
+
     // 4. Insights
     const prevMonthFirstDay = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const prevMonthLastDay = new Date(now.getFullYear(), now.getMonth(), 0);
+    const prevMonthLastDay = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
     const prevMonthOverview = await expenseRepository.getMonthlySummary(userId, prevMonthFirstDay, prevMonthLastDay);
 
     const daysPassed = now.getDate();

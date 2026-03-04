@@ -132,7 +132,7 @@ export default function DashboardPage() {
   const pixelButtonContentStyle = "font-bold tracking-widest uppercase text-sm border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all";
 
   return (
-    <div className="flex flex-col gap-6 w-full h-full overflow-y-auto pb-10 bg-content2 dark:bg-background transition-colors duration-300 rounded-2xl md:pr-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-zinc-300 dark:[&::-webkit-scrollbar-thumb]:bg-zinc-700">
+    <div className="flex flex-col gap-6 w-full h-full overflow-y-auto pb-10 bg-content2 dark:bg-background transition-colors duration-300 md:pr-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-zinc-300 dark:[&::-webkit-scrollbar-thumb]:bg-zinc-700">
 
       {/* Welcome Header */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between bg-white dark:bg-zinc-800 p-6 shadow-pixel dark:shadow-pixel-dark border-4 border-black shrink-0 relative overflow-hidden">
