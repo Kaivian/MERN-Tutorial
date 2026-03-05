@@ -12,10 +12,6 @@ import {
   Chip,
   useDisclosure,
   Spinner,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem
 } from "@heroui/react";
 import { RoleService } from "@/services/role.service";
 import { Role } from "@/types/rbac.types";
@@ -113,8 +109,9 @@ export default function RolesPage() {
         aria-label="Roles table"
         classNames={{
           wrapper: "rounded-none border-4 border-black dark:border-white shadow-pixel dark:shadow-pixel-dark bg-retro-bg dark:bg-retro-bg-dark p-0 overflow-hidden",
-          th: "bg-retro-orange text-black font-bold text-xl uppercase rounded-none border-b-4 border-black dark:border-white py-4",
-          td: "text-lg border-b-2 border-black/10 dark:border-white/10 py-3",
+          th: "bg-retro-orange text-black font-bold text-xl uppercase rounded-none border-b-4 border-black dark:border-white py-4 px-6",
+          td: "text-lg border-b-2 border-black/10 dark:border-white/10 py-4 px-6",
+          tr: "hover:bg-black/5 dark:hover:bg-white/5 transition-colors group",
         }}
       >
         <TableHeader>
@@ -160,39 +157,63 @@ export default function RolesPage() {
                 </Chip>
               </TableCell>
               <TableCell>
-                <div className="relative flex justify-end items-center gap-2">
-                  <Dropdown classNames={{ content: "rounded-none border-4 border-black shadow-pixel bg-retro-bg dark:bg-retro-bg-dark font-jersey10 text-xl" }}>
-                    <DropdownTrigger>
-                      <Button isIconOnly size="sm" className="bg-transparent rounded-none hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
-                        <MoreVertical className="text-default-600 dark:text-default-300" />
-                      </Button>
-                    </DropdownTrigger>
-                    <DropdownMenu disabledKeys={!canEdit ? ["edit", "toggle-status", "delete"] : []} itemClasses={{ base: "rounded-none data-[hover=true]:bg-black/10 dark:data-[hover=true]:bg-white/10" }}>
-                      <DropdownItem key="edit" startContent={<Edit2 size={16} />} onPress={() => { setSelectedRole(item); onOpen(); }}>
-                        Edit Role
-                      </DropdownItem>
-                      <DropdownItem
-                        key="toggle-status"
-                        color={item.status === 'inactive' ? "success" : "warning"}
-                        className={item.status === 'inactive' ? "text-success" : "text-warning"}
-                        startContent={item.status === 'inactive' ? <Unlock size={16} /> : <Lock size={16} />}
-                        onPress={() => !item.isSystem && handleStatusChange(item)}
-                        isDisabled={item.isSystem}
-                      >
-                        {item.status === 'inactive' ? 'Activate Role' : 'Deactivate Role'}
-                      </DropdownItem>
-                      <DropdownItem
-                        key="delete"
-                        color="danger"
-                        className="text-danger"
-                        startContent={<Trash2 size={16} />}
-                        onPress={() => !item.isSystem && handleDelete(item)}
-                        isDisabled={item.isSystem || !canDelete}
-                      >
-                        Delete Role
-                      </DropdownItem>
-                    </DropdownMenu>
-                  </Dropdown>
+                <div className="flex justify-end items-center gap-3 w-min ml-auto">
+                  <Button
+                    size="sm"
+                    className="bg-warning text-black rounded-none border-2 border-transparent group-hover:border-black dark:group-hover:border-white shadow-none group-hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all font-jersey10 text-lg uppercase hidden xl:flex"
+                    startContent={<Edit2 size={16} />}
+                    onPress={() => { setSelectedRole(item); onOpen(); }}
+                    isDisabled={!canEdit}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    isIconOnly
+                    size="sm"
+                    className="bg-warning text-black rounded-none border-2 border-transparent group-hover:border-black dark:group-hover:border-white shadow-none group-hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all xl:hidden"
+                    onPress={() => { setSelectedRole(item); onOpen(); }}
+                    isDisabled={!canEdit}
+                  >
+                    <Edit2 size={16} />
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    className={`${item.status === 'inactive' ? 'bg-success' : 'bg-[#a3a3a3]'} text-black rounded-none border-2 border-transparent group-hover:border-black dark:group-hover:border-white shadow-none group-hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all font-jersey10 text-lg uppercase hidden xl:flex`}
+                    startContent={item.status === 'inactive' ? <Unlock size={16} /> : <Lock size={16} />}
+                    onPress={() => !item.isSystem && handleStatusChange(item)}
+                    isDisabled={item.isSystem || !canEdit}
+                  >
+                    {item.status === 'inactive' ? 'Activate' : 'Deactivate'}
+                  </Button>
+                  <Button
+                    isIconOnly
+                    size="sm"
+                    className={`${item.status === 'inactive' ? 'bg-success' : 'bg-[#a3a3a3]'} text-black rounded-none border-2 border-transparent group-hover:border-black dark:group-hover:border-white shadow-none group-hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all xl:hidden`}
+                    onPress={() => !item.isSystem && handleStatusChange(item)}
+                    isDisabled={item.isSystem || !canEdit}
+                  >
+                    {item.status === 'inactive' ? <Unlock size={16} /> : <Lock size={16} />}
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    className={`bg-danger text-black rounded-none border-2 border-transparent group-hover:border-black dark:group-hover:border-white shadow-none group-hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all font-jersey10 text-lg uppercase hidden xl:flex`}
+                    startContent={<Trash2 size={16} />}
+                    onPress={() => !item.isSystem && handleDelete(item)}
+                    isDisabled={item.isSystem || !canDelete}
+                  >
+                    Delete
+                  </Button>
+                  <Button
+                    isIconOnly
+                    size="sm"
+                    className={`bg-danger text-black rounded-none border-2 border-transparent group-hover:border-black dark:group-hover:border-white shadow-none group-hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all xl:hidden`}
+                    onPress={() => !item.isSystem && handleDelete(item)}
+                    isDisabled={item.isSystem || !canDelete}
+                  >
+                    <Trash2 size={16} />
+                  </Button>
                 </div>
               </TableCell>
             </TableRow>

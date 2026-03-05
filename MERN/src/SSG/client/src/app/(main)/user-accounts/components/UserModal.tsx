@@ -184,28 +184,26 @@ export function UserModal({ isOpen, onOpenChange, user, onRefresh }: UserModalPr
               />
 
               <div className="mt-2 bg-white dark:bg-black p-4 border-4 border-black dark:border-white shadow-pixel dark:shadow-pixel-dark">
-                <CheckboxGroup
-                  label="Assign Roles"
-                  orientation="horizontal"
-                  value={formData.roles}
-                  onValueChange={(val) => setFormData({ ...formData, roles: val })}
-                  classNames={{
-                    label: "font-jersey10 text-xl text-black dark:text-white mb-2",
-                  }}
-                >
-                  {availableRoles.map(r => (
-                    <Checkbox
-                      key={r.slug}
-                      value={r.slug}
-                      classNames={{
-                        label: "font-jersey10 text-lg",
-                        wrapper: "rounded-none border-2 border-black dark:border-white",
-                      }}
-                    >
-                      {r.name}
-                    </Checkbox>
-                  ))}
-                </CheckboxGroup>
+                <p className="font-jersey10 text-xl text-black dark:text-white mb-4">Assign Roles</p>
+                <div className="grid grid-cols-2 gap-4">
+                  {availableRoles.map(r => {
+                    const isSelected = formData.roles.includes(r.slug);
+                    return (
+                      <div
+                        key={r.slug}
+                        onClick={() => {
+                          if (isSelected) setFormData({ ...formData, roles: formData.roles.filter(role => role !== r.slug) });
+                          else setFormData({ ...formData, roles: [...formData.roles, r.slug] });
+                        }}
+                        className={`cursor-pointer border-4 transition-all duration-200 p-3 font-jersey10 flex items-center justify-center text-xl uppercase ${isSelected
+                          ? 'border-black dark:border-white bg-retro-orange text-black shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] translate-y-[-2px]'
+                          : 'border-black/30 dark:border-white/30 bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 hover:border-black dark:hover:border-white shadow-none'}`}
+                      >
+                        {r.name}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
             </ModalBody>

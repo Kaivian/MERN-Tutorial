@@ -14,10 +14,6 @@ import {
   Chip,
   useDisclosure,
   Spinner,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem
 } from "@heroui/react";
 import { UserService } from "@/services/user.service";
 import { User } from "@/types/auth.types";
@@ -110,10 +106,10 @@ export default function UserAccountsPage() {
           isClearable
           className="w-full sm:max-w-[44%] font-jersey10 text-xl"
           classNames={{
-            inputWrapper: "rounded-none border-4 border-black dark:border-white shadow-pixel dark:shadow-pixel-dark bg-white dark:bg-black h-12"
+            inputWrapper: "rounded-none border-4 border-black dark:border-white shadow-pixel dark:shadow-pixel-dark bg-white dark:bg-black h-12 hover:translate-y-[2px] transition-all focus-within:shadow-[2px_2px_0px_#000] dark:focus-within:shadow-[2px_2px_0px_#fff]"
           }}
-          placeholder="Search by username or email..."
-          startContent={<Search size={18} className="text-default-400" />}
+          placeholder="> Search users_"
+          startContent={<span className="text-retro-orange font-bold mr-2 text-2xl">{'>'}</span>}
           value={search}
           onClear={() => setSearch("")}
           onValueChange={setSearch}
@@ -124,8 +120,9 @@ export default function UserAccountsPage() {
         aria-label="Users table"
         classNames={{
           wrapper: "rounded-none border-4 border-black dark:border-white shadow-pixel dark:shadow-pixel-dark bg-retro-bg dark:bg-retro-bg-dark p-0 overflow-hidden",
-          th: "bg-retro-orange text-black font-bold text-xl uppercase rounded-none border-b-4 border-black dark:border-white py-4",
-          td: "text-lg border-b-2 border-black/10 dark:border-white/10 py-3",
+          th: "bg-retro-orange text-black font-bold text-xl uppercase rounded-none border-b-4 border-black dark:border-white py-4 px-6",
+          td: "text-lg border-b-2 border-black/10 dark:border-white/10 py-4 px-6",
+          tr: "hover:bg-black/5 dark:hover:bg-white/5 transition-colors group",
         }}
         bottomContent={
           totalPages > 0 ? (
@@ -184,28 +181,44 @@ export default function UserAccountsPage() {
                 </Chip>
               </TableCell>
               <TableCell>
-                <div className="relative flex justify-end items-center gap-2">
-                  <Dropdown classNames={{ content: "rounded-none border-4 border-black shadow-pixel bg-retro-bg dark:bg-retro-bg-dark font-jersey10 text-xl" }}>
-                    <DropdownTrigger>
-                      <Button isIconOnly size="sm" className="bg-transparent rounded-none hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
-                        <MoreVertical className="text-default-600 dark:text-default-300" />
-                      </Button>
-                    </DropdownTrigger>
-                    <DropdownMenu disabledKeys={!canEdit ? ["edit", "toggle-status"] : []} itemClasses={{ base: "rounded-none data-[hover=true]:bg-black/10 dark:data-[hover=true]:bg-white/10" }}>
-                      <DropdownItem key="edit" startContent={<Edit2 size={16} />} onPress={() => { setSelectedUser(item); onOpen(); }}>
-                        Edit Roles
-                      </DropdownItem>
-                      <DropdownItem
-                        key="toggle-status"
-                        color={item.status === 'banned' ? "success" : "danger"}
-                        className={item.status === 'banned' ? "text-success" : "text-danger"}
-                        startContent={item.status === 'banned' ? <Unlock size={16} /> : <Lock size={16} />}
-                        onPress={() => handleStatusChange(item)}
-                      >
-                        {item.status === 'banned' ? 'Unlock Account' : 'Lock Account'}
-                      </DropdownItem>
-                    </DropdownMenu>
-                  </Dropdown>
+                <div className="flex justify-end items-center gap-3">
+                  <Button
+                    size="sm"
+                    className="bg-warning text-black rounded-none border-2 border-transparent group-hover:border-black dark:group-hover:border-white shadow-none group-hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all font-jersey10 text-lg uppercase hidden sm:flex"
+                    startContent={<Edit2 size={16} />}
+                    onPress={() => { setSelectedUser(item); onOpen(); }}
+                    isDisabled={!canEdit}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    isIconOnly
+                    size="sm"
+                    className="bg-warning text-black rounded-none border-2 border-transparent group-hover:border-black dark:group-hover:border-white shadow-none group-hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all sm:hidden"
+                    onPress={() => { setSelectedUser(item); onOpen(); }}
+                    isDisabled={!canEdit}
+                  >
+                    <Edit2 size={16} />
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    className={`${item.status === 'banned' ? 'bg-success' : 'bg-danger'} text-black rounded-none border-2 border-transparent group-hover:border-black dark:group-hover:border-white shadow-none group-hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all font-jersey10 text-lg uppercase hidden sm:flex`}
+                    startContent={item.status === 'banned' ? <Unlock size={16} /> : <Lock size={16} />}
+                    onPress={() => handleStatusChange(item)}
+                    isDisabled={!canEdit}
+                  >
+                    {item.status === 'banned' ? 'Unlock' : 'Lock'}
+                  </Button>
+                  <Button
+                    isIconOnly
+                    size="sm"
+                    className={`${item.status === 'banned' ? 'bg-success' : 'bg-danger'} text-black rounded-none border-2 border-transparent group-hover:border-black dark:group-hover:border-white shadow-none group-hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all sm:hidden`}
+                    onPress={() => handleStatusChange(item)}
+                    isDisabled={!canEdit}
+                  >
+                    {item.status === 'banned' ? <Unlock size={16} /> : <Lock size={16} />}
+                  </Button>
                 </div>
               </TableCell>
             </TableRow>
