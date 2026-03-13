@@ -75,14 +75,6 @@ app.use(responseMiddleware);
 /* ==================== 3. ROUTES ==================== */
 
 /**
- * Health Check Endpoint.
- * Uses 'res.success' for a standardized JSON response.
- */
-app.get('/', (req, res) => {
-  res.success({ status: 'active', version: '1.0.0' }, 'API is active');
-});
-
-/**
  * API Routes.
  * Mounts all routes defined in routes/index.js under '/api'
  */
