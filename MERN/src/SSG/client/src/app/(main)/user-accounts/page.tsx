@@ -83,17 +83,17 @@ export default function UserAccountsPage() {
   }
 
   return (
-    <div className="w-full space-y-6 font-jersey10 tracking-wide">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-retro-bg dark:bg-retro-bg-dark p-6 border-4 border-black dark:border-white shadow-pixel dark:shadow-pixel-dark mb-8 gap-4">
-        <div>
-          <h1 className="text-4xl font-bold text-retro-orange uppercase drop-shadow-[2px_2px_0px_#000]">User Accounts</h1>
-          <p className="text-xl text-default-500 dark:text-default-400 mt-2">Manage system users, roles, and access.</p>
+    <div className="w-full h-[calc(100vh-100px)] flex flex-col font-jersey10 tracking-wide gap-4 pb-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-retro-bg dark:bg-retro-bg-dark p-4 border-4 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] relative overflow-hidden group shrink-0">
+        <div className="absolute -top-10 -right-10 w-24 h-24 bg-retro-orange opacity-20 transform rotate-12 group-hover:rotate-45 transition-transform duration-500"></div>
+        <div className="relative z-10">
+          <h1 className="text-3xl md:text-4xl font-bold text-retro-purple dark:text-retro-orange uppercase drop-shadow-[2px_2px_0px_#000] dark:drop-shadow-[2px_2px_0px_#fff]">User Accounts</h1>
+          <p className="text-lg md:text-xl text-default-800 dark:text-default-200 mt-1 font-bold p-1 bg-white/50 dark:bg-black/50 inline-block">Manage system users, roles, and access.</p>
         </div>
         {canCreate && (
           <Button
-            color="primary"
-            className="rounded-none border-2 border-black font-bold uppercase shadow-pixel dark:shadow-pixel-dark hover:translate-y-[2px] hover:shadow-pixel-hover dark:hover:shadow-pixel-dark-hover"
-            startContent={<Plus size={18} />}
+            className="rounded-none border-4 border-black dark:border-white bg-[#55efc4] text-black font-bold uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all z-10 text-lg py-4 px-6 mt-4 md:mt-0"
+            startContent={<Plus size={20} strokeWidth={3} />}
             onPress={() => { setSelectedUser(null); onOpen(); }}
           >
             New User
@@ -101,130 +101,141 @@ export default function UserAccountsPage() {
         )}
       </div>
 
-      <div className="flex gap-4 mb-6">
+      <div className="flex gap-4 shrink-0">
         <Input
           isClearable
-          className="w-full sm:max-w-[44%] font-jersey10 text-xl"
+          className="w-full md:max-w-[40%] font-jersey10 text-xl"
           classNames={{
-            inputWrapper: "rounded-none border-4 border-black dark:border-white shadow-pixel dark:shadow-pixel-dark bg-white dark:bg-black h-12 hover:translate-y-[2px] transition-all focus-within:shadow-[2px_2px_0px_#000] dark:focus-within:shadow-[2px_2px_0px_#fff]"
+            inputWrapper: "rounded-none border-4 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] bg-white dark:bg-black h-12 transition-all focus-within:shadow-[4px_4px_0px_0px_var(--hero-primary)] focus-within:-translate-y-1 focus-within:-translate-x-1",
+            input: "text-xl font-bold text-black dark:text-white pt-1",
           }}
-          placeholder="> Search users_"
-          startContent={<span className="text-retro-orange font-bold mr-2 text-2xl">{'>'}</span>}
+          placeholder="> SEARCH_USERS_"
+          startContent={<span className="text-retro-purple dark:text-retro-orange font-bold mr-2 text-2xl animate-pulse">{'>'}</span>}
           value={search}
           onClear={() => setSearch("")}
           onValueChange={setSearch}
         />
       </div>
 
-      <Table
-        aria-label="Users table"
-        classNames={{
-          wrapper: "rounded-none border-4 border-black dark:border-white shadow-pixel dark:shadow-pixel-dark bg-retro-bg dark:bg-retro-bg-dark p-0 overflow-hidden",
-          th: "bg-retro-orange text-black font-bold text-xl uppercase rounded-none border-b-4 border-black dark:border-white py-4 px-6",
-          td: "text-lg border-b-2 border-black/10 dark:border-white/10 py-4 px-6",
-          tr: "hover:bg-black/5 dark:hover:bg-white/5 transition-colors group",
-        }}
-        bottomContent={
-          totalPages > 0 ? (
-            <div className="flex w-full justify-center">
-              <Pagination
-                isCompact
-                showControls
-                showShadow
-                color="primary"
-                page={page}
-                total={totalPages}
-                onChange={(page) => setPage(page)}
-                classNames={{
-                  cursor: "rounded-none border-2 border-black font-bold font-jersey10 text-xl",
-                  item: "rounded-none border-2 border-black font-jersey10 text-xl bg-white dark:bg-black",
-                  prev: "rounded-none border-2 border-black bg-white dark:bg-black",
-                  next: "rounded-none border-2 border-black bg-white dark:bg-black",
-                }}
-              />
-            </div>
-          ) : null
-        }
-      >
-        <TableHeader>
-          <TableColumn>USER</TableColumn>
-          <TableColumn>ROLES</TableColumn>
-          <TableColumn>STATUS</TableColumn>
-          <TableColumn align="center">ACTIONS</TableColumn>
-        </TableHeader>
-        <TableBody
-          items={users}
-          isLoading={isLoading}
-          loadingContent={<Spinner label="Loading..." />}
-          emptyContent={"No users found"}
+      <div className="border-4 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] bg-retro-bg dark:bg-retro-bg-dark p-1 flex-1 min-h-0 overflow-hidden flex flex-col">
+        <Table
+          aria-label="Users table"
+          isHeaderSticky
+          classNames={{
+            base: "flex-1 overflow-hidden flex flex-col",
+            wrapper: "flex-1 min-h-0 rounded-none bg-transparent p-0 overflow-auto shadow-none",
+            th: "bg-retro-purple dark:bg-retro-purple text-white font-bold text-xl uppercase rounded-none border-b-4 border-black dark:border-white py-3 px-4 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)] whitespace-nowrap sticky top-0 z-20",
+            td: "text-lg border-b-4 border-black/10 dark:border-white/10 py-3 px-4 whitespace-nowrap",
+            tr: "hover:bg-black/10 dark:hover:bg-white/10 transition-colors group cursor-pointer",
+          }}
+          bottomContent={
+            totalPages > 0 ? (
+              <div className="flex w-full justify-center p-3 shrink-0">
+                <Pagination
+                  isCompact
+                  showControls
+                  showShadow
+                  color="secondary"
+                  page={page}
+                  total={totalPages}
+                  onChange={(page) => setPage(page)}
+                  classNames={{
+                    cursor: "rounded-none border-4 border-black dark:border-white font-bold font-jersey10 text-xl text-white shadow-[2px_2px_0px_0px_#000]",
+                    item: "rounded-none border-4 border-black dark:border-white font-jersey10 text-xl bg-white dark:bg-black font-bold shadow-[2px_2px_0px_0px_#000] hover:-translate-y-0.5 hover:shadow-[3px_3px_0px_0px_#000]",
+                    prev: "rounded-none border-4 border-black dark:border-white bg-white dark:bg-black shadow-[2px_2px_0px_0px_#000] hover:-translate-y-0.5 hover:shadow-[3px_3px_0px_0px_#000]",
+                    next: "rounded-none border-4 border-black dark:border-white bg-white dark:bg-black shadow-[2px_2px_0px_0px_#000] hover:-translate-y-0.5 hover:shadow-[3px_3px_0px_0px_#000]",
+                  }}
+                />
+              </div>
+            ) : null
+          }
         >
-          {(item) => (
-            <TableRow key={item.id}>
-              <TableCell>
-                <div className="flex flex-col gap-1">
-                  <span className="text-xl font-bold capitalize text-retro-purple dark:text-retro-orange">{item.username}</span>
-                  <span className="text-base text-default-500">{item.email}</span>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex gap-2 flex-wrap">
-                  {item.roles?.map((r: any) => (
-                    <Chip key={r.slug || r} size="md" variant="flat" className="rounded-none border-2 border-black font-jersey10 text-lg shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff]">
-                      {r.name || r}
-                    </Chip>
-                  ))}
-                </div>
-              </TableCell>
-              <TableCell>
-                <Chip className="capitalize rounded-none border-2 border-black shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] font-jersey10 text-lg" color={item.status === "active" ? "success" : item.status === "banned" ? "danger" : "default"} size="md" variant="flat">
-                  {item.status}
-                </Chip>
-              </TableCell>
-              <TableCell>
-                <div className="flex justify-end items-center gap-3">
-                  <Button
-                    size="sm"
-                    className="bg-warning text-black rounded-none border-2 border-transparent group-hover:border-black dark:group-hover:border-white shadow-none group-hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all font-jersey10 text-lg uppercase hidden sm:flex"
-                    startContent={<Edit2 size={16} />}
-                    onPress={() => { setSelectedUser(item); onOpen(); }}
-                    isDisabled={!canEdit}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    isIconOnly
-                    size="sm"
-                    className="bg-warning text-black rounded-none border-2 border-transparent group-hover:border-black dark:group-hover:border-white shadow-none group-hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all sm:hidden"
-                    onPress={() => { setSelectedUser(item); onOpen(); }}
-                    isDisabled={!canEdit}
-                  >
-                    <Edit2 size={16} />
-                  </Button>
+          <TableHeader>
+            <TableColumn>USER</TableColumn>
+            <TableColumn>ROLES</TableColumn>
+            <TableColumn>STATUS</TableColumn>
+            <TableColumn align="center">ACTIONS</TableColumn>
+          </TableHeader>
+          <TableBody
+            items={users}
+            isLoading={isLoading}
+            loadingContent={<Spinner label="Loading..." />}
+            emptyContent={"No users found"}
+            className="h-full"
+          >
+            {(item) => (
+              <TableRow key={item.id}>
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white dark:bg-black border-4 border-black dark:border-white group-hover:scale-110 transition-transform shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] flex items-center justify-center overflow-hidden shrink-0">
+                      <img src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${item.username}`} alt="avatar" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-2xl font-bold capitalize text-retro-orange drop-shadow-[1px_1px_0px_rgba(0,0,0,0.5)] group-hover:text-retro-purple dark:group-hover:text-retro-orange transition-colors">{item.username}</span>
+                      <span className="text-lg text-black dark:text-white font-bold bg-black/10 dark:bg-white/10 px-1.5 py-0 border-2 border-transparent w-max">{item.email}</span>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex gap-1.5 flex-wrap max-w-xs">
+                    {item.roles?.map((r: any) => (
+                      <Chip key={r.slug || r} size="sm" variant="flat" className="rounded-none border-4 border-black dark:border-white bg-[#ffeaa7] dark:bg-[#fdcb6e] text-black font-jersey10 text-lg font-bold shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] group-hover:-translate-y-1 transition-transform">
+                        {r.name || r}
+                      </Chip>
+                    ))}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Chip className={`capitalize rounded-none border-4 border-black dark:border-white shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] font-jersey10 text-lg font-bold text-black ${item.status === 'active' ? 'bg-[#55efc4]' : item.status === 'banned' ? 'bg-[#ff7675]' : 'bg-[#dfe6e9]'}`} size="sm" variant="flat">
+                    {item.status}
+                  </Chip>
+                </TableCell>
+                <TableCell>
+                  <div className="flex justify-end items-center gap-2">
+                    <Button
+                      size="sm"
+                      className="bg-warning text-black rounded-none border-4 border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none hover:bg-[#ffeaa7] transition-all font-jersey10 text-lg uppercase font-bold hidden md:flex h-8 px-3"
+                      startContent={<Edit2 size={16} strokeWidth={3} />}
+                      onPress={() => { setSelectedUser(item); onOpen(); }}
+                      isDisabled={!canEdit}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      isIconOnly
+                      size="sm"
+                      className="bg-warning text-black rounded-none border-4 border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all md:hidden h-8 w-8 min-w-8"
+                      onPress={() => { setSelectedUser(item); onOpen(); }}
+                      isDisabled={!canEdit}
+                    >
+                      <Edit2 size={16} strokeWidth={3} />
+                    </Button>
 
-                  <Button
-                    size="sm"
-                    className={`${item.status === 'banned' ? 'bg-success' : 'bg-danger'} text-black rounded-none border-2 border-transparent group-hover:border-black dark:group-hover:border-white shadow-none group-hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all font-jersey10 text-lg uppercase hidden sm:flex`}
-                    startContent={item.status === 'banned' ? <Unlock size={16} /> : <Lock size={16} />}
-                    onPress={() => handleStatusChange(item)}
-                    isDisabled={!canEdit}
-                  >
-                    {item.status === 'banned' ? 'Unlock' : 'Lock'}
-                  </Button>
-                  <Button
-                    isIconOnly
-                    size="sm"
-                    className={`${item.status === 'banned' ? 'bg-success' : 'bg-danger'} text-black rounded-none border-2 border-transparent group-hover:border-black dark:group-hover:border-white shadow-none group-hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all sm:hidden`}
-                    onPress={() => handleStatusChange(item)}
-                    isDisabled={!canEdit}
-                  >
-                    {item.status === 'banned' ? <Unlock size={16} /> : <Lock size={16} />}
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+                    <Button
+                      size="sm"
+                      className={`${item.status === 'banned' ? 'bg-[#55efc4]' : 'bg-[#ff7675]'} text-black rounded-none border-4 border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all font-jersey10 text-lg uppercase font-bold hidden md:flex h-8 px-3`}
+                      startContent={item.status === 'banned' ? <Unlock size={16} strokeWidth={3} /> : <Lock size={16} strokeWidth={3} />}
+                      onPress={() => handleStatusChange(item)}
+                      isDisabled={!canEdit}
+                    >
+                      {item.status === 'banned' ? 'Unlock' : 'Lock'}
+                    </Button>
+                    <Button
+                      isIconOnly
+                      size="sm"
+                      className={`${item.status === 'banned' ? 'bg-[#55efc4]' : 'bg-[#ff7675]'} text-black rounded-none border-4 border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all md:hidden h-8 w-8 min-w-8`}
+                      onPress={() => handleStatusChange(item)}
+                      isDisabled={!canEdit}
+                    >
+                      {item.status === 'banned' ? <Unlock size={16} strokeWidth={3} /> : <Lock size={16} strokeWidth={3} />}
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
       <UserModal isOpen={isOpen} onOpenChange={onOpenChange} user={selectedUser} onRefresh={fetchUsers} />
     </div>

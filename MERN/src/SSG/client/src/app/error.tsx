@@ -1,5 +1,5 @@
 'use client'
- 
+
 export default function Error({
   error,
   reset,
@@ -9,8 +9,8 @@ export default function Error({
 }) {
   return (
     <div className="p-10">
-      <h2>Đã có lỗi xảy ra!</h2>
-      <button onClick={() => reset()}>Thử lại</button>
+      <h2>Something went wrong!</h2>
+      <button onClick={() => reset()}>Try again</button>
     </div>
   )
 }

@@ -61,6 +61,11 @@ export const siteConfig = {
       path: "/login",
       guestOnly: true
     },
+    register: {
+      label: "Register",
+      path: "/register",
+      guestOnly: true
+    },
 
     // ========================================================================
     // 3. SYSTEM PRIVATE ROUTES (Login Required)

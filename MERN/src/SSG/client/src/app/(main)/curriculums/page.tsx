@@ -171,7 +171,7 @@ export default function CurriculumsPage() {
   return (
     <div className="flex flex-col h-full overflow-hidden font-jersey10 tracking-wide">
       {/* ── Top Header ── */}
-      <div className={`flex items-center justify-between p-6 m-4 mb-0 ${RETRO.header}`}>
+      <div className={`flex items-center justify-between p-6 mb-0 ${RETRO.header}`}>
         <div>
           <h1 className={RETRO.title}>
             ⚔ Curriculum Manager
@@ -181,7 +181,7 @@ export default function CurriculumsPage() {
       </div>
 
       {/* ── 3-Column Explorer ── */}
-      <div className="flex flex-1 gap-4 p-4 overflow-hidden">
+      <div className="flex flex-1 gap-4 pt-4 overflow-hidden">
         {/* ── Column 1: Major Categories ── */}
         <div className={`flex flex-col w-72 flex-shrink-0 overflow-hidden ${RETRO.panel}`}>
           <div className={RETRO.panelHeader}>

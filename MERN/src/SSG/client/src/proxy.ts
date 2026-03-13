@@ -26,6 +26,7 @@ const COOKIES = {
 
 const PATHS = {
   LOGIN: siteConfig.links.login.path,
+  REGISTER: siteConfig.links.register.path,
   DASHBOARD: siteConfig.links.dashboard.path,
   CHANGE_PASS: siteConfig.links.changeDefaultPassword.path,
   ACCESS_DENIED: '/403',
@@ -128,26 +129,26 @@ export async function proxy(request: NextRequest) {
   // SCENARIO A: Guest Only Routes (e.g., /login)
   if (isGuestOnlyRoute) {
     if (accessToken) {
-       // [LOGIC UPDATE]: Check if the user is forced to change password.
-       // If true, we allow them to stay on the Login page (to switch accounts or logout).
-       // If we redirected them to Dashboard, the Dashboard logic would bounce them back to Change Password,
-       // creating a loop or preventing account switching.
-       
-       const jwtPayload = parseJwt(accessToken);
-       const mustChangePassword = jwtPayload?.mustChangePassword === true || jwtPayload?.mustChangePassword === 'true';
+      // [LOGIC UPDATE]: Check if the user is forced to change password.
+      // If true, we allow them to stay on the Login page (to switch accounts or logout).
+      // If we redirected them to Dashboard, the Dashboard logic would bounce them back to Change Password,
+      // creating a loop or preventing account switching.
 
-       if (mustChangePassword) {
-         return response; // Allow access to /login
-       }
+      const jwtPayload = parseJwt(accessToken);
+      const mustChangePassword = jwtPayload?.mustChangePassword === true || jwtPayload?.mustChangePassword === 'true';
 
-       // Standard Active User -> Redirect to Dashboard
-       return NextResponse.redirect(new URL(PATHS.DASHBOARD, request.url));
+      if (mustChangePassword) {
+        return response; // Allow access to /login
+      }
+
+      // Standard Active User -> Redirect to Dashboard
+      return NextResponse.redirect(new URL(PATHS.DASHBOARD, request.url));
     }
   }
-  
+
   // SCENARIO B: Private Routes (Protected)
   else if (!isPublicRoute) {
-    
+
     // B1. Authentication Check
     if (!accessToken) {
       const loginUrl = new URL(PATHS.LOGIN, request.url);
@@ -164,11 +165,11 @@ export async function proxy(request: NextRequest) {
       if (pathname === PATHS.CHANGE_PASS) {
         return response;
       }
-      
+
       // If trying to access any other private route, redirect to Change Password.
       return NextResponse.redirect(new URL(PATHS.CHANGE_PASS, request.url));
-    } 
-    
+    }
+
     // B3. Fetch User Context (Only if password change is NOT required)
     else {
       // Edge Case: If a compliant user tries to access Change Password unnecessarily, redirect to Dashboard.

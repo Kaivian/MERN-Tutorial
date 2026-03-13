@@ -101,7 +101,7 @@ export default function AppTemplateLayout({
   if (!isMounted) return null;
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-background transition-colors duration-300">
+    <div className="flex h-screen w-screen bg-background transition-colors duration-300">
       <Sidebar
         isCollapsed={isDesktopCollapsed}
         isMobileOpen={isMobileOpen}

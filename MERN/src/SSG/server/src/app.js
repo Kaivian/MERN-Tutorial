@@ -13,6 +13,9 @@ import { apiLimiter } from './middlewares/rate-limit.middleware.js';
 import { responseMiddleware } from './middlewares/response.middleware.js';
 import { errorHandler } from './middlewares/error.middleware.js';
 
+import path from "path";
+import { fileURLToPath } from "url";
+
 const app = express();
 
 /* ==================== 1. CORE CONFIGURATION ==================== */
@@ -84,6 +87,17 @@ app.get('/', (req, res) => {
  * Mounts all routes defined in routes/index.js under '/api'
  */
 app.use('/api', apiRoutes);
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+/* ==================== REACT BUILD ==================== */
+
+app.use(express.static(path.join(__dirname, "../../client/build")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../client/build/index.html"));
+});
 
 /* ==================== 4. ERROR HANDLING ==================== */
 

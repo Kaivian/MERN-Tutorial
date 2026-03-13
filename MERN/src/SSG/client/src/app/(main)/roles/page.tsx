@@ -87,17 +87,17 @@ export default function RolesPage() {
   }
 
   return (
-    <div className="w-full space-y-6 font-jersey10 tracking-wide">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-retro-bg dark:bg-retro-bg-dark p-6 border-4 border-black dark:border-white shadow-pixel dark:shadow-pixel-dark mb-8 gap-4">
-        <div>
-          <h1 className="text-4xl font-bold text-retro-orange uppercase drop-shadow-[2px_2px_0px_#000]">Role Management</h1>
-          <p className="text-xl text-default-500 dark:text-default-400 mt-2">Configure system roles and permission sets.</p>
+    <div className="w-full h-[calc(100vh-100px)] flex flex-col font-jersey10 tracking-wide gap-4 pb-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-retro-bg dark:bg-retro-bg-dark p-4 border-4 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] relative overflow-hidden group shrink-0">
+        <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-retro-purple opacity-20 transform -rotate-12 group-hover:-rotate-45 transition-transform duration-500"></div>
+        <div className="relative z-10">
+          <h1 className="text-3xl md:text-4xl font-bold text-retro-orange uppercase drop-shadow-[2px_2px_0px_#000] dark:drop-shadow-[2px_2px_0px_#fff]">Role Management</h1>
+          <p className="text-lg md:text-xl text-default-800 dark:text-default-200 mt-1 font-bold p-1 bg-white/50 dark:bg-black/50 inline-block">Configure system roles and permission sets.</p>
         </div>
         {canCreate && (
           <Button
-            color="primary"
-            className="rounded-none border-2 border-black font-bold uppercase shadow-pixel dark:shadow-pixel-dark hover:translate-y-[2px] hover:shadow-pixel-hover dark:hover:shadow-pixel-dark-hover"
-            startContent={<Plus size={18} />}
+            className="rounded-none border-4 border-black dark:border-white bg-[#55efc4] text-black font-bold uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all z-10 text-lg py-4 px-6 mt-4 md:mt-0"
+            startContent={<Plus size={20} strokeWidth={3} />}
             onPress={() => { setSelectedRole(null); onOpen(); }}
           >
             New Role
@@ -105,121 +105,126 @@ export default function RolesPage() {
         )}
       </div>
 
-      <Table
-        aria-label="Roles table"
-        classNames={{
-          wrapper: "rounded-none border-4 border-black dark:border-white shadow-pixel dark:shadow-pixel-dark bg-retro-bg dark:bg-retro-bg-dark p-0 overflow-hidden",
-          th: "bg-retro-orange text-black font-bold text-xl uppercase rounded-none border-b-4 border-black dark:border-white py-4 px-6",
-          td: "text-lg border-b-2 border-black/10 dark:border-white/10 py-4 px-6",
-          tr: "hover:bg-black/5 dark:hover:bg-white/5 transition-colors group",
-        }}
-      >
-        <TableHeader>
-          <TableColumn>ROLE NAME</TableColumn>
-          <TableColumn>SLUG</TableColumn>
-          <TableColumn>PERMISSIONS</TableColumn>
-          <TableColumn>STATUS</TableColumn>
-          <TableColumn align="center">ACTIONS</TableColumn>
-        </TableHeader>
-        <TableBody
-          items={roles}
-          isLoading={isLoading}
-          loadingContent={<Spinner label="Loading..." />}
-          emptyContent={"No roles found"}
+      <div className="border-4 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] bg-retro-bg dark:bg-retro-bg-dark p-1 flex-1 min-h-0 overflow-hidden flex flex-col">
+        <Table
+          aria-label="Roles table"
+          isHeaderSticky
+          classNames={{
+            base: "flex-1 overflow-hidden flex flex-col",
+            wrapper: "flex-1 min-h-0 rounded-none bg-transparent p-0 overflow-auto shadow-none",
+            th: "bg-retro-orange dark:bg-retro-orange text-black font-bold text-xl uppercase rounded-none border-b-4 border-black dark:border-white py-3 px-4 drop-shadow-[2px_2px_0px_rgba(255,255,255,1)] whitespace-nowrap",
+            td: "text-lg border-b-4 border-black/10 dark:border-white/10 py-3 px-4 whitespace-nowrap",
+            tr: "hover:bg-black/10 dark:hover:bg-white/10 transition-colors group cursor-pointer",
+          }}
         >
-          {(item) => (
-            <TableRow key={item._id}>
-              <TableCell>
-                <div className="flex flex-col gap-1">
-                  <span className="text-xl font-bold uppercase text-retro-purple dark:text-retro-orange">{item.name}</span>
-                  <span className="text-base text-default-500">{item.description}</span>
-                  {item.isSystem && <Chip size="md" color="warning" variant="flat" className="mt-2 w-max rounded-none border-2 border-black shadow-[2px_2px_0px_0px_#000] font-jersey10">System Role</Chip>}
-                </div>
-              </TableCell>
-              <TableCell><code className="text-base bg-default-100 dark:bg-black p-1 border-2 border-black dark:border-white font-mono rounded-none">{item.slug}</code></TableCell>
-              <TableCell>
-                <div className="flex flex-wrap gap-2 max-w-[300px]">
-                  {item.permissions.slice(0, 3).map((p: string) => (
-                    <Chip key={p} size="md" variant="faded" className="rounded-none border-2 border-black font-jersey10 text-lg shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff]">
-                      {p}
-                    </Chip>
-                  ))}
-                  {item.permissions.length > 3 && (
-                    <Chip size="md" variant="faded" className="rounded-none border-2 border-black font-jersey10 text-lg shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] bg-retro-orange/20 dark:bg-retro-orange/40 text-black dark:text-white">
-                      +{item.permissions.length - 3} more
-                    </Chip>
-                  )}
-                </div>
-              </TableCell>
-              <TableCell>
-                <Chip className="capitalize rounded-none border-2 border-black shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] font-jersey10 text-lg" color={item.status === "active" ? "success" : "danger"} size="md" variant="flat">
-                  {item.status}
-                </Chip>
-              </TableCell>
-              <TableCell>
-                <div className="flex justify-end items-center gap-3 w-min ml-auto">
-                  <Button
-                    size="sm"
-                    className="bg-warning text-black rounded-none border-2 border-transparent group-hover:border-black dark:group-hover:border-white shadow-none group-hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all font-jersey10 text-lg uppercase hidden xl:flex"
-                    startContent={<Edit2 size={16} />}
-                    onPress={() => { setSelectedRole(item); onOpen(); }}
-                    isDisabled={!canEdit}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    isIconOnly
-                    size="sm"
-                    className="bg-warning text-black rounded-none border-2 border-transparent group-hover:border-black dark:group-hover:border-white shadow-none group-hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all xl:hidden"
-                    onPress={() => { setSelectedRole(item); onOpen(); }}
-                    isDisabled={!canEdit}
-                  >
-                    <Edit2 size={16} />
-                  </Button>
+          <TableHeader>
+            <TableColumn>ROLE NAME</TableColumn>
+            <TableColumn>SLUG</TableColumn>
+            <TableColumn>PERMISSIONS</TableColumn>
+            <TableColumn>STATUS</TableColumn>
+            <TableColumn align="center">ACTIONS</TableColumn>
+          </TableHeader>
+          <TableBody
+            items={roles}
+            isLoading={isLoading}
+            loadingContent={<Spinner label="Loading..." />}
+            emptyContent={"No roles found"}
+            className="h-full"
+          >
+            {(item) => (
+              <TableRow key={item._id}>
+                <TableCell>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-2xl font-bold uppercase text-retro-purple dark:text-retro-orange drop-shadow-[1px_1px_0px_rgba(0,0,0,0.5)] group-hover:text-retro-orange transition-colors">{item.name}</span>
+                    <span className="text-lg text-black dark:text-white font-bold bg-black/10 dark:bg-white/10 px-2 py-0.5 w-max border-2 border-transparent">{item.description}</span>
+                    {item.isSystem && <Chip size="sm" className="mt-1 w-max rounded-none border-4 border-black dark:border-white shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] bg-[#fdcb6e] text-black font-jersey10 text-lg font-bold">System Role</Chip>}
+                  </div>
+                </TableCell>
+                <TableCell><code className="text-lg bg-black/10 dark:bg-white/10 p-1.5 border-4 border-black dark:border-white font-mono rounded-none font-bold">{item.slug}</code></TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-2 max-w-xs">
+                    {item.permissions.slice(0, 3).map((p: string) => (
+                      <Chip key={p} size="sm" variant="flat" className="rounded-none border-4 border-black dark:border-white bg-[#74b9ff] dark:bg-[#0984e3] text-black dark:text-white font-jersey10 text-lg font-bold shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] group-hover:-translate-y-1 transition-transform">
+                        {p}
+                      </Chip>
+                    ))}
+                    {item.permissions.length > 3 && (
+                      <Chip size="sm" variant="flat" className="rounded-none border-4 border-black dark:border-white bg-[#fab1a0] dark:bg-[#e17055] text-black dark:text-white font-jersey10 text-lg font-bold shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] group-hover:-translate-y-1 transition-transform">
+                        +{item.permissions.length - 3} more
+                      </Chip>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Chip className={`capitalize rounded-none border-4 border-black dark:border-white shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] font-jersey10 text-lg font-bold text-black ${item.status === 'active' ? 'bg-[#55efc4]' : 'bg-[#ff7675]'}`} size="sm" variant="flat">
+                    {item.status}
+                  </Chip>
+                </TableCell>
+                <TableCell>
+                  <div className="flex justify-end items-center gap-2 w-min ml-auto">
+                    <Button
+                      size="sm"
+                      className="bg-warning text-black rounded-none border-4 border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none hover:bg-[#ffeaa7] transition-all font-jersey10 text-lg uppercase font-bold hidden xl:flex h-8 px-3"
+                      startContent={<Edit2 size={16} strokeWidth={3} />}
+                      onPress={() => { setSelectedRole(item); onOpen(); }}
+                      isDisabled={!canEdit}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      isIconOnly
+                      size="sm"
+                      className="bg-warning text-black rounded-none border-4 border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all xl:hidden h-8 w-8 min-w-8"
+                      onPress={() => { setSelectedRole(item); onOpen(); }}
+                      isDisabled={!canEdit}
+                    >
+                      <Edit2 size={16} strokeWidth={3} />
+                    </Button>
 
-                  <Button
-                    size="sm"
-                    className={`${item.status === 'inactive' ? 'bg-success' : 'bg-[#a3a3a3]'} text-black rounded-none border-2 border-transparent group-hover:border-black dark:group-hover:border-white shadow-none group-hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all font-jersey10 text-lg uppercase hidden xl:flex`}
-                    startContent={item.status === 'inactive' ? <Unlock size={16} /> : <Lock size={16} />}
-                    onPress={() => !item.isSystem && handleStatusChange(item)}
-                    isDisabled={item.isSystem || !canEdit}
-                  >
-                    {item.status === 'inactive' ? 'Activate' : 'Deactivate'}
-                  </Button>
-                  <Button
-                    isIconOnly
-                    size="sm"
-                    className={`${item.status === 'inactive' ? 'bg-success' : 'bg-[#a3a3a3]'} text-black rounded-none border-2 border-transparent group-hover:border-black dark:group-hover:border-white shadow-none group-hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all xl:hidden`}
-                    onPress={() => !item.isSystem && handleStatusChange(item)}
-                    isDisabled={item.isSystem || !canEdit}
-                  >
-                    {item.status === 'inactive' ? <Unlock size={16} /> : <Lock size={16} />}
-                  </Button>
+                    <Button
+                      size="sm"
+                      className={`${item.status === 'inactive' ? 'bg-[#55efc4]' : 'bg-[#a3a3a3]'} text-black rounded-none border-4 border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all font-jersey10 text-lg uppercase font-bold hidden xl:flex h-8 px-3`}
+                      startContent={item.status === 'inactive' ? <Unlock size={16} strokeWidth={3} /> : <Lock size={16} strokeWidth={3} />}
+                      onPress={() => !item.isSystem && handleStatusChange(item)}
+                      isDisabled={item.isSystem || !canEdit}
+                    >
+                      {item.status === 'inactive' ? 'Activate' : 'Deactivate'}
+                    </Button>
+                    <Button
+                      isIconOnly
+                      size="sm"
+                      className={`${item.status === 'inactive' ? 'bg-[#55efc4]' : 'bg-[#a3a3a3]'} text-black rounded-none border-4 border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all xl:hidden h-8 w-8 min-w-8`}
+                      onPress={() => !item.isSystem && handleStatusChange(item)}
+                      isDisabled={item.isSystem || !canEdit}
+                    >
+                      {item.status === 'inactive' ? <Unlock size={16} strokeWidth={3} /> : <Lock size={16} strokeWidth={3} />}
+                    </Button>
 
-                  <Button
-                    size="sm"
-                    className={`bg-danger text-black rounded-none border-2 border-transparent group-hover:border-black dark:group-hover:border-white shadow-none group-hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all font-jersey10 text-lg uppercase hidden xl:flex`}
-                    startContent={<Trash2 size={16} />}
-                    onPress={() => !item.isSystem && handleDelete(item)}
-                    isDisabled={item.isSystem || !canDelete}
-                  >
-                    Delete
-                  </Button>
-                  <Button
-                    isIconOnly
-                    size="sm"
-                    className={`bg-danger text-black rounded-none border-2 border-transparent group-hover:border-black dark:group-hover:border-white shadow-none group-hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all xl:hidden`}
-                    onPress={() => !item.isSystem && handleDelete(item)}
-                    isDisabled={item.isSystem || !canDelete}
-                  >
-                    <Trash2 size={16} />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+                    <Button
+                      size="sm"
+                      className={`bg-[#ff7675] text-black rounded-none border-4 border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all font-jersey10 text-lg uppercase font-bold hidden xl:flex h-8 px-3`}
+                      startContent={<Trash2 size={16} strokeWidth={3} />}
+                      onPress={() => !item.isSystem && handleDelete(item)}
+                      isDisabled={item.isSystem || !canDelete}
+                    >
+                      Delete
+                    </Button>
+                    <Button
+                      isIconOnly
+                      size="sm"
+                      className={`bg-[#ff7675] text-black rounded-none border-4 border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all xl:hidden h-8 w-8 min-w-8`}
+                      onPress={() => !item.isSystem && handleDelete(item)}
+                      isDisabled={item.isSystem || !canDelete}
+                    >
+                      <Trash2 size={16} strokeWidth={3} />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
       <RoleModal isOpen={isOpen} onOpenChange={onOpenChange} role={selectedRole} onRefresh={fetchRoles} />
     </div>
