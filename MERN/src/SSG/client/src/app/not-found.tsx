@@ -1,59 +1,46 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Button, Card, CardBody } from "@heroui/react";
-import { useLogout } from "@/hooks/auth/useLogout";
 
 export default function NotFound() {
-  const router = useRouter();
-  const { logout, isLoading } = useLogout({ redirectTo: "/login" });
-
-  const handleGoBack = () => {
-    if (window.history.length > 1) {
-      router.back();
-    } else {
-      router.push("/");
-    }
-  };
+  // KHÔNG sử dụng useLogout, useRouter, hoặc các Provider Context ở đây để tránh lỗi Build.
+  // Chỉ sử dụng HTML thuần và Tailwind CSS thuần.
 
   return (
-    <div className="min-h-screen grid place-items-center bg-background text-foreground">
-      <Card className="w-full max-w-md shadow-lg">
-        <CardBody className="py-10 text-center">
-          <div className="mx-auto mb-4 inline-flex h-16 w-16 items-center justify-center bg-content1 text-3xl font-extrabold">
-            404
-          </div>
+    <div className="min-h-screen flex items-center justify-center bg-[#18181b] p-4 text-center">
+      <div className="max-w-md w-full border-4 border-black bg-white p-10 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+        <div className="mx-auto mb-6 inline-flex h-20 w-20 items-center justify-center bg-retro-orange border-4 border-black text-4xl font-black text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          404
+        </div>
 
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Không tìm thấy trang
-          </h1>
-          <p className="mt-2 text-subtitle">
-            Đường dẫn sai hoặc nội dung đã bị di chuyển.
-          </p>
+        <h1 className="text-3xl font-black text-black uppercase tracking-tighter mb-2">
+          Không tìm thấy trang
+        </h1>
 
-          <div className="mt-6 flex items-center justify-center gap-3">
-            <Link prefetch href="/">
-              <Button color="primary">Về trang chủ</Button>
-            </Link>
+        <p className="text-gray-600 font-medium mb-8">
+          Đường dẫn không tồn tại hoặc nội dung đã bị di chuyển trong hệ thống.
+        </p>
 
-            <Button variant="flat" onPress={handleGoBack}>
-              Quay lại
-            </Button>
+        <div className="flex flex-col gap-4">
+          <Link
+            href="/"
+            className="w-full py-3 bg-[#00e5ff] text-black font-bold uppercase border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-1 hover:shadow-none transition-all text-center"
+          >
+            Về trang chủ
+          </Link>
 
-            <Button
-              color="danger"
-              isDisabled={isLoading}
-              isLoading={isLoading}
-              onPress={logout}
-            >
-              Đăng xuất
-            </Button>
-          </div>
+          <Link
+            href="/login"
+            className="w-full py-3 bg-zinc-200 text-black font-bold uppercase border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-1 hover:shadow-none transition-all text-center"
+          >
+            Đăng nhập lại
+          </Link>
+        </div>
 
-          <div className="mt-6 text-xs text-subtitle">Mã lỗi: 404</div>
-        </CardBody>
-      </Card>
+        <div className="mt-8 pt-6 border-t-4 border-dotted border-black text-xs font-mono font-bold uppercase">
+          Error Code: 404_NOT_FOUND
+        </div>
+      </div>
     </div>
   );
 }
