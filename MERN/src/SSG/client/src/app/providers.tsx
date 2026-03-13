@@ -26,14 +26,23 @@ declare module "@react-types/shared" {
 
 export function Providers({ children, themeProps }: ProvidersProps) {
   const router = useRouter();
-  const [queryClient] = React.useState(() => new QueryClient());
+
+  const [queryClient] = React.useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 60 * 1000,
+      },
+    },
+  }));
 
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
         <HeroUIProvider navigate={router.push}>
           <NextThemesProvider {...themeProps}>
-            <ToastProvider placement="top-right" toastOffset={8} />{children}
+            {/* Đảm bảo ToastProvider không gây ảnh hưởng đến việc render children */}
+            <ToastProvider placement="top-right" toastOffset={8} />
+            {children}
           </NextThemesProvider>
         </HeroUIProvider>
       </LanguageProvider>
