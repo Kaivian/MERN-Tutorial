@@ -1,8 +1,5 @@
 'use client';
 
-import { fontSans } from "@/config/font.config";
-import clsx from "clsx";
-
 export default function GlobalError({
   error,
   reset,
@@ -12,19 +9,25 @@ export default function GlobalError({
 }) {
   return (
     <html lang="en">
-      <body className={clsx("min-h-screen antialiased", fontSans.className)}>
-        <div className="flex flex-col items-center justify-center p-10 min-h-screen text-center">
-          <h1 className="text-2xl font-bold mb-4">Đã xảy ra lỗi hệ thống!</h1>
-          <p className="text-default-500 mb-6">
-            Vui lòng thử làm mới trang hoặc quay lại sau.
-          </p>
-          <button
-            className="px-4 py-2 bg-primary text-white rounded-md"
-            onClick={() => reset()}
-          >
-            Thử lại
-          </button>
-        </div>
+      <head>
+        <title>Hệ thống có lỗi</title>
+      </head>
+      <body style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        fontFamily: 'sans-serif'
+      }}>
+        <h2>Đã có lỗi nghiêm trọng xảy ra!</h2>
+        <p style={{ color: 'gray' }}>{error?.message || "Vui lòng thử lại sau"}</p>
+        <button
+          onClick={() => reset()}
+          style={{ padding: '10px 20px', cursor: 'pointer', marginTop: '10px' }}
+        >
+          Thử lại
+        </button>
       </body>
     </html>
   );

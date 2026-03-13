@@ -16,9 +16,8 @@ const fontJersey = Jersey_10({
 });
 
 export const metadata: Metadata = {
-  title: "FPT Unimate",
-  description: "Kaivian Template",
-  icons: "/favicon.png",
+  title: { default: "FPT Unimate", template: `Kaivian Template` },
+  icons: { icon: "/favicon.png" },
 };
 
 export default async function RootLayout({
