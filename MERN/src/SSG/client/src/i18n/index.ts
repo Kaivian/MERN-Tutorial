@@ -13,19 +13,22 @@ type NestedKeyOf<ObjectType extends object> =
 export type TranslationKey = NestedKeyOf<typeof en>;
 
 export function useTranslation() {
-    const { language } = useLanguage();
-    const dictionary = dictionaries[language];
+    // Thêm giá trị mặc định nếu context bị null
+    const context = useLanguage();
+    const language = context?.language || 'en'; // Nếu context null (lúc build), dùng 'en' làm mặc định
+
+    const dictionary = dictionaries[language as keyof typeof dictionaries] || dictionaries.en;
 
     const t = (key: TranslationKey | string, variables?: Record<string, string | number>) => {
         const keys = key.split('.');
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let value: any = dictionary;
 
         for (const k of keys) {
-            if (value === undefined) break;
+            if (value === undefined || value === null) break;
             value = value[k as keyof typeof value];
         }
 
+        // ... phần logic còn lại giữ nguyên ...
         if (typeof value === 'string') {
             if (variables) {
                 return value.replace(/{(\w+)}/g, (_, v) => String(variables[v] ?? `{${v}}`));
@@ -33,19 +36,17 @@ export function useTranslation() {
             return value;
         }
 
-        // Fallback to English key if not found in current language
+        // Fallback to English
         if (language !== 'en') {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let enValue: any = en;
             for (const k of keys) {
-                if (enValue === undefined) break;
+                if (enValue === undefined || enValue === null) break;
                 enValue = enValue[k as keyof typeof enValue];
             }
             if (typeof enValue === 'string') {
-                if (variables) {
-                    return enValue.replace(/{(\w+)}/g, (_, v) => String(variables[v] ?? `{${v}}`));
-                }
-                return enValue;
+                return variables
+                    ? enValue.replace(/{(\w+)}/g, (_, v) => String(variables[v] ?? `{${v}}`))
+                    : enValue;
             }
         }
 
