@@ -3,6 +3,7 @@
 
 import React from "react";
 import { Terminal, Gamepad2, GraduationCap } from "lucide-react";
+import { ENV } from "@/config/env.config";
 
 export default function AuthLayout({
     children,
@@ -88,7 +89,7 @@ export default function AuthLayout({
                     <div className="mt-6 text-center text-sm leading-5 text-[#71717a]">
                         <p>
                             <span className="font-roboto">&copy;</span>{' '}
-                            {currentYear} SE20A06 - SSG104 - Group 3. All rights reserved.
+                            {currentYear} SE20A06 - SSG104 - Group 3. All rights reserved. {ENV.NODE_ENV}.
                         </p>
                     </div>
                 </footer>
