@@ -18,7 +18,7 @@ const router = Router();
 router.get('/status', (req, res) => {
   res.success({
     environment: ENV.app.env,
-    database: ENV.app.env === 'development' ? 'development_db' : 'production_db',
+    database: ENV.app.env === 'development' ? 'development' : 'fptunimate_db',
     uptime: process.uptime()
   }, 'Backend API is running smoothly');
 });

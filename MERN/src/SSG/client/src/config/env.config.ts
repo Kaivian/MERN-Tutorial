@@ -1,58 +1,57 @@
-// client/src/config/env.config.ts
-
 /**
  * @file env.config.ts
  * @description Centralized configuration for Environment Variables.
- * Acts as the Single Source of Truth (SSOT) for process.env with safety fallbacks.
- * * NOTE: Since this is a Next.js client-side config, we must use the 
- * 'NEXT_PUBLIC_' prefix to ensure variables are exposed to the browser.
+ * * QUAN TRỌNG: 
+ * 1. Trong Next.js Middleware/Edge Runtime, bạn nên truy xuất trực tiếp 
+ * process.env.VAR_NAME thay vì gán cả object process.env.
+ * 2. Đảm bảo các biến đã được thêm vào Vercel Project Settings.
  */
 
 export const ENV = {
-  // Node environment usually comes from the build process itself
-  NODE_ENV: process.env.NODE_ENV || process.env.NEXT_PUBLIC_NODE_ENV || "development",
+  // Ưu tiên biến từ .env, sau đó đến biến hệ thống, cuối cùng là mặc định
+  NODE_ENV:
+    process.env.NEXT_PUBLIC_NODE_ENV ||
+    process.env.NODE_ENV ||
+    "development",
 
   // -----------------------------------------------------------------
   // 1. API & Network Configuration
   // -----------------------------------------------------------------
-  /** * The base URL of the Backend API server. 
-   * Maps to NEXT_PUBLIC_API_URL in .env 
-   */
-  API_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
+  API_URL:
+    process.env.NEXT_PUBLIC_API_URL ||
+    "http://localhost:5000/api",
 
-  /** * The public URL of this Frontend application.
-   * Maps to NEXT_PUBLIC_APP_URL in .env
-   */
-  APP_URL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+  APP_URL:
+    process.env.NEXT_PUBLIC_APP_URL ||
+    "http://localhost:3000",
 
   // -----------------------------------------------------------------
   // 2. Application Identity
   // -----------------------------------------------------------------
-  /** * The display name of the application used in UI/Metadata.
-   * Maps to NEXT_PUBLIC_APP_NAME in .env
-   */
-  APP_NAME: process.env.NEXT_PUBLIC_APP_NAME || "Management System",
+  APP_NAME:
+    process.env.NEXT_PUBLIC_APP_NAME ||
+    "FPT Unimate App",
 
-  /** * Unique Client ID to identify this frontend to the backend.
-   * Maps to NEXT_PUBLIC_CLIENT_AUDIENCE_ID in .env
-   */
-  CLIENT_AUDIENCE_ID: process.env.NEXT_PUBLIC_CLIENT_AUDIENCE_ID || "client-app-fe",
+  CLIENT_AUDIENCE_ID:
+    process.env.NEXT_PUBLIC_CLIENT_AUDIENCE_ID ||
+    "fptunimate-client-app-fe-2026",
 
   // -----------------------------------------------------------------
   // 3. Third-Party Integrations
   // -----------------------------------------------------------------
-  /** * Google OAuth Public Client ID.
-   * Maps to NEXT_PUBLIC_GOOGLE_CLIENT_ID in .env
-   */
-  GOOGLE_CLIENT_ID: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "",
+  GOOGLE_CLIENT_ID:
+    process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+    "",
 
   // -----------------------------------------------------------------
-  // 4. Feature Flags (Optional)
+  // 4. Feature Flags
   // -----------------------------------------------------------------
-  /**
-   * Toggle for registration feature. 
-   * strings "true" from .env need to be converted to boolean.
-   */
-  ENABLE_REGISTRATION: process.env.NEXT_PUBLIC_ENABLE_REGISTRATION === "true",
+  // Ép kiểu về boolean một cách an toàn
+  ENABLE_REGISTRATION:
+    String(process.env.NEXT_PUBLIC_ENABLE_REGISTRATION) === "true",
 
 } as const;
+
+// Helper để kiểm tra nhanh môi trường (Dùng trong code cho gọn)
+export const isProd = ENV.NODE_ENV === "production";
+export const isDev = ENV.NODE_ENV === "development";

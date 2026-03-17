@@ -11,6 +11,7 @@
     "dev": "cross-env NODE_ENV=development nodemon src/server.js",
     "start": "node src/server.js",
     "seed": "cross-env NODE_ENV=development node src/scripts/seed.js",
+    "seedprod": "cross-env NODE_ENV=production node src/scripts/seed.js",
     "build": "npm run start",
     "lint": "eslint .",
     "format": "prettier --write .",
