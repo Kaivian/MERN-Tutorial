@@ -35,7 +35,9 @@ app.use(helmet());
 /** Enable CORS with options from config. */
 app.use(cors({
   origin: ENV.security.allowedOrigins,
-  credentials: true // Allow cookies to be sent across domains
+  credentials: true, // Allow cookies to be sent across domains
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
 }));
 
 /** Compress response bodies for all requests to improve performance. */
