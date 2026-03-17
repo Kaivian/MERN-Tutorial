@@ -4,14 +4,14 @@ import ENV from './env.config.js';
 /**
  * Determines the target database name based on the environment.
  * - If NODE_ENV is 'development', the database name is strictly 'development'.
- * - If NODE_ENV is 'production', the database name is 'icicle_app' (or your main project name).
+ * - If NODE_ENV is 'production', the database name is 'fptunimate_db' (or your main project name).
  *
  * @constant
  * @type {string}
  */
-const targetDbName = ENV.app.env === 'development' 
-  ? 'development' 
-  : 'icicle_app';
+const targetDbName = ENV.app.env === 'development'
+  ? 'development'
+  : 'fptunimate_db';
 
 /**
  * MongoDB Configuration Object.
