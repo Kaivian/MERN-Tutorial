@@ -295,13 +295,13 @@ export default function CurriculumsPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
-                      <div
-                        className="p-1.5 border-2 border-black dark:border-white bg-retro-orange/10 hover:bg-retro-orange/30 transition-colors"
-                        title="View Subjects"
-                        onClick={() => router.push(`/curriculums/subjects?code=${major._id}`)}
-                      >
+                    <button
+                      className="p-1.5 border-2 border-black dark:border-white bg-retro-orange/10 hover:bg-retro-orange/30 transition-colors"
+                      title="View Subjects"
+                      onClick={() => router.push(`/curriculums/${major._id}/subjects`)}
+                    >
                       <Eye className="w-4 h-4 text-retro-orange" />
-                    </div>
+                    </button>
                   </div>
                   <ChevronRight className="w-4 h-4 text-default-500 flex-shrink-0" />
                   {canManage && (

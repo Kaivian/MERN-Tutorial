@@ -4,6 +4,7 @@ import clsx from "clsx";
 import { Metadata } from "next";
 import { Providers } from "./providers";
 import { fontSans, fontMono } from "@/config/font.config";
+import { getCurrentUser } from "@/services/auth-server.service";
 import { AuthProvider } from "@/providers/auth.provider";
 import { Jersey_10 } from "next/font/google";
 import { Suspense } from 'react'
@@ -19,11 +20,19 @@ export const metadata: Metadata = {
   icons: { icon: "/favicon.png" },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  let userData = null;
+
+  try {
+    userData = await getCurrentUser();
+  } catch (error) {
+    userData = null;
+  }
+
   return (
     <html suppressHydrationWarning lang="en">
       <body
@@ -36,7 +45,7 @@ export default function RootLayout({
       >
         <Suspense fallback={<>...</>}>
           <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
-            <AuthProvider initialData={null}>
+            <AuthProvider initialData={userData}>
               {children}
             </AuthProvider>
           </Providers>

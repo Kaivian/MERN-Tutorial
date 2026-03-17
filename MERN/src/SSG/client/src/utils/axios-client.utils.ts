@@ -176,10 +176,9 @@ axiosClient.interceptors.response.use(
         
         // 2. Force Logout / Redirect to Login
         if (typeof window !== 'undefined') {
-          // Prevent infinite redirect loops if we're already on the login page
-          if (!window.location.pathname.startsWith('/login')) {
-            window.location.href = '/login?session_expired=true';
-          }
+          // Use window.location to force a full reload and clear JS memory
+          // Update '/login' to your actual login route
+          window.location.href = '/login?session_expired=true';
         }
         
         // 3. Reject the promise

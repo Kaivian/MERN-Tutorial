@@ -13,8 +13,8 @@ import ENV from '../config/env.config.js';
  */
 const COOKIE_OPTS = {
   httpOnly: true,
-  secure: true,
-  sameSite: 'none',
+  secure: ENV.app.env === 'production', // HTTPS only in production
+  sameSite: 'none',                      // 'lax' allows navigation from external sites
   path: '/',
 };
 

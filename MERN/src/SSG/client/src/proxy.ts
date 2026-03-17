@@ -188,7 +188,7 @@ export async function proxy(request: NextRequest) {
       value: accessToken,
       httpOnly: false,
       path: '/',
-      sameSite: 'lax',
+      sameSite: 'none',
       secure: ENV.NODE_ENV === 'production',
       maxAge: 15 * 60,
     });

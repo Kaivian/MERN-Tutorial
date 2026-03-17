@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// client/src/app/(main)/curriculums/subjects/page.tsx
+// client/src/app/(main)/curriculums/[code]/subjects/page.tsx
 "use client";
 
 import React, { useState, useCallback } from "react";
@@ -20,7 +20,7 @@ import {
   addToast
 } from "@heroui/react";
 import { Plus, Search, Edit2, Trash2, ArrowLeft, Settings2, BookOpen, GraduationCap, GripVertical } from "lucide-react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { adminCurriculumService, curriculumService } from "@/services/curriculum.service";
 import { useAuth } from "@/providers/auth.provider";
 import SubjectModal from "@/components/curriculums/SubjectModal";
@@ -222,9 +222,9 @@ function OverlayCard({ subject }: { subject: any }) {
 
 // ============ Main Page ============
 export default function SubjectsPage() {
-  const searchParams = useSearchParams();
+  const params = useParams();
   const router = useRouter();
-  const majorId = searchParams.get("code") as string;
+  const majorId = params.code as string;
   const qc = useQueryClient();
 
   const { hasPermission } = useAuth();
