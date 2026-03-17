@@ -186,7 +186,7 @@ export async function proxy(request: NextRequest) {
     response.cookies.set({
       name: COOKIES.ACCESS_TOKEN,
       value: accessToken,
-      httpOnly: false,
+      httpOnly: true,
       path: '/',
       sameSite: 'none',
       secure: ENV.NODE_ENV === 'production',
