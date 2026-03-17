@@ -9,9 +9,10 @@
  * and provides optimized hooks for checking permissions.
  */
 
-import React, { createContext, useContext, useMemo, useCallback } from "react";
+import React, { createContext, useContext, useMemo, useCallback, useState, useEffect } from "react";
 import { AuthMeResponse } from "@/types/auth.types";
 import { matchPermission, hasAllPermissions } from "@/utils/permission-matcher.utils";
+import { authService } from "@/services/auth-client.service";
 
 // ============================================================================
 // TYPES
@@ -29,6 +30,9 @@ interface AuthContextType {
 
   /** Boolean flag indicating if a user is currently logged in. */
   isAuthenticated: boolean;
+
+  /** Boolean flag indicating if the auth state is still loading. */
+  isLoading: boolean;
 
   /**
    * Checks if the user holds a specific permission (supports wildcards).
@@ -49,8 +53,7 @@ interface AuthProviderProps {
   /** The child components (usually the entire app structure). */
   children: React.ReactNode;
   /**
-   * The initial authentication data fetched from the Server Component (Layout).
-   * This prevents the need for a client-side fetch on initial load.
+   * The initial authentication data passed (can be null).
    */
   initialData: AuthMeResponse | null;
 }
@@ -71,22 +74,41 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
  * @component
  * @example
  * // In src/app/layout.tsx
- * <AuthProvider initialData={serverFetchedData}>
+ * <AuthProvider initialData={null}>
  * {children}
  * </AuthProvider>
  */
 export function AuthProvider({ children, initialData }: AuthProviderProps) {
-  // 1. Extract data (Safe defaults)
-  // We use useMemo here to ensure 'user' and 'permissions' maintain stable references.
-  // This prevents downstream hooks (useCallback, context value) from recalculating unnecessarily
-  // because [] !== [] in JavaScript.
+  const [user, setUser] = useState<AuthMeResponse["user"] | null>(initialData?.user || null);
+  const [permissions, setPermissions] = useState<string[]>(initialData?.permissions || []);
+  const [isLoading, setIsLoading] = useState<boolean>(!initialData?.user);
 
-  const user = useMemo(() => {
-    return initialData?.user || null;
-  }, [initialData]);
+  useEffect(() => {
+    // If not provided initialData, we try to fetch from client service.
+    if (!initialData?.user) {
+      const fetchAuth = async () => {
+        setIsLoading(true);
+        try {
+          const res = await authService.getMe();
+          if (res?.user) {
+            setUser(res.user);
+            setPermissions(res.permissions || []);
+          } else {
+            setUser(null);
+            setPermissions([]);
+          }
+        } catch (error) {
+          setUser(null);
+          setPermissions([]);
+        } finally {
+          setIsLoading(false);
+        }
+      };
 
-  const permissions = useMemo(() => {
-    return initialData?.permissions || [];
+      fetchAuth();
+    } else {
+      setIsLoading(false);
+    }
   }, [initialData]);
 
   const isAuthenticated = !!user;
@@ -121,10 +143,11 @@ export function AuthProvider({ children, initialData }: AuthProviderProps) {
       user,
       permissions,
       isAuthenticated,
+      isLoading,
       hasPermission: checkHasPermission,
       checkAllPermissions: checkHasAllPermissions,
     }),
-    [user, permissions, isAuthenticated, checkHasPermission, checkHasAllPermissions]
+    [user, permissions, isAuthenticated, isLoading, checkHasPermission, checkHasAllPermissions]
   );
 
   return (
