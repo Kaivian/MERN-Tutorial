@@ -98,9 +98,7 @@ async function refreshAccessToken(request: NextRequest): Promise<string | null> 
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
-  // 1. Khởi tạo biến để chứa Response cuối cùng
-  let finalResponse: NextResponse = NextResponse.next();
+  const response = NextResponse.next();
 
   // --------------------------------------------------------------------------
   // 1. Token Management
@@ -108,6 +106,7 @@ export async function proxy(request: NextRequest) {
   let accessToken = request.cookies.get(COOKIES.ACCESS_TOKEN)?.value;
   let hasRefreshed = false;
 
+  // Try to refresh if access token is missing but refresh token exists
   if (!accessToken && request.cookies.has(COOKIES.REFRESH_TOKEN)) {
     const newAccessToken = await refreshAccessToken(request);
     if (newAccessToken) {
@@ -124,72 +123,78 @@ export async function proxy(request: NextRequest) {
   const isGuestOnlyRoute = routeConfig?.type === 'GUEST_ONLY';
 
   // --------------------------------------------------------------------------
-  // 3. Authorization Logic & Redirect Handling
+  // 3. Authorization Logic
   // --------------------------------------------------------------------------
 
-  // Hàm helper để gán redirect nhưng vẫn giữ lại finalResponse để xử lý cookie sau này
-  const handleRedirect = (path: string) => {
-    const url = new URL(path, request.url);
-    if (path === PATHS.LOGIN) url.searchParams.set('callbackUrl', pathname);
-    return NextResponse.redirect(url);
-  };
-
+  // SCENARIO A: Guest Only Routes (e.g., /login)
   if (isGuestOnlyRoute) {
     if (accessToken) {
+      // [LOGIC UPDATE]: Check if the user is forced to change password.
+      // If true, we allow them to stay on the Login page (to switch accounts or logout).
+      // If we redirected them to Dashboard, the Dashboard logic would bounce them back to Change Password,
+      // creating a loop or preventing account switching.
+
       const jwtPayload = parseJwt(accessToken);
       const mustChangePassword = jwtPayload?.mustChangePassword === true || jwtPayload?.mustChangePassword === 'true';
 
-      if (!mustChangePassword) {
-        finalResponse = handleRedirect(PATHS.DASHBOARD);
+      if (mustChangePassword) {
+        return response; // Allow access to /login
       }
-      // Nếu mustChangePassword, giữ nguyên NextResponse.next() để vào trang login
+
+      // Standard Active User -> Redirect to Dashboard
+      return NextResponse.redirect(new URL(PATHS.DASHBOARD, request.url));
     }
   }
+
+  // SCENARIO B: Private Routes (Protected)
   else if (!isPublicRoute) {
-    if (!accessToken) {
-      finalResponse = handleRedirect(PATHS.LOGIN);
-    } else {
-      const jwtPayload = parseJwt(accessToken);
-      const mustChangePassword = jwtPayload?.mustChangePassword === true || jwtPayload?.mustChangePassword === 'true';
 
-      if (mustChangePassword && pathname !== PATHS.CHANGE_PASS) {
-        finalResponse = handleRedirect(PATHS.CHANGE_PASS);
-      } else if (!mustChangePassword && pathname === PATHS.CHANGE_PASS) {
-        finalResponse = handleRedirect(PATHS.DASHBOARD);
+    // B1. Authentication Check
+    if (!accessToken) {
+      const loginUrl = new URL(PATHS.LOGIN, request.url);
+      loginUrl.searchParams.set('callbackUrl', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // B2. JWT Payload Check (Fast Local Check)
+    // Primary Goal: Detect 'mustChangePassword' BEFORE calling the API.
+    const jwtPayload = parseJwt(accessToken);
+    const mustChangePassword = jwtPayload?.mustChangePassword === true || jwtPayload?.mustChangePassword === 'true';
+
+    if (mustChangePassword) {
+      if (pathname === PATHS.CHANGE_PASS) {
+        return response;
+      }
+
+      // If trying to access any other private route, redirect to Change Password.
+      return NextResponse.redirect(new URL(PATHS.CHANGE_PASS, request.url));
+    }
+
+    // B3. Fetch User Context (Only if password change is NOT required)
+    else {
+      // Edge Case: If a compliant user tries to access Change Password unnecessarily, redirect to Dashboard.
+      if (pathname === PATHS.CHANGE_PASS) {
+        return NextResponse.redirect(new URL(PATHS.DASHBOARD, request.url));
       }
     }
   }
 
   // --------------------------------------------------------------------------
-  // 4. Finalization: Cookie Sync (QUAN TRỌNG)
+  // 4. Finalization: Cookie Sync
   // --------------------------------------------------------------------------
-  // Gán cookie vào finalResponse (dù là .next() hay .redirect())
   if (hasRefreshed && accessToken) {
-    finalResponse.cookies.set({
+    response.cookies.set({
       name: COOKIES.ACCESS_TOKEN,
       value: accessToken,
       httpOnly: true,
       path: '/',
-      sameSite: 'none', // Bắt buộc cho Vercel -> Render
-      secure: true,      // Bắt buộc khi sameSite='none'
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 15 * 60,
     });
-
-    // Đồng bộ thêm cả refreshToken nếu cần (để tránh lệch pha)
-    const refreshToken = request.cookies.get(COOKIES.REFRESH_TOKEN)?.value;
-    if (refreshToken) {
-      finalResponse.cookies.set({
-        name: COOKIES.REFRESH_TOKEN,
-        value: refreshToken,
-        httpOnly: true,
-        path: '/',
-        sameSite: 'none',
-        secure: true,
-      });
-    }
   }
 
-  return finalResponse;
+  return response;
 }
 
 export const config = {

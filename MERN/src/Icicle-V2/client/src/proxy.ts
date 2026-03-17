@@ -97,7 +97,6 @@ async function refreshAccessToken(request: NextRequest): Promise<string | null> 
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const response = NextResponse.next();
 
   // --------------------------------------------------------------------------
   // 1. Token Management
@@ -121,6 +120,22 @@ export async function proxy(request: NextRequest) {
   const isPublicRoute = !routeConfig || routeConfig.type === 'PUBLIC';
   const isGuestOnlyRoute = routeConfig?.type === 'GUEST_ONLY';
 
+  // Helper to append refreshed cookies if needed without mutating unchanged responses
+  const applyRefreshedCookies = (res: NextResponse) => {
+    if (hasRefreshed && accessToken) {
+      res.cookies.set({
+        name: COOKIES.ACCESS_TOKEN,
+        value: accessToken,
+        httpOnly: false,
+        path: '/',
+        sameSite: 'lax',
+        secure: ENV.NODE_ENV === 'production',
+        maxAge: 15 * 60,
+      });
+    }
+    return res;
+  };
+
   // --------------------------------------------------------------------------
   // 3. Authorization Logic
   // --------------------------------------------------------------------------
@@ -128,50 +143,51 @@ export async function proxy(request: NextRequest) {
   // SCENARIO A: Guest Only Routes (e.g., /login)
   if (isGuestOnlyRoute) {
     if (accessToken) {
-       // [LOGIC UPDATE]: Check if the user is forced to change password.
-       // If true, we allow them to stay on the Login page (to switch accounts or logout).
-       // If we redirected them to Dashboard, the Dashboard logic would bounce them back to Change Password,
-       // creating a loop or preventing account switching.
-       
-       const jwtPayload = parseJwt(accessToken);
-       const mustChangePassword = jwtPayload?.mustChangePassword === true || jwtPayload?.mustChangePassword === 'true';
+      // [LOGIC UPDATE]: Check if the user is forced to change password.
+      const jwtPayload = parseJwt(accessToken);
+      const mustChangePassword = jwtPayload?.mustChangePassword === true || jwtPayload?.mustChangePassword === 'true';
 
-       if (mustChangePassword) {
-         return response; // Allow access to /login
-       }
+      if (mustChangePassword) {
+        return applyRefreshedCookies(NextResponse.next()); // Allow access to /login
+      }
 
-       // Standard Active User -> Redirect to Dashboard
-       return NextResponse.redirect(new URL(PATHS.DASHBOARD, request.url));
+      // Standard Active User -> Redirect to Dashboard
+      return NextResponse.redirect(new URL(PATHS.DASHBOARD, request.url));
     }
   }
-  
+
   // SCENARIO B: Private Routes (Protected)
   else if (!isPublicRoute) {
-    
+
     // B1. Authentication Check
     if (!accessToken) {
       const loginUrl = new URL(PATHS.LOGIN, request.url);
       loginUrl.searchParams.set('callbackUrl', pathname);
-      return NextResponse.redirect(loginUrl);
+
+      const response = NextResponse.redirect(loginUrl);
+
+      // Clean up cookies on the redirect response, so we don't pollute static pages
+      if (request.cookies.has(COOKIES.ACCESS_TOKEN)) response.cookies.delete(COOKIES.ACCESS_TOKEN);
+      if (request.cookies.has(COOKIES.REFRESH_TOKEN)) response.cookies.delete(COOKIES.REFRESH_TOKEN);
+
+      return response;
     }
 
     // B2. JWT Payload Check (Fast Local Check)
-    // Primary Goal: Detect 'mustChangePassword' BEFORE calling the API.
     const jwtPayload = parseJwt(accessToken);
     const mustChangePassword = jwtPayload?.mustChangePassword === true || jwtPayload?.mustChangePassword === 'true';
 
     if (mustChangePassword) {
       if (pathname === PATHS.CHANGE_PASS) {
-        return response;
+        return applyRefreshedCookies(NextResponse.next());
       }
-      
+
       // If trying to access any other private route, redirect to Change Password.
       return NextResponse.redirect(new URL(PATHS.CHANGE_PASS, request.url));
-    } 
-    
-    // B3. Fetch User Context (Only if password change is NOT required)
+    }
+
+    // B3. Check redundant access to Change Password
     else {
-      // Edge Case: If a compliant user tries to access Change Password unnecessarily, redirect to Dashboard.
       if (pathname === PATHS.CHANGE_PASS) {
         return NextResponse.redirect(new URL(PATHS.DASHBOARD, request.url));
       }
@@ -179,21 +195,10 @@ export async function proxy(request: NextRequest) {
   }
 
   // --------------------------------------------------------------------------
-  // 4. Finalization: Cookie Sync
-  // --------------------------------------------------------------------------
-  if (hasRefreshed && accessToken) {
-    response.cookies.set({
-      name: COOKIES.ACCESS_TOKEN,
-      value: accessToken,
-      httpOnly: false,
-      path: '/',
-      sameSite: 'lax',
-      secure: ENV.NODE_ENV === 'production',
-      maxAge: 15 * 60,
-    });
-  }
-
-  return response;
+  // 4. Finalization
+  // --------------------------------------------------------------------------  
+  // Allow access for public routes or valid private routes
+  return applyRefreshedCookies(NextResponse.next());
 }
 
 export const config = {
