@@ -13,8 +13,8 @@ import ENV from '../config/env.config.js';
  */
 const COOKIE_OPTS = {
   httpOnly: true,
-  secure: ENV.app.env === 'production', // HTTPS only in production
-  sameSite: 'lax',                      // 'lax' allows navigation from external sites
+  secure: true,
+  sameSite: 'none',
   path: '/',
 };
 
@@ -150,10 +150,10 @@ class AuthController {
       if (req.user?.id) {
         await authService.logout(req.user.id);
       }
-      
+
       this.clearAuthCookies(res);
       logger.info(`[Auth] User logged out (IP: ${req.ip})`);
-      
+
       res.success(null, 'Logged out successfully');
     } catch (error) {
       logger.error(`[Auth] Logout error: ${error.message}`);
@@ -184,7 +184,7 @@ class AuthController {
     } catch (error) {
       // If refresh fails (expired/reuse), clear everything to force re-login
       this.clearAuthCookies(res);
-      
+
       logger.error(`[Auth] Refresh token failed: ${error.message}`);
       return res.error(error.message, 403, error);
     }
@@ -217,23 +217,23 @@ class AuthController {
         userId,
         currentPassword,
         newPassword,
-        { 
-          ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1', 
-          userAgent: req.headers['user-agent'] || 'Unknown' 
+        {
+          ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1',
+          userAgent: req.headers['user-agent'] || 'Unknown'
         }
       );
 
       // Rotate tokens immediately so user stays logged in with new state
-      this.setAuthCookies(res, { 
-        accessToken: result.accessToken, 
-        refreshToken: result.refreshToken 
+      this.setAuthCookies(res, {
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken
       });
 
       logger.success(`[Auth] Password changed for UserID: ${userId}`);
-      
-      res.success({ 
-        message: 'Password changed successfully', 
-        user: result.user 
+
+      res.success({
+        message: 'Password changed successfully',
+        user: result.user
       });
 
     } catch (error) {
