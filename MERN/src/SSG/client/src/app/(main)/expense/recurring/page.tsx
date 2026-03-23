@@ -267,8 +267,8 @@ export default function RecurringExpensesPage() {
                     label="Amount (VNĐ)"
                     placeholder="0"
                     value={formData.amount}
-                    onChange={(e) => {
-                      const rawValue = e.target.value.replace(/\D/g, "");
+                    onValueChange={(val) => {
+                      const rawValue = val.replace(/\D/g, "");
                       if (!rawValue) {
                         setFormData({ ...formData, amount: "" });
                       } else {

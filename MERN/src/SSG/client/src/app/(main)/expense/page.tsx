@@ -336,8 +336,8 @@ export default function ExpenseDashboard() {
                   label="Monthly Limit (VNĐ)"
                   placeholder="500,000"
                   value={budgetForm.monthlyLimit}
-                  onChange={(e) => {
-                    const rawValue = e.target.value.replace(/\D/g, "");
+                  onValueChange={(val) => {
+                    const rawValue = val.replace(/\D/g, "");
                     if (!rawValue) {
                       setBudgetForm({ ...budgetForm, monthlyLimit: "" });
                     } else {
