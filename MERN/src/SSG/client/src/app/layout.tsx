@@ -44,7 +44,7 @@ export default async function RootLayout({
         )}
       >
         <Suspense fallback={<>...</>}>
-          <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
+          <Providers themeProps={{ attribute: "class", defaultTheme: "light", enableSystem: true }}>
             <AuthProvider initialData={userData}>
               {children}
             </AuthProvider>
