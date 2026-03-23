@@ -156,7 +156,7 @@ export default function PageHeader({ toggleSidebar, title }: PageHeaderProps) {
                   showFallback: true,
                 }}
                 description={user?.email || user?.username || "..."}
-                name={user?.fullName || "User"}
+                name={user?.username || "User"}
                 classNames={{
                   wrapper: "hidden md:flex text-start",
                   name: "font-bold text-black dark:text-white text-sm uppercase",

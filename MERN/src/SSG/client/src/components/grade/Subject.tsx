@@ -18,6 +18,7 @@ import {
   Tab,
 } from "@heroui/react";
 import { UserSubjectGrade, UpdateGradePayload } from "@/types/user-curriculum.types";
+import { usePermission } from "@/providers/auth.provider";
 
 // --- TYPE DEFINITIONS ---
 type AssessmentPlanItem = UserSubjectGrade["assessment_plan"][number];
@@ -131,6 +132,7 @@ const SyllabusColumn = ({ subject, sortedPlans }: {
 
 // --- MAIN COMPONENT ---
 export const SubjectRow = ({ subject, onSave }: { subject: UserSubjectGrade, onSave: (subjectId: string, payload: UpdateGradePayload) => Promise<unknown> }) => {
+  const canEdit = usePermission("grades:edit");
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [showSyllabus, setShowSyllabus] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -543,18 +545,20 @@ export const SubjectRow = ({ subject, onSave }: { subject: UserSubjectGrade, onS
                     {showSyllabus ? "HIDE SYLLABUS" : "VIEW SYLLABUS"}
                   </Button>
 
-                  <Button
-                    className={cn(
-                      "font-sans font-bold uppercase tracking-widest border-2 border-black transition-all shadow-pixel hover:shadow-pixel-hover active:translate-y-[2px] active:translate-x-[2px] active:shadow-none min-w-35",
-                      isEditing ? "bg-emerald-400 text-black hover:bg-emerald-300" : "bg-[#e6b689] text-black hover:bg-[#d4a373]"
-                    )}
-                    radius="none"
-                    isLoading={isSaving}
-                    startContent={!isSaving && (isEditing ? <i className="hn hn-check-circle-fill text-lg" /> : <i className="hn hn-edit text-lg" />)}
-                    onPress={handleSave}
-                  >
-                    {isEditing ? "SAVE GRADES" : "EDIT GRADES"}
-                  </Button>
+                  {canEdit && (
+                    <Button
+                      className={cn(
+                        "font-sans font-bold uppercase tracking-widest border-2 border-black transition-all shadow-pixel hover:shadow-pixel-hover active:translate-y-[2px] active:translate-x-[2px] active:shadow-none min-w-35",
+                        isEditing ? "bg-emerald-400 text-black hover:bg-emerald-300" : "bg-[#e6b689] text-black hover:bg-[#d4a373]"
+                      )}
+                      radius="none"
+                      isLoading={isSaving}
+                      startContent={!isSaving && (isEditing ? <i className="hn hn-check-circle-fill text-lg" /> : <i className="hn hn-edit text-lg" />)}
+                      onPress={handleSave}
+                    >
+                      {isEditing ? "SAVE GRADES" : "EDIT GRADES"}
+                    </Button>
+                  )}
                 </div>
               </ModalFooter>
             </>

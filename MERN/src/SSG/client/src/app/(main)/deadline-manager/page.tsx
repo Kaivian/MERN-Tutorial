@@ -8,8 +8,10 @@ import DeadlineList from "@/components/todo/DeadlineList";
 import { useTasks } from "@/hooks/useTasks";
 import { Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from "@heroui/react";
 import { useTranslation } from "@/i18n";
+import { usePermission } from "@/providers/auth.provider";
 
 export default function DeadlineManagerPage() {
+    const canCreate = usePermission("deadline:create");
     const { t } = useTranslation();
     const { tasks: backendTasks, isLoading: isTasksLoading, createTask, updateTask, deleteTask } = useTasks();
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -50,15 +52,17 @@ export default function DeadlineManagerPage() {
                     <Button onPress={onGuideOpen} size="sm" radius="none" className="font-bold tracking-widest uppercase !bg-emerald-500 !text-white !shadow-[2px_2px_0_1px_rgba(0,0,0,1)] border-2 border-black hover:translate-y-[2px] h-[36px] hidden sm:flex">
                         {t('deadlineManager.guide')}
                     </Button>
-                    <button
-                        onClick={() => {
-                            setEditingTask(null);
-                            setIsFormOpen(true);
-                        }}
-                        className="bg-[#e6b689] hover:bg-[#d4a373] text-black font-bold uppercase tracking-widest px-4 py-2 border-2 border-black shadow-pixel hover:shadow-pixel-hover active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all text-sm"
-                    >
-                        + {t('deadlineManager.add_task')}
-                    </button>
+                    {canCreate && (
+                        <button
+                            onClick={() => {
+                                setEditingTask(null);
+                                setIsFormOpen(true);
+                            }}
+                            className="bg-[#e6b689] hover:bg-[#d4a373] text-black font-bold uppercase tracking-widest px-4 py-2 border-2 border-black shadow-pixel hover:shadow-pixel-hover active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all text-sm"
+                        >
+                            + {t('deadlineManager.add_task')}
+                        </button>
+                    )}
                 </div>
             </div>
 

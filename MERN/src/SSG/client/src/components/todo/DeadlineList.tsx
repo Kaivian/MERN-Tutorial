@@ -3,6 +3,7 @@
 import React from "react";
 import { Task, Subject } from "@/types/deadline.types";
 import { UndoLeft, CheckCircle, Pen, TrashBinTrash } from "@solar-icons/react";
+import { usePermission } from "@/providers/auth.provider";
 
 interface DeadlineListProps {
     tasks: Task[];
@@ -13,6 +14,8 @@ interface DeadlineListProps {
 }
 
 export default function DeadlineList({ tasks, subjects, onDelete, onEdit, onToggleComplete }: DeadlineListProps) {
+    const canEdit = usePermission("deadline:edit");
+    const canDelete = usePermission("deadline:delete");
 
     if (tasks.length === 0) return null;
 
@@ -86,17 +89,21 @@ export default function DeadlineList({ tasks, subjects, onDelete, onEdit, onTogg
                                 </td>
                                 <td className="p-2">
                                     <div className="flex items-center justify-center gap-1.5">
-                                        {onToggleComplete && (
+                                        {onToggleComplete && canEdit && (
                                             <button onClick={() => onToggleComplete(task)} title={task.isCompleted ? "Restore" : "Complete"} className={`w-7 h-7 flex items-center justify-center font-bold text-xs border-2 shadow-[2px_2px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all ${task.isCompleted ? 'text-zinc-700 bg-zinc-200 hover:bg-zinc-300 border-black' : 'text-green-700 bg-green-100 hover:bg-green-200 border-black'}`}>
                                                 {task.isCompleted ? <UndoLeft size={16} /> : <CheckCircle size={16} />}
                                             </button>
                                         )}
-                                        <button onClick={() => onEdit(task)} title="Edit" className="w-7 h-7 flex items-center justify-center font-bold text-xs border-2 text-zinc-700 bg-zinc-100 hover:bg-zinc-200 border-black shadow-[2px_2px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all">
-                                            <Pen size={16} />
-                                        </button>
-                                        <button onClick={() => task._id && onDelete(task._id)} title="Delete" className="w-7 h-7 flex items-center justify-center font-bold text-xs border-2 text-red-500 bg-red-50 hover:bg-red-100 border-black shadow-[2px_2px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all">
-                                            <TrashBinTrash size={16} />
-                                        </button>
+                                        {canEdit && (
+                                            <button onClick={() => onEdit(task)} title="Edit" className="w-7 h-7 flex items-center justify-center font-bold text-xs border-2 text-zinc-700 bg-zinc-100 hover:bg-zinc-200 border-black shadow-[2px_2px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all">
+                                                <Pen size={16} />
+                                            </button>
+                                        )}
+                                        {canDelete && (
+                                            <button onClick={() => task._id && onDelete(task._id)} title="Delete" className="w-7 h-7 flex items-center justify-center font-bold text-xs border-2 text-red-500 bg-red-50 hover:bg-red-100 border-black shadow-[2px_2px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all">
+                                                <TrashBinTrash size={16} />
+                                            </button>
+                                        )}
                                     </div>
                                 </td>
                             </tr>

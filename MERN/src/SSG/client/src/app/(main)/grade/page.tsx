@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
-import { useAuth } from "@/providers/auth.provider";
+import { useAuth, usePermission } from "@/providers/auth.provider";
 import {
   Card,
   CardHeader,
@@ -26,6 +26,7 @@ import { userCurriculumService } from "@/services/user-curriculum.service";
 
 export default function GradePage() {
   const { user } = useAuth();
+  const canEdit = usePermission("grades:edit");
   const { t } = useTranslation();
 
   // --- State ---
@@ -142,7 +143,7 @@ export default function GradePage() {
   const buttonStyles = "bg-[#e6b689] hover:bg-[#d4a373] text-black border-2 border-black font-jersey10 min-w-10 h-10 shadow-pixel hover:shadow-pixel-hover active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all";
 
   return (
-    <div className="overflow-hidden flex flex-col gap-3 h-auto md:h-screen transition-colors duration-300 rounded-xl pb-10 md:pb-0">
+    <div className="overflow-hidden flex flex-col gap-3 h-auto md:h-screen transition-colors duration-300 pb-10 md:pb-0">
 
       {/* HEADER & FILTERS */}
       <div className="w-full relative md:sticky md:top-0 z-20 flex flex-col md:flex-row gap-3 shrink-0">
@@ -315,9 +316,11 @@ export default function GradePage() {
                   <Button isIconOnly radius="none" className={cn(buttonStyles, "hidden md:flex")}>
                     <i className="hn hn-filter" />
                   </Button>
-                  <Button isIconOnly radius="none" className={buttonStyles} onPress={() => setIsEditing(!isEditing)}>
-                    <i className={`hn ${isEditing ? "hn-save text-lg" : "hn-pen text-lg"}`} />
-                  </Button>
+                  {canEdit && (
+                    <Button isIconOnly radius="none" className={buttonStyles} onPress={() => setIsEditing(!isEditing)}>
+                      <i className={`hn ${isEditing ? "hn-save text-lg" : "hn-pen text-lg"}`} />
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardBody>

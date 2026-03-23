@@ -11,10 +11,17 @@ import axiosInstance from "@/utils/axios-client.utils";
 import Link from "next/link";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from "recharts";
 import { useTranslation } from "@/i18n";
+import { usePermission, useAuth } from "@/providers/auth.provider";
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#a28CFE', '#FF6B6B'];
 
 export default function ExpenseDashboard() {
+  const { hasPermission } = useAuth();
+  const canCreate = usePermission("expense.dashboard:manage_budget");
+  const canEdit = usePermission("expense.dashboard:manage_budget");
+  const canViewRecurring = hasPermission("expense.recurring:view");
+  const canViewTransactions = hasPermission("expense.transaction:view");
+
   const [summary, setSummary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const { t } = useTranslation();
@@ -107,15 +114,21 @@ export default function ExpenseDashboard() {
           <Button onPress={onGuideOpen} variant="solid" className="bg-emerald-500 text-white border-2 border-black rounded-none font-bold shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all uppercase">
             {t('expense.guide')}
           </Button>
-          <Button onPress={openBudgetModal} variant="bordered" className="border-2 border-black rounded-none font-bold uppercase shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all bg-white dark:bg-zinc-800 text-black dark:text-white">
-            + {t('expense.budget')}
-          </Button>
-          <Button as={Link} href="/expense/recurring" color="secondary" variant="solid" className="border-2 border-black rounded-none font-bold uppercase shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
-            {t('expense.recurring')}
-          </Button>
-          <Button as={Link} href="/expense/transactions" color="primary" variant="solid" className="border-2 border-black rounded-none font-bold uppercase shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
-            {t('expense.transactions')}
-          </Button>
+          {canCreate && (
+            <Button onPress={openBudgetModal} variant="bordered" className="border-2 border-black rounded-none font-bold uppercase shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all bg-white dark:bg-zinc-800 text-black dark:text-white">
+              + {t('expense.budget')}
+            </Button>
+          )}
+          {canViewRecurring && (
+            <Button as={Link} href="/expense/recurring" color="secondary" variant="solid" className="border-2 border-black rounded-none font-bold uppercase shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
+              {t('expense.recurring')}
+            </Button>
+          )}
+          {canViewTransactions && (
+            <Button as={Link} href="/expense/transactions" color="primary" variant="solid" className="border-2 border-black rounded-none font-bold uppercase shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
+              {t('expense.transactions')}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -258,9 +271,11 @@ export default function ExpenseDashboard() {
                                 {b.totalSpent.toLocaleString('vi-VN')} / {b.monthlyLimit.toLocaleString('vi-VN')} vnd
                               </span>
                             </div>
-                            <Button size="sm" isIconOnly onPress={() => openEditBudgetModal(b)} className="bg-yellow-400 border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
-                              <i className="hn hn-pen-solid text-black"></i>
-                            </Button>
+                            {canEdit && (
+                              <Button size="sm" isIconOnly onPress={() => openEditBudgetModal(b)} className="bg-yellow-400 border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
+                                <i className="hn hn-pen-solid text-black"></i>
+                              </Button>
+                            )}
                           </div>
                           {/* Retro Progress Bar */}
                           <div className="w-full h-6 bg-gray-200 dark:bg-zinc-700 border-4 border-black relative overflow-hidden shadow-[2px_2px_0_rgba(0,0,0,1)]">
@@ -279,9 +294,11 @@ export default function ExpenseDashboard() {
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
                     <p className="text-gray-500 italic font-bold">{t('expense.noBudgets')}</p>
-                    <Button onPress={openBudgetModal} className="border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] bg-yellow-400 font-bold uppercase">
-                      {t('expense.createFirstBudget')}
-                    </Button>
+                    {canCreate && (
+                      <Button onPress={openBudgetModal} className="border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] bg-yellow-400 font-bold uppercase">
+                        {t('expense.createFirstBudget')}
+                      </Button>
+                    )}
                   </div>
                 )}
               </CardBody>

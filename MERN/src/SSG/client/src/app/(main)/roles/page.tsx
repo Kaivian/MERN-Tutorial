@@ -20,6 +20,7 @@ import { usePermission } from "@/providers/auth.provider";
 import { addToast } from "@heroui/react";
 import { RoleModal } from "./components/RoleModal";
 import AccessDenied from "@/components/errors/AccessDenied";
+import { getPermissionLabel } from "@/config/permissions.config";
 
 export default function RolesPage() {
   const [roles, setRoles] = useState<Role[]>([]);
@@ -144,8 +145,8 @@ export default function RolesPage() {
                 <TableCell>
                   <div className="flex flex-wrap gap-2 max-w-xs">
                     {item.permissions.slice(0, 3).map((p: string) => (
-                      <Chip key={p} size="sm" variant="flat" className="rounded-none border-4 border-black dark:border-white bg-[#74b9ff] dark:bg-[#0984e3] text-black dark:text-white font-jersey10 text-lg font-bold shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] group-hover:-translate-y-1 transition-transform">
-                        {p}
+                      <Chip key={p} size="sm" variant="flat" className="rounded-none border-4 border-black dark:border-white bg-[#74b9ff] dark:bg-[#0984e3] text-black dark:text-white font-jersey10 text-lg font-bold shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] group-hover:-translate-y-1 transition-transform uppercase">
+                        {getPermissionLabel(p)}
                       </Chip>
                     ))}
                     {item.permissions.length > 3 && (

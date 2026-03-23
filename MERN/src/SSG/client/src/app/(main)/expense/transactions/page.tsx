@@ -10,6 +10,7 @@ import {
 import axiosInstance from "@/utils/axios-client.utils";
 import Link from "next/link";
 import { useTranslation } from "@/i18n";
+import { usePermission } from "@/providers/auth.provider";
 
 interface Transaction {
   _id: string;
@@ -22,6 +23,10 @@ interface Transaction {
 }
 
 export default function TransactionsPage() {
+  const canCreate = usePermission("expense.transaction:create");
+  const canEdit = usePermission("expense.transaction:edit");
+  const canDelete = usePermission("expense.transaction:delete");
+
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [budgets, setBudgets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -147,9 +152,11 @@ export default function TransactionsPage() {
           <Button as={Link} href="/expense" variant="bordered" className="border-2 border-black rounded-none font-bold uppercase">
             {t('expenseTransactions.backToDashboard')}
           </Button>
-          <Button onPress={openAddModal} color="primary" variant="solid" className="border-2 border-black rounded-none font-bold uppercase shadow-[2px_2px_0_rgba(0,0,0,1)]">
-            + {t('expenseTransactions.add')}
-          </Button>
+          {canCreate && (
+            <Button onPress={openAddModal} color="primary" variant="solid" className="border-2 border-black rounded-none font-bold uppercase shadow-[2px_2px_0_rgba(0,0,0,1)]">
+              + {t('expenseTransactions.add')}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -180,12 +187,16 @@ export default function TransactionsPage() {
                       {t.type === 'INCOME' ? '+' : '-'}{t.amount.toLocaleString('vi-VN')} vnd
                     </span>
                     <div className="flex gap-2">
-                      <Button size="sm" isIconOnly onPress={() => openEditModal(t)} className="bg-yellow-400 border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
-                        <i className="hn hn-pen-solid text-black"></i>
-                      </Button>
-                      <Button size="sm" isIconOnly onPress={() => handleDelete(t._id)} className="bg-red-500 border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
-                        <i className="hn hn-trash text-white"></i>
-                      </Button>
+                      {canEdit && (
+                        <Button size="sm" isIconOnly onPress={() => openEditModal(t)} className="bg-yellow-400 border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
+                          <i className="hn hn-pen-solid text-black"></i>
+                        </Button>
+                      )}
+                      {canDelete && (
+                        <Button size="sm" isIconOnly onPress={() => handleDelete(t._id)} className="bg-red-500 border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
+                          <i className="hn hn-trash text-white"></i>
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </CardBody>
@@ -237,8 +248,8 @@ export default function TransactionsPage() {
                     onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                     classNames={{ base: "w-1/2", trigger: "border-2 border-black rounded-none" }}
                   >
-                    <SelectItem key="EXPENSE">{t('expense.expense')}</SelectItem>
-                    <SelectItem key="INCOME">{t('expense.income')}</SelectItem>
+                    <SelectItem key="EXPENSE">{t('expenseTransactions.expense')}</SelectItem>
+                    <SelectItem key="INCOME">{t('expenseTransactions.income')}</SelectItem>
                   </Select>
                   <Input
                     type="text"
@@ -293,9 +304,9 @@ export default function TransactionsPage() {
                     onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
                     classNames={{ base: "w-1/2", trigger: "border-2 border-black rounded-none" }}
                   >
-                    <SelectItem key="CASH">{t('expense.cash')}</SelectItem>
-                    <SelectItem key="BANK">{t('expense.bank')}</SelectItem>
-                    <SelectItem key="EWALLET">{t('expense.eWallet')}</SelectItem>
+                    <SelectItem key="CASH">{t('expenseTransactions.cash')}</SelectItem>
+                    <SelectItem key="BANK">{t('expenseTransactions.bank')}</SelectItem>
+                    <SelectItem key="EWALLET">{t('expenseTransactions.eWallet')}</SelectItem>
                   </Select>
 
                   <Input

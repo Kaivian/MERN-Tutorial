@@ -17,13 +17,13 @@ export default function DashboardPage() {
   const { t } = useTranslation();
 
   // --- Permission Queries ---
-  const canViewGrade = hasPermission("read_grades") || hasPermission("personal_grades") || true;
-  const canViewExpense = hasPermission("read_expenses") || hasPermission("personal_expenses") || true;
-  const canViewTasks = hasPermission("read_tasks") || hasPermission("personal_tasks") || true;
+  const canViewGrade = hasPermission("grades:view");
+  const canViewExpense = hasPermission("expense.dashboard:view");
+  const canViewTasks = hasPermission("calendar:view") || hasPermission("deadline:view");
 
-  const canViewUsers = hasPermission("read_users");
-  const canViewRoles = hasPermission("read_roles");
-  const canViewCurriculum = hasPermission("curriculums:manage");
+  const canViewUsers = hasPermission("users:view");
+  const canViewRoles = hasPermission("roles:view");
+  const canViewCurriculum = hasPermission("curriculum:edit") || hasPermission("curriculum:view");
 
   // --- Grade Data ---
   const { data: userCurriculum, isLoading: isCurriculumLoading } = useUserCurriculum();

@@ -38,7 +38,7 @@ const RETRO = {
 // ============================================================
 export default function CurriculumsPage() {
   const { hasPermission } = useAuth();
-  const canManage = hasPermission("curriculums:manage");
+  const canManage = hasPermission("curriculum:edit");
   const qc = useQueryClient();
   const router = useRouter();
 

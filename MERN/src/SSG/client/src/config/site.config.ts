@@ -77,27 +77,33 @@ export const siteConfig = {
     },
     dashboard: {
       label: "Dashboard",
-      path: "/dashboard"
+      path: "/dashboard",
+      requiredPerms: ["dashboard:view"] as const
     },
     profile: {
       label: "Profile",
-      path: "/profile"
+      path: "/profile",
+      requiredPerms: ["profile:view"] as const
     },
     grade: {
       label: "Grade",
-      path: "/grade"
+      path: "/grade",
+      requiredPerms: ["grades:view"] as const
     },
     gradeChart: {
       label: "Grade Analytics",
-      path: "/grade/chart"
+      path: "/grade/chart",
+      requiredPerms: ["grades:view"] as const
     },
 
     // ========================================================================
     // 4. BUSINESS ROUTES (Login Required)
     // ========================================================================
-    calendar: { label: "Calendar", path: "/calendar" },
-    deadlineManager: { label: "Deadline Manager", path: "/deadline-manager" },
-    expense: { label: "Expense Management", path: "/expense" },
+    calendar: { label: "Calendar", path: "/calendar", requiredPerms: ["calendar:view"] as const },
+    deadlineManager: { label: "Deadline Manager", path: "/deadline-manager", requiredPerms: ["deadline:view"] as const },
+    expense: { label: "Expense Management", path: "/expense", requiredPerms: ["expense.dashboard:view"] as const },
+    expenseRecurring: { label: "Recurring Expenses", path: "/expense/recurring", requiredPerms: ["expense.recurring:view"] as const },
+    expenseTransactions: { label: "Expense Transactions", path: "/expense/transactions", requiredPerms: ["expense.transaction:view"] as const },
     customer: { label: "Customers", path: "/customers" },
     product: { label: "Products", path: "/products" },
     truck: { label: "Trucks", path: "/trucks" },
@@ -132,7 +138,7 @@ export const siteConfig = {
     curriculums: {
       label: "Curriculums",
       path: "/curriculums",
-      requiredPerms: ["curriculums:manage"] as const
+      requiredPerms: ["curriculum:view"] as const
     },
 
   } satisfies Record<string, RouteLinkEntry>,

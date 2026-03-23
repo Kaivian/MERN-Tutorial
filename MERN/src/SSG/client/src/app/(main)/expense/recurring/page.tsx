@@ -10,6 +10,7 @@ import {
 import axiosInstance from "@/utils/axios-client.utils";
 import Link from "next/link";
 import { useTranslation } from "@/i18n";
+import { usePermission } from "@/providers/auth.provider";
 
 interface RecurringExpense {
   _id: string;
@@ -22,6 +23,10 @@ interface RecurringExpense {
 }
 
 export default function RecurringExpensesPage() {
+  const canCreate = usePermission("expense.recurring:create");
+  const canEdit = usePermission("expense.recurring:edit");
+  const canDelete = usePermission("expense.recurring:delete");
+
   const [recurrings, setRecurrings] = useState<RecurringExpense[]>([]);
   const [budgets, setBudgets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -169,12 +174,16 @@ export default function RecurringExpensesPage() {
           <Button as={Link} href="/expense" variant="bordered" className="border-2 border-black rounded-none font-bold uppercase">
             {t('expenseRecurring.backToDashboard')}
           </Button>
-          <Button onPress={handleProcessDue} isLoading={processing} color="secondary" variant="solid" className="border-2 border-black rounded-none font-bold uppercase shadow-[2px_2px_0_rgba(0,0,0,1)]">
-            {t('expenseRecurring.processDue')}
-          </Button>
-          <Button onPress={openAddModal} color="primary" variant="solid" className="border-2 border-black rounded-none font-bold uppercase shadow-[2px_2px_0_rgba(0,0,0,1)]">
-            + {t('expenseRecurring.add')}
-          </Button>
+          {canCreate && (
+            <>
+              <Button onPress={handleProcessDue} isLoading={processing} color="secondary" variant="solid" className="border-2 border-black rounded-none font-bold uppercase shadow-[2px_2px_0_rgba(0,0,0,1)]">
+                {t('expenseRecurring.processDue')}
+              </Button>
+              <Button onPress={openAddModal} color="primary" variant="solid" className="border-2 border-black rounded-none font-bold uppercase shadow-[2px_2px_0_rgba(0,0,0,1)]">
+                + {t('expenseRecurring.add')}
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
@@ -213,12 +222,16 @@ export default function RecurringExpensesPage() {
                       <span className={`px-2 py-1 text-xs border-2 border-black font-bold uppercase ${r.isActive ? 'bg-green-400 text-black' : 'bg-gray-300 text-gray-700'}`}>
                         {r.isActive ? 'Active' : 'Paused'}
                       </span>
-                      <Button size="sm" isIconOnly onPress={() => openEditModal(r)} className="bg-yellow-400 border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all ml-4">
-                        <i className="hn hn-pen-solid text-black"></i>
-                      </Button>
-                      <Button size="sm" isIconOnly onPress={() => handleDelete(r._id)} className="bg-red-500 border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
-                        <i className="hn hn-trash text-white"></i>
-                      </Button>
+                      {canEdit && (
+                        <Button size="sm" isIconOnly onPress={() => openEditModal(r)} className="bg-yellow-400 border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all ml-4">
+                          <i className="hn hn-pen-solid text-black"></i>
+                        </Button>
+                      )}
+                      {canDelete && (
+                        <Button size="sm" isIconOnly onPress={() => handleDelete(r._id)} className="bg-red-500 border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all">
+                          <i className="hn hn-trash text-white"></i>
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </CardBody>
