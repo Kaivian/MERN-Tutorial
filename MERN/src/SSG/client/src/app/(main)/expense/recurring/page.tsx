@@ -84,7 +84,7 @@ export default function RecurringExpensesPage() {
     setIsEditing(true);
     setCurrentId(r._id);
     setFormData({
-      amount: r.amount.toString(),
+      amount: r.amount.toLocaleString('en-US'),
       category: r.category,
       frequency: r.frequency,
       nextExecutionDate: new Date(r.nextExecutionDate).toISOString().split("T")[0],
@@ -115,9 +115,10 @@ export default function RecurringExpensesPage() {
 
     try {
       setSaving(true);
+      const rawAmount = formData.amount.toString().replace(/,/g, "");
       const payload = {
         ...formData,
-        amount: Number(formData.amount),
+        amount: Number(rawAmount),
         nextExecutionDate: new Date(formData.nextExecutionDate).toISOString()
       };
 
@@ -206,7 +207,7 @@ export default function RecurringExpensesPage() {
 
                   <div className="flex items-center justify-end w-full md:w-1/3 gap-4">
                     <span className="text-2xl font-bold text-red-600">
-                      {r.amount.toLocaleString('vi-VN')} vnd
+                      {r.amount.toLocaleString('vi-VN')} VNĐ
                     </span>
                     <div className="flex gap-2 items-center">
                       <span className={`px-2 py-1 text-xs border-2 border-black font-bold uppercase ${r.isActive ? 'bg-green-400 text-black' : 'bg-gray-300 text-gray-700'}`}>
@@ -262,11 +263,19 @@ export default function RecurringExpensesPage() {
               <ModalBody className="py-4 flex flex-col gap-4">
                 <div className="flex gap-4">
                   <Input
-                    type="number"
-                    label="Amount (vnd)"
+                    type="text"
+                    label="Amount (VNĐ)"
                     placeholder="0"
                     value={formData.amount}
-                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                    onChange={(e) => {
+                      const rawValue = e.target.value.replace(/\D/g, "");
+                      if (!rawValue) {
+                        setFormData({ ...formData, amount: "" });
+                      } else {
+                        const formatted = Number(rawValue).toLocaleString('en-US');
+                        setFormData({ ...formData, amount: formatted });
+                      }
+                    }}
                     isRequired
                     classNames={{ base: "w-1/2", inputWrapper: "border-2 border-black rounded-none" }}
                   />
@@ -329,9 +338,11 @@ export default function RecurringExpensesPage() {
                 <Button variant="bordered" onPress={onClose} className="border-2 border-black rounded-none uppercase font-bold">
                   Cancel
                 </Button>
-                <Button color="primary" onPress={() => handleSubmit(onClose)} isLoading={saving} className="border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] uppercase font-bold">
-                  {saving ? "Saving..." : "Save"}
-                </Button>
+                {formData.amount && formData.category && formData.nextExecutionDate && (
+                  <Button color="primary" onPress={() => handleSubmit(onClose)} isLoading={saving} className="border-2 border-black rounded-none shadow-[2px_2px_0_rgba(0,0,0,1)] uppercase font-bold">
+                    {saving ? "Saving..." : "Save"}
+                  </Button>
+                )}
               </ModalFooter>
             </>
           )}

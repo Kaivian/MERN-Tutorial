@@ -24,6 +24,7 @@ export const createRecurringSchema = Joi.object({
   category: Joi.string().required(),
   frequency: Joi.string().valid('WEEKLY', 'MONTHLY', 'CUSTOM').required(),
   nextExecutionDate: Joi.date().iso().required(),
+  isActive: Joi.boolean().optional(),
   description: Joi.string().max(500).allow('').optional(),
 });
 

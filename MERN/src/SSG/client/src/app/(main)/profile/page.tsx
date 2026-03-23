@@ -108,8 +108,8 @@ export default function ProfilePage() {
     const commonSelectStyles = {
         trigger: "border-zinc-600 data-[hover=true]:border-[#e6b689] shadow-pixel transition-all duration-150 data-[open=true]:translate-x-[4px] data-[open=true]:translate-y-[4px] data-[open=true]:shadow-none data-[open=true]:border-[#e6b689] font-jersey10 rounded-none",
         label: "text-zinc-500 uppercase tracking-widest text-sm font-jersey10 mb-1",
-        value: "font-jersey10 text-xl text-zinc-300",
-        popoverContent: "rounded-none border-2 border-[#e6b689] mx-[2px] data-[selected=true]:bg-zinc-800 data-[selected=true]:text-[#e6b689] data-[selected=true]:font-jersey10",
+        value: "font-jersey10 text-xl !text-black dark:!text-white",
+        popoverContent: "rounded-none border-2 border-[#e6b689] mx-[2px] bg-white dark:bg-zinc-900 text-black dark:text-zinc-300",
     };
 
     const getSelectStyles = (disabled: boolean) => ({
@@ -120,11 +120,16 @@ export default function ProfilePage() {
     const commonListboxProps = {
         itemClasses: {
             base: [
-                "rounded-none", "text-zinc-500", "transition-colors", "outline-none", "font-jersey10", "text-xl",
+                "group", "rounded-none", "text-black", "dark:text-zinc-300", "transition-colors", "outline-none", "font-jersey10", "text-xl",
                 "data-[focus-visible=true]:ring-0", "data-[focus-visible=true]:ring-offset-0",
-                "data-[hover=true]:!bg-[#e6b689]", "data-[hover=true]:!text-zinc-900",
-                "data-[selected=true]:!bg-[#e6b689]", "data-[selected=true]:!text-zinc-900",
-                "data-[focus=true]:!bg-[#e6b689]", "data-[focus=true]:!text-zinc-900",
+                "data-[hover=true]:bg-[#e6b689]", "data-[hover=true]:text-black", "dark:data-[hover=true]:text-black",
+                "data-[selected=true]:bg-[#e6b689]", "data-[selected=true]:text-black", "dark:data-[selected=true]:text-black",
+                "data-[focus=true]:bg-[#e6b689]", "data-[focus=true]:text-black", "dark:data-[focus=true]:text-black",
+            ].join(" "),
+            title: [
+                "group-data-[hover=true]:!text-black", "dark:group-data-[hover=true]:!text-black",
+                "group-data-[selected=true]:!text-black", "dark:group-data-[selected=true]:!text-black",
+                "group-data-[focus=true]:!text-black", "dark:group-data-[focus=true]:!text-black",
             ].join(" "),
         },
     };
@@ -132,7 +137,7 @@ export default function ProfilePage() {
     const buttonStyles = "bg-[#e6b689] text-black border-2 border-black font-jersey10 text-xl uppercase tracking-widest px-8 shadow-pixel hover:bg-[#d4a373] hover:translate-x-[2px] hover:translate-y-[2px] transition-all hover:shadow-pixel-hover active:translate-x-[4px] active:translate-y-[4px] active:shadow-none";
 
     return (
-        <div className="flex flex-col gap-6 pr-2 pb-2 mx-auto w-full text-white font-jersey10 overflow-auto">
+        <div className="flex flex-col gap-6 pr-2 pb-2 mx-auto w-full text-black dark:text-white font-jersey10 overflow-auto">
             {/* HEADER */}
             <div className="flex flex-col gap-2">
                 <h1 className="text-5xl font-jersey10 text-[#e6b689] uppercase tracking-wider [text-shadow:3px_3px_0_#000]">
@@ -245,7 +250,7 @@ export default function ProfilePage() {
                                 listboxProps={commonListboxProps}
                             >
                                 {categories.map((cat) => (
-                                    <SelectItem key={cat._id}>{cat.name}</SelectItem>
+                                    <SelectItem key={cat._id} textValue={cat.name}>{cat.name}</SelectItem>
                                 ))}
                             </Select>
 
@@ -265,7 +270,7 @@ export default function ProfilePage() {
                                 listboxProps={commonListboxProps}
                             >
                                 {majors.map((major) => (
-                                    <SelectItem key={major._id}>{major.name} ({major.code})</SelectItem>
+                                    <SelectItem key={major._id} textValue={`${major.name} (${major.code})`}>{major.name} ({major.code})</SelectItem>
                                 ))}
                             </Select>
 
@@ -285,7 +290,7 @@ export default function ProfilePage() {
                                 listboxProps={commonListboxProps}
                             >
                                 {classes.map((cls) => (
-                                    <SelectItem key={cls._id}>{cls.code} – {cls.name}</SelectItem>
+                                    <SelectItem key={cls._id} textValue={`${cls.code} – ${cls.name}`}>{cls.code} – {cls.name}</SelectItem>
                                 ))}
                             </Select>
 

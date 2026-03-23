@@ -83,7 +83,7 @@ export default function TransactionsPage() {
     setIsEditing(true);
     setCurrentId(t._id);
     setFormData({
-      amount: t.amount.toString(),
+      amount: t.amount.toLocaleString('en-US'),
       type: t.type,
       category: t.category,
       description: t.description || "",
@@ -110,7 +110,7 @@ export default function TransactionsPage() {
       setSaving(true);
       const payload = {
         ...formData,
-        amount: Number(formData.amount),
+        amount: Number(formData.amount.toString().replace(/,/g, "")),
         transactionDate: new Date(formData.transactionDate).toISOString()
       };
 
@@ -241,11 +241,19 @@ export default function TransactionsPage() {
                     <SelectItem key="INCOME">{t('expense.income')}</SelectItem>
                   </Select>
                   <Input
-                    type="number"
-                    label="Amount (vnd)"
+                    type="text"
+                    label="Amount (VNĐ)"
                     placeholder="0"
                     value={formData.amount}
-                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                    onChange={(e) => {
+                      const rawValue = e.target.value.replace(/\D/g, "");
+                      if (!rawValue) {
+                        setFormData({ ...formData, amount: "" });
+                      } else {
+                        const formatted = Number(rawValue).toLocaleString('en-US');
+                        setFormData({ ...formData, amount: formatted });
+                      }
+                    }}
                     classNames={{ base: "w-1/2", inputWrapper: "border-2 border-black rounded-none" }}
                   />
                 </div>

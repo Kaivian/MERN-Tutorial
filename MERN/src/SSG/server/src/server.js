@@ -1,8 +1,8 @@
-// server/src/server.js
 import app from './app.js';
 import ENV from './config/env.config.js';
 import connectDB from './db/init.mongodb.js';
 import logger from './utils/logger.utils.js';
+import { setupCronJobs } from './utils/cron.utils.js';
 
 /**
  * Entry point to start the server.
@@ -21,6 +21,10 @@ const startServer = async () => {
      * This step includes the logic to auto-create the 'development' DB and seed data.
      */
     await connectDB();
+
+    /** Step 1.5: Setup scheduled jobs (cron) */
+    setupCronJobs();
+
 
     /** Step 2: Start Express Server. */
     const server = app.listen(ENV.app.port, () => {

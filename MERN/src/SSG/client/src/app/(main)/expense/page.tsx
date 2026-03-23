@@ -55,13 +55,13 @@ export default function ExpenseDashboard() {
       if (isEditingBudget && budgetForm.id) {
         await axiosInstance.put(`/expense/budgets/${budgetForm.id}`, {
           category: budgetForm.category,
-          monthlyLimit: Number(budgetForm.monthlyLimit)
+          monthlyLimit: Number(budgetForm.monthlyLimit.toString().replace(/,/g, ""))
         });
         addToast({ title: "Success", description: "Budget updated!", color: "success" });
       } else {
         await axiosInstance.post("/expense/budgets", {
           category: budgetForm.category,
-          monthlyLimit: Number(budgetForm.monthlyLimit)
+          monthlyLimit: Number(budgetForm.monthlyLimit.toString().replace(/,/g, ""))
         });
         addToast({ title: "Success", description: "Budget saved!", color: "success" });
       }
@@ -82,7 +82,7 @@ export default function ExpenseDashboard() {
 
   const openEditBudgetModal = (b: any) => {
     setIsEditingBudget(true);
-    setBudgetForm({ id: b._id, category: b.category, monthlyLimit: b.monthlyLimit.toString() });
+    setBudgetForm({ id: b._id, category: b.category, monthlyLimit: b.monthlyLimit.toLocaleString('en-US') });
     onOpen();
   };
 
@@ -332,11 +332,19 @@ export default function ExpenseDashboard() {
                   description="Exact match to your transaction categories."
                 />
                 <Input
-                  type="number"
-                  label="Monthly Limit (₫)"
-                  placeholder="500000"
+                  type="text"
+                  label="Monthly Limit (VNĐ)"
+                  placeholder="500,000"
                   value={budgetForm.monthlyLimit}
-                  onChange={(e) => setBudgetForm({ ...budgetForm, monthlyLimit: e.target.value })}
+                  onChange={(e) => {
+                    const rawValue = e.target.value.replace(/\D/g, "");
+                    if (!rawValue) {
+                      setBudgetForm({ ...budgetForm, monthlyLimit: "" });
+                    } else {
+                      const formatted = Number(rawValue).toLocaleString('en-US');
+                      setBudgetForm({ ...budgetForm, monthlyLimit: formatted });
+                    }
+                  }}
                   classNames={{ inputWrapper: "border-2 border-black rounded-none" }}
                 />
               </ModalBody>
