@@ -27,9 +27,15 @@ export default function DeadlineForm({ subjects, initialData, onAdd, onCancel }:
     const [category, setCategory] = useState<GradeCategory | string>(defaultCat);
     const [weight, setWeight] = useState(defaultWt);
 
-    const [startDate, setStartDate] = useState(() => initialData?.startDate ? new Date(initialData.startDate).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16));
+    const formatLocalToInput = (dateStr: string | Date) => {
+        const d = new Date(dateStr);
+        const tzOffsetMs = d.getTimezoneOffset() * 60000;
+        return new Date(d.getTime() - tzOffsetMs).toISOString().slice(0, 16);
+    };
+
+    const [startDate, setStartDate] = useState(() => initialData?.startDate ? formatLocalToInput(initialData.startDate) : formatLocalToInput(new Date()));
     const [hasDeadline, setHasDeadline] = useState(initialData ? !!initialData.endDate : true);
-    const [endDate, setEndDate] = useState(() => initialData?.endDate ? new Date(initialData.endDate).toISOString().slice(0, 16) : new Date(Date.now() + 86400000 * 7).toISOString().slice(0, 16));
+    const [endDate, setEndDate] = useState(() => initialData?.endDate ? formatLocalToInput(initialData.endDate) : formatLocalToInput(new Date(Date.now() + 86400000 * 7)));
 
     const [slot, setSlot] = useState(initialData?.slot || 1);
     const [difficulty, setDifficulty] = useState(initialData?.difficulty || 3);
@@ -79,8 +85,8 @@ export default function DeadlineForm({ subjects, initialData, onAdd, onCancel }:
             weight: subjectId === 'personal' ? undefined : weight,
             slot: subjectId === 'personal' ? undefined : slot,
             color: subjectId === 'personal' ? color : undefined,
-            startDate,
-            endDate: hasDeadline ? endDate : null,
+            startDate: new Date(startDate).toISOString(),
+            endDate: hasDeadline && endDate ? new Date(endDate).toISOString() : null,
             difficulty,
             estimatedHours,
             subTasks,

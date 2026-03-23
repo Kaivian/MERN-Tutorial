@@ -133,8 +133,8 @@ class ExpenseService {
       };
     });
 
-    overview.totalIncome = totalBudgetLimit;
-    overview.netCashFlow = totalBudgetLimit - overview.totalExpense;
+    overview.totalIncome += totalBudgetLimit;
+    overview.netCashFlow = overview.totalIncome - overview.totalExpense;
 
     // 4. Insights
     const prevMonthFirstDay = new Date(now.getFullYear(), now.getMonth() - 1, 1);
